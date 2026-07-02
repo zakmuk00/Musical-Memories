@@ -1,5 +1,4 @@
-import pandas as pd
-import sqlalchemy as db
+from flask_sqlalchemy import SQLAlchemy
 
 ### Database Idea:
 '''
@@ -20,3 +19,8 @@ Plan:
 - Try making ORM functions so we can query directly to database
     without having to write SQL
 '''
+
+db = SQLAlchemy()
+
+
+
