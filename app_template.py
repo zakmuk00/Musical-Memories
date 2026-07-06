@@ -1,5 +1,5 @@
 from database import db
-from entry import Entry, add_entry, get_by_id, get_by_date, delete_by_id, delete_by_date, delete_table
+from entry import Entry, add_entry, get_by_id, get_by_date, delete_by_id, delete_by_date, delete_table, update_entry
 from flask import Flask
 from datetime import date
 
@@ -45,6 +45,7 @@ if __name__ == '__main__':
         get_by_id(3)
         get_by_date(7, 3, 2026)
         delete_by_id(1)
+        update_entry(2, location_name='At a throwback party')
 
         # delete_table() # Deletes the entire table, might need this to avoid integrity erros while testing
 

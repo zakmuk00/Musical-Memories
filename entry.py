@@ -103,3 +103,29 @@ def delete_table():
     Entry.query.delete()
     db.session.commit()
     print('Table deleted')
+
+# Updates an existing entry
+# Use this when we update an entry and send all changes
+# after clicking save button
+# Documentations:
+# hasattr: https://www.w3schools.com/python/ref_func_hasattr.asp
+# setattr: https://www.w3schools.com/python/ref_func_setattr.asp
+# kwargs: https://www.w3schools.com/python/python_args_kwargs.asp
+# NOT FULLY TESTED YET
+def update_entry(id, **kwargs):
+    entry = Entry.query.get(id)
+    if entry is None:
+        print('Could not find entry')
+        return False
+    else:
+        for key, value in kwargs.items():
+            if hasattr(entry, key):
+                # Vulnerability: No type checking yet
+                setattr(entry, key, value)
+                print(f'{key} updated')
+            else:
+                print(f'{key} is not a valid key, did not update')
+        
+        db.session.commit()
+        print("Change completed")
+        return True
