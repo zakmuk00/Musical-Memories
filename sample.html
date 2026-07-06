@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Map</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
+    <script id="search-js" src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
+    <style>
+    body {
+    margin: 0;
+    font-family: Arial;
+    }
+
+    .page {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    }
+
+    .panel {
+    flex: 1;
+    background: #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    }
+
+    #map {
+    width: 50%;
+    height: 300px;   /* THIS is key */
+    border-radius: 10px;
+    }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+  <div id="map"></div>
+
+    <div style="flex:1; background:black; color:white; padding:10px;">
+      Where you were at
+    </div>
+
+  </div>
+
+<button id="saveBtn">Save Location</button>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
