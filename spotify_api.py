@@ -4,6 +4,7 @@ import requests
 import random
 import string
 import urllib.parse
+import base64
 from dotenv import load_dotenv
 
 # loading environment variables from .env file
@@ -41,6 +42,17 @@ class SpotifyClient:
         self.length = 16
         self.characters = string.ascii_letters + string.digits
 
+    # header needed for Spotify's token endpoint
+    def get_auth_header(self):
+        auth_string = self.client_id + ':' + self.client_secret
+        auth_bytes = auth_string.encode("utf-8")
+        auth_base64 = base64.b64encode(auth_bytes).decode("utf-8")
+
+        return {
+            "Authorization" : "Basic " + auth_base64,
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+
     # recommended by spotify documentation for security
     def generate_random_string(self):
         return ''.join(random.choices(self.characters, k=self.length))
@@ -62,9 +74,95 @@ class SpotifyClient:
 
         return f"{self.auth_url}?{urllib.parse.urlencode(query_params)}"
 
+    def save_tokens(self, token_data):
+        now = time.time()
+        # update access token and expires_at to save the token used to call Spotify
+        self.access_token = token_data.get("access_token")
+        self.expires_at = now + token_data.get("expires_in", 3600) - 60
+
+        # saves the refresh token if available
+        if token_data.get("refresh_token"):
+            self.refresh_token = token_data.get("refresh_token")
+    
+    def exchange_code_for_access_token(self, code):
+        data = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": self.redirect_uri
+        }
+
+        response = requests.post(
+            self.token_url,
+            headers=self.get_auth_header(),
+            data=data,        
+        )
+        # call save_tokens to save needed token data
+        response.raise_for_status()
+        token_data = response.json()
+        self.save_tokens(token_data)
+        
+        return token_data
+    
+    # obtain new access token when old access expires
+    def refresh_access_token(self):
+        if not self.refresh_token:
+            raise RuntimeError("No refresh token. User must login again")
+
+        data = {
+            "grant_type": "refresh_token",
+            "refresh_token": self.refresh_token
+        }
+
+        response = requests.post(
+            self.token_url,
+            headers=self.get_auth_header(),
+            data=data
+        )
+
+        response_data = response.json()
+
+        if not response.ok:
+            if response_data.get("error") == "invalid_grant":
+                self.access_token = None
+                self.refresh_token = None
+                self.expires_at = 0
+                raise RuntimeError("Refresh token is invalid. User must log in again")
+
+        if "refresh_token" not in response_data:
+            response_data["refresh_token"] = self.refresh_token
+
+        self.save_tokens(response_data)
+
+        return response_data
+
+    def get_valid_access_token(self):
+        # if token is present and not expired
+        if self.access_token and time.time() < self.expires_at:
+            return self.access_token
+        
+        # if there is a refresh token we can obtain a new token
+        if self.refresh_token:
+            token_data = self.refresh_access_token()
+            return token_data["access_token"]
+
+        raise RuntimeError("There is no valid access token. User must log in.")
+
+
+
 # testing
 if __name__ == "__main__":
     spotify = SpotifyClient()
 
     login_url = spotify.build_user_login_url()
     print(login_url)
+    print()
+    code = input()
+
+    token_data = spotify.exchange_code_for_access_token(code)
+    # check if I received tokens
+    print(bool(token_data.get("access_token")))
+    print(bool(token_data.get("refresh_token")))
+
+    # check if client saved tokens
+    print(bool(spotify.access_token))
+    print(bool(spotify.refresh_token))
