@@ -1,5 +1,3 @@
-const coordinates = document.getElementById('coordinates');
-
 const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yOWxsdGE1MXU1OTM0b20zb2lsZWF6bSJ9.4OpFI6JNjn9X1A3K0Dov5A'
 
 const map = new mapboxgl.Map({
@@ -16,7 +14,7 @@ const searchBox = new MapboxSearchBox();
 searchBox.accessToken = mapbox_token;
 searchBox.options = {
     language: 'en'
-}
+};
 searchBox.mapboxgl = mapboxgl
 searchBox.marker = true
 
@@ -28,7 +26,7 @@ const geolocate = new mapboxgl.GeolocateControl({
     },
     trackUserLocation: true,
     showUserHeading: true
-})
+});
 
 map.addControl(geolocate);
 
