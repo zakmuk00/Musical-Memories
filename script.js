@@ -1,7 +1,9 @@
 const coordinates = document.getElementById('coordinates');
 
+const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yM3dzY3hoMDV2MTMzb21paDFoOHp6bSJ9.cIrFL02wGGG7edLxGqOaHA'
+
 const map = new mapboxgl.Map({
-    accessToken: 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yM3dzY3hoMDV2MTMzb21paDFoOHp6bSJ9.cIrFL02wGGG7edLxGqOaHA',
+    accessToken: mapbox_token,
     container: 'map',
     // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
     style: 'mapbox://styles/mapbox/standard',
@@ -11,7 +13,7 @@ const map = new mapboxgl.Map({
 });
 
 const searchBox = new MapboxSearchBox();
-searchBox.accessToken = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yM3dzY3hoMDV2MTMzb21paDFoOHp6bSJ9.cIrFL02wGGG7edLxGqOaHA';
+searchBox.accessToken = mapbox_token;
 searchBox.options = {
     language: 'en'
 }
