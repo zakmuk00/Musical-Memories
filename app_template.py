@@ -1,5 +1,5 @@
 from database import db
-from entry import Entry, add_entry
+from entry import Entry, add_entry, get_by_id, get_by_date, delete_by_id, delete_by_date, delete_table
 from flask import Flask
 from datetime import date
 
@@ -16,6 +16,7 @@ def start_app():
 if __name__ == '__main__':
     app = start_app()
     with app.app_context():
+        # normal new row
         sample_entry = Entry(date=date(2026, 7, 2),
                             song_name='Love, Fig', 
                             spotify_link='https://open.spotify.com/track/1UybzZ9Iag33eM0maYoqxC',
@@ -25,6 +26,7 @@ if __name__ == '__main__':
         db.session.add(sample_entry)
         db.session.commit()
 
+        # new row with implemented method
         add_entry(date(2026, 7, 3), 
                     'Gangnam Style', 
                     'https://open.spotify.com/album/0ZjxizLeMyFEjR27JIvD99',
@@ -39,4 +41,13 @@ if __name__ == '__main__':
         #                     journal_text='A true classic. Cant get enough of this honestly.',
         #                     location_name='On a walk')
         # db.session.add(sample_entry_2)
+        get_by_id(1)
+        get_by_id(3)
+        get_by_date(7, 3, 2026)
+        delete_by_id(1)
+
+        # delete_table() # Deletes the entire table, might need this to avoid integrity erros while testing
+
+
+        
     app.run(debug=True, use_reloader=False)
