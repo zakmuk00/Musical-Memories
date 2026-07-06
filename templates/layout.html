@@ -20,9 +20,11 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-nav ms-auto text-end">
-                    <a class="nav-link" href="{{ url_for('home') }}">Home</a>
-                    <a class="nav-link" href="/about">About</a>
+                <div class="navbar-nav me-auto text-start">
+                    <a class="nav-link" href="/proxy/5000/">Home</a> <!--Add in /home or just / when moved to production-->                   
+                    <a class="nav-link" href="/proxy/5000/calendar">Calendar</a>
+                    <a class="nav-link" href="/proxy/5000/note">Note</a> <!--TEMP FOR TESTING DELETE THIS WHEN PUSHING-->
+                    <a class="nav-link" href="/proxy/5000/about">About</a>
                 </div>
             </div>
         </div>

@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}Note{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="card shadow border-0 mb-4 p-4">
+        <div class="card-body">
+            
+            <div class="row g-4 mb-4">
+                <div class="col-md-8">
+                    <div class="card shadow-sm p-3 h-100 bg-light">
+                        <h3 class="fw-bold text-success">Your song:</h3>
+                        <h4 class="text-muted">Track Name Placeholder</h4>
+                        <hr>
+                        <h5 class="fw-semibold">Want to feel this again?</h5>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm p-3 h-100 text-center d-flex align-items-center justify-content-center">
+                        <h2 class="fw-bold text-secondary"> Picture</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left: Notes (Width 8) -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm p-3 h-100">
+                        <h2 class="fw-bold border-bottom pb-2"> Notes</h2>
+                        <p class="text-secondary mt-2">Your saved diary entry details will populate here...</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm p-3 h-100 bg-dark text-white text-center d-flex align-items-center justify-content-center">
+                        <h2 class="fw-bold"> Map</h2>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
