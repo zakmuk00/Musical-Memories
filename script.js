@@ -1,6 +1,6 @@
 const coordinates = document.getElementById('coordinates');
 
-const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yM3dzY3hoMDV2MTMzb21paDFoOHp6bSJ9.cIrFL02wGGG7edLxGqOaHA'
+const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yOWxsdGE1MXU1OTM0b20zb2lsZWF6bSJ9.4OpFI6JNjn9X1A3K0Dov5A'
 
 const map = new mapboxgl.Map({
     accessToken: mapbox_token,
