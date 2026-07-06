@@ -9,68 +9,62 @@ from dotenv import load_dotenv
 # loading environment variables from .env file
 load_dotenv()
 
-SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
-SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
-SPOTIFY_BASE_URL =  "https://api.spotify.com/v1/"
 
-# token caching in order to keep track of current token
-token_cache = {
-    "access_token": None,
-    "refresh_token": None,
-    "expires_at": 0
-}
+class SpotifyClient:
+    def __init__(self):
+        # initialize urls
+        self.auth_url = "https://accounts.spotify.com/authorize"
+        self.token_url = "https://accounts.spotify.com/api/token"
+        self.base_url = "https://api.spotify.com/v1/"
 
-# checking if env has all the values we need
-def get_spotify_config():
-    client_id = os.getenv("SPOTIFY_CLIENT_ID")
-    client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-    redirect_url = os.getenv("SPOTIFY_REDIRECT_URL")
+        # initialize env variables
+        self.client_id = os.getenv("SPOTIFY_CLIENT_ID")
+        self.client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+        self.redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
 
-    if not client_id:
-        raise RuntimeError("Client id not found")
+        # initialize tokens
+        self.access_token = None
+        self.refresh_token = None
+        self.expires_at = 0
+
+        # checks to see if env file has the necessasry values
+        if not self.client_id:
+            raise RuntimeError("Client id not found")
     
-    if not client_secret:
-        raise RuntimeError("Client secret id not found")
+        if not self.client_secret:
+            raise RuntimeError("Client secret id not found")
 
-    if not redirect_url:
-        raise RuntimeError("Redirect url not found")
-    
-    return {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "redirect_url" : redirect_url
-    }
+        if not self.redirect_uri:
+            raise RuntimeError("Redirect uri not found")
 
-# recommended by spotify documentation for security
-def generate_random_string(length=16):
-    characters = string.ascii_letters + string.digits
-    return ''.join(random.choices(characters, k=length))
+        # parameters for generating random string
+        self.length = 16
+        self.characters = string.ascii_letters + string.digits
+
+    # recommended by spotify documentation for security
+    def generate_random_string(self):
+        return ''.join(random.choices(self.characters, k=self.length))
 
 
-# requests user authorization and builds the url that the user would login to
-def build_user_login_url():
-    # Return dictionary of conifguration
-    configuration = get_spotify_config()
-    state = generate_random_string()
-    scope = 'user-read-private user-read-email'
+    # requests user authorization and builds the url that the user would login to
+    def build_user_login_url(self):
+        state = self.generate_random_string()
+        scope = 'user-read-private user-read-email'
 
-    query_params = {
-        'response_type': 'code',
-        'client_id': configuration["client_id"],
-        'scope': scope,
-        'redirect_url': configuration["redirect_url"],
-        'state': state
-    }
+        query_params = {
+            'response_type': 'code',
+            'client_id': self.client_id,
+            'scope': scope,
+            'redirect_uri': self.redirect_uri,
+            'state': state,
+            'show_dialog' : 'false'
+        }
 
-    return 'https://accounts.spotify.com/authorize?' + urllib.parse.urlencode(query_params)
+        return f"{self.auth_url}?{urllib.parse.urlencode(query_params)}"
 
 # testing
 if __name__ == "__main__":
-    configuration = get_spotify_config()
-    print(bool(configuration["client_id"]))
-    print(bool(configuration["client_secret"]))
-    print(bool(configuration["redirect_url"]))
+    spotify = SpotifyClient()
 
-    print()
-    login_url = build_user_login_url()
+    login_url = spotify.build_user_login_url()
     print(login_url)
