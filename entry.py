@@ -5,9 +5,14 @@ import datetime
 class Entry(db.Model):
     """
     This is the class that defines a journal entry in our app
+    
+    Note:
+        There is a unique constraint to user_id and date.
+        One user can only have one entry per day.
+
     Attributes:
         id (int): Auto-incremented unique Entry key
-        user_id (str): Identified who made the Entry
+        user_id (str): Identifies who made the Entry
         date (date): The date of the journal Entry
         song_name (str): Name of the song
         spotify_link (str): Url to the song on Spotify
@@ -30,55 +35,98 @@ class Entry(db.Model):
     # longitude = db.Column(db.String(255)) # Optional
     __table_args__ = (db.UniqueConstraint('user_id', 'date', name='unique_user_date'),)
 
-# Adds a new row into table
 # Only accepts multiple parameters so far
 # Might need another version where an Entry object can be passed
 def add_entry(user, date, song, link, image, text, location):
+    """
+    Adds a new entry into the database
+
+    Args:
+        user (str): The ID of the user creating the Entry
+        date (date): The date the Entry is being created
+        song (str): The name of the song
+        link (str): Url to the song on Spotify
+        image (str): Url to the song's image (recommend using Spotify api)
+        text (str): Journal Text, use '' if blank
+        location (str): The location the journal entry was created
+
+    Returns:
+        bool: The status of adding the entry
+    """
     # Validation needed
     if not type(date) is datetime.date:
         print('Wrong date format')
-        return
+        return False
     
     if not (type(song) is str and type(link) is str and type(image) is str):
         print('Invalid song data')
-        return
+        return False
     
     if not type(text) is str:
         print('Invalid journal data')
-        return
+        return False
 
     if not type(location) is str:
         print('Invalid location data')
-        return
+        return False
     
     db.session.add(Entry(user_id=user, date=date, song_name=song, spotify_link=link, song_image=image, journal_text=text, location_name=location))
     db.session.commit()
+    return True
 
 # Returns Entry object based on the id
 # Only prints results for now, will return object later
 def get_by_id(query_user_id, id):
+    """
+    Returns a Entry object based on the id
+    
+    Note: The current user id and the entry's user_id needs to match
+    
+    Args:
+        query_user_id (str): The user id of entry being searched
+        id (str): The id of the entry
+    
+    Returns:
+        Entry: the Entry object if it exists and None otherwise
+    """
     response = Entry.query.get(id)
     if response is None:
         print('Id not in table')
         print()
-        return None
     elif response.user_id != query_user_id:
         print('User is not authorized for access')
         print()
         return None
-    else:
-        return response
+    return response
 
 def get_all_by_user(query_user_id):
+    """
+    Returns all the entries made by a user
+
+    Args:
+        query_user_id: The user id of entries being searched
+    
+    Returns:
+        [Entry]: A list of entries made by the user
+    """
     response = Entry.query.filter_by(user_id=query_user_id).all()
     if response is None:
         print('No entries by user')
     return response
 
-# Returns Entry object based on date in the format (mm, dd, yyyy)
-# Parameters are nums and not strings
-# Only prints results for now, will return object later
 def get_by_date(query_user_id, query_date):
+    """
+    Returns a Entry object based on the date created
+    
+    Note: The current user id and the entry's user_id needs to match
+    
+    Args:
+        query_user_id (str): The user id of entry being searched
+        query_date (date): The date of the entry
+    
+    Returns:
+        Entry: the Entry object if it exists and None otherwise
+    """
     # Validation needed
     response = Entry.query.filter_by(user_id=query_user_id, date=query_date).first()
     if response is None:
@@ -89,11 +137,23 @@ def get_by_date(query_user_id, query_date):
         print('song name:', response.song_name)
         print('created:', response.date)
         print()
-        return response
+    return response
 
 # Deletes rows with the given id
 # Returns boolean value of deletion status
 def delete_by_id(query_user_id, query_id):
+    """
+    Deletes a Entry object based on the id
+    
+    Note: The current user id and the entry's user_id needs to match
+    
+    Args:
+        query_user_id (str): The user id of entry being searched
+        id (str): The id of the entry
+    
+    Returns:
+        bool: The status of the deletion
+    """
     response = Entry.query.filter_by(user_id=query_user_id, id=query_id).first()
     if response is not None:
         db.session.delete(response)
@@ -107,11 +167,15 @@ def delete_by_id(query_user_id, query_id):
 def delete_by_date(query_user_id, query_date):
     """
     Deletes an Entry based on the date created
+
+    Note: The current user id and the entry's user_id needs to match
+
     Args:
         query_user_id (str): The user_id must match the id in Entry for access
         query_date (date): The date of the Entry being searched
+
     Returns:
-        bool: The status of deletion
+        bool: The status of the deletion
     """
     response = Entry.query.filter_by(user_id=query_user_id, date=query_date).first()
     if response is not None:
@@ -130,28 +194,44 @@ def delete_table():
     db.session.commit()
     print('Table deleted')
 
-# Updates an existing entry
 # Use this when we update an entry and send all changes
 # after clicking save button
 # Documentations:
 # hasattr: https://www.w3schools.com/python/ref_func_hasattr.asp
 # setattr: https://www.w3schools.com/python/ref_func_setattr.asp
+# getattr: https://www.w3schools.com/python/ref_func_getattr.asp
 # kwargs: https://www.w3schools.com/python/python_args_kwargs.asp
 # NOT FULLY TESTED YET
-def update_entry(query_user_id, id, **kwargs):
-    entry = Entry.query.filter_by(user_id=query_user_id, id=id).first()
+def update_entry(query_user_id, query_id, **kwargs):
+    """
+    Updates an existing entry with the passed fields
+
+    Args:
+        query_user_id: The user id of the Entry being searched
+        id: The id of the Entry
+        **kwargs: Fields being replaced (eg. location='Space Needle')
+    
+    Returns:
+        bool: The status of the update
+    """
+    entry = Entry.query.filter_by(user_id=query_user_id, id=query_id).first()
     if entry is None:
         print('Could not find entry')
         return False
     else:
         for key, value in kwargs.items():
+            if key == 'id' or key == 'user_id':
+                print(f'Key {key} is immutable, cannot update this field')
+                continue
             if hasattr(entry, key):
-                # Vulnerability: No type checking yet
-                setattr(entry, key, value)
-                print(f'{key} updated')
+                entry_value = getattr(entry, key)
+                if entry_value == None or type(key) == type(entry_value):
+                    setattr(entry, key, value)
+                    print(f'{key} updated')
+                else:
+                    print(f'Type mismatch when updating {key}')
             else:
                 print(f'{key} is not a valid key, did not update')
-        
         db.session.commit()
         print("Change completed")
         return True

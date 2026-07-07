@@ -47,7 +47,7 @@ if __name__ == '__main__':
         get_by_id('user1', 3)
         get_by_date('user1', date(2026, 7, 3))
         delete_by_id('user1', 1)
-        update_entry('user1', 2, location_name='At a throwback party')
+        update_entry('user1', 2, id=4, location_name='At a throwback party')
 
         # delete_table() # Deletes the entire table, might need this to avoid integrity erros while testing
 
