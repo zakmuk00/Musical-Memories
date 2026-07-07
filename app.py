@@ -27,7 +27,7 @@ def note():
     return render_template('note.html', subtitle='Note page', text='This is the note page')
 
 @app.route("/noteMaker", methods=["GET"])
-def note_maker():
+def noteMaker():
     form = NoteMakerForm()
     if form.validate_on_submit():
         pass
