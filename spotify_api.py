@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     query = input("search for song: ").strip()
 
-    songs = spotify.search_track(query).strip()
+    songs = spotify.search_track(query)
 
     print()
 
@@ -238,4 +238,4 @@ if __name__ == "__main__":
 
     check = print(spotify.play_track(device_id, track_uri))
 
-    print(check)
+    
