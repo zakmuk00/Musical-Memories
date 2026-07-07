@@ -61,7 +61,7 @@ class SpotifyClient:
     # requests user authorization and builds the url that the user would login to
     def build_user_login_url(self):
         state = self.generate_random_string()
-        scope = 'user-read-private user-read-email'
+        scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state'
 
         query_params = {
             'response_type': 'code',
@@ -147,6 +147,57 @@ class SpotifyClient:
 
         raise RuntimeError("There is no valid access token. User must log in.")
 
+    # fetch track data and extract uris for web player
+    def search_track(self, query):
+        token = self.get_valid_access_token()
+        headers = {"Authorization": f"Bearer {token}"}
+        # limit of 3 for dropdown implementation
+        params = {"q": query, "type": "track", "limit": 3}
+
+        response = requests.get(f"{self.base_url}search", headers=headers, params=params)
+
+        if response.status_code == 200:
+            data = response.json()
+            tracks = data.get("tracks", {}).get("items", [])
+            results_list = []
+            for track in tracks:
+                album_images = track.get("album", {}).get("images", [])
+                image_url = None
+                # if album image exists assign image url to the first image
+                if album_images:
+                    image_url = album_images[0]["url"]
+
+                results_list.append({
+                    "name": track["name"],
+                    "uri": track["uri"],
+                    "artist": track["artists"][0]["name"],
+                    "image": image_url
+                })
+            # returns a list containing up to 3 song objects
+            return results_list
+        return []
+    
+    # start playback of the user's chosen track on their specific Web Player SDK device ID
+    def play_track(self, device_id, track_uri):
+        token = self.get_valid_access_token()
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        url = f"{self.base_url}me/player/play?device_id={device_id}"
+
+        data = {
+            "uris" : [track_uri]
+        }
+
+        response = requests.put(url, headers=headers, json=data)
+
+        return response.status_code == 204
+
+
+
 
 
 # testing
@@ -156,7 +207,8 @@ if __name__ == "__main__":
     login_url = spotify.build_user_login_url()
     print(login_url)
     print()
-    code = input()
+    # follow the log in link, log in then copy and paste the string after "code=" and before "&state"
+    code = input("Copy and Paste your temporary code string: ")
 
     token_data = spotify.exchange_code_for_access_token(code)
     # check if I received tokens
@@ -166,3 +218,24 @@ if __name__ == "__main__":
     # check if client saved tokens
     print(bool(spotify.access_token))
     print(bool(spotify.refresh_token))
+
+    query = input("search for song: ").strip()
+
+    songs = spotify.search_track(query).strip()
+
+    print()
+
+    for song in songs:
+        print("name:", song["name"])
+        print("artist:", song["artist"])
+        print("uri:", song["uri"])
+        print("image url:", song["image"])
+
+    device_id = input("Your device id: ")
+
+    track_uri = input("Your track's URI: ")
+
+
+    check = print(spotify.play_track(device_id, track_uri))
+
+    print(check)
