@@ -1,5 +1,9 @@
-from flask import Flask, request, jsonify, render_template, url_for
+import os
+from flask import Flask, render_template, url_for
+from forms.noteMakerForm import NoteMakerForm
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@'
 
 @app.route("/")
 def home():
@@ -22,10 +26,12 @@ def calendar():
 def note():
     return render_template('note.html', subtitle='Note page', text='This is the note page')
 
-@app.route("/note")
-def note():
-    return render_template('note.html', subtitle='Note page', text='This is the note page')
-
+@app.route("/noteMaker", methods=["GET"])
+def noteMaker():
+    form = NoteMakerForm()
+    if form.validate_on_submit():
+        pass
+    return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 @app.route("/save-location", methods=["POST"])
 def save_location():
     data = request.json

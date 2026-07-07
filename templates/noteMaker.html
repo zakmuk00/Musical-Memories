@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Note-Maker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-6">
+        <div class="card shadow mb-4 p-4 text-center bg-light">
+            <div class="card-body">
+                <h3 class="fw-bold text-uppercase text-secondary">Enter Note Information</h3>
+
+                <form action="" method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <!-- Song Section-->
+                    <div class="mb-4">
+                        <div class="input-group">
+                            {{ form.song(class="form-control border-success p-3 text-center fw-semibold", placeholder="Song") }}
+                        </div>
+                    </div>
+                    <!-- Location Section-->
+                    <div class="mb-4">
+                        {{ form.location(class="form-control bg-dark text-white fw-semibold", placeholder="Enter Location or Custom Tag?") }}
+                    </div>
+                    <!-- Photo Section-->
+                    <div class="row g-3 mb-4">
+                        <div>
+                            <div class="border rounded d-flex flex-column align-items-center justify-content-center bg-white">
+                                <label class="form-label fw-semibold text-muted mb-2">Photo</label>
+                                {{ form.photo(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Notes Section-->
+                    <div>
+                        <div class="border rounded h-100 d-flex flex-column align-items-center justify-content-center bg-white">
+                            <label class="form-label fw-semibold text-muted mb-2">Notes</label>
+                            {{ form.notes(class="form-control", rows="2", placeholder="Write...") }}
+                        </div>
+                    </div>
+                    <!-- Submit Section-->
+                    <div class="d-grid gap-2 col-8 mx-auto mt-4">
+                        {{ form.submit(class="btn btn-lg fw-bold text-uppercase") }}
+                    </div>
+
+                </form>
+            </div> 
+        </div>
+    </div>
+</div>
+{% endblock %}
