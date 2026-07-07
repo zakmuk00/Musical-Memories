@@ -1,5 +1,9 @@
+import os
 from flask import Flask, render_template, url_for
+from forms.noteMakerForm import NoteMakerForm
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@'
 
 @app.route("/")
 def home():
@@ -21,6 +25,13 @@ def calendar():
 @app.route("/note")
 def note():
     return render_template('note.html', subtitle='Note page', text='This is the note page')
+
+@app.route("/noteMaker", methods=["GET"])
+def note_maker():
+    form = NoteMakerForm()
+    if form.validate_on_submit():
+        pass
+    return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
