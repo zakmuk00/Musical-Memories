@@ -22,6 +22,10 @@ def calendar():
 def note():
     return render_template('note.html', subtitle='Note page', text='This is the note page')
 
+@app.route("/note")
+def note():
+    return render_template('note.html', subtitle='Note page', text='This is the note page')
+
 @app.route("/save-location", methods=["POST"])
 def save_location():
     data = request.json
