@@ -19,6 +19,8 @@ class Entry(db.Model):
         song_image (str): Url to the song's image (recommend using Spotify api)
         journal_text (str): Optional journaling text written by user
         location_name (str): The location the journal entry was created
+        latitude (num): latitude coordinate
+        longitude (num): longitude coordinate
     """
     __tablename__ = 'calendar_entries'
     id = db.Column(db.Integer, primary_key=True)
@@ -27,17 +29,17 @@ class Entry(db.Model):
     song_name = db.Column(db.String(255), nullable=False)
     spotify_link = db.Column(db.String(255), nullable=False)
     song_image = db.Column(db.String(255), nullable=False)
+    location_name = db.Column(db.String(255), nullable=False)
     journal_text = db.Column(db.Text) # Optional
     # Need to make a backend route for this
     # journal_image = db.Column(db.String(255))
-    location_name = db.Column(db.String(255), nullable=False)
-    # latitude = db.Column(db.String(255)) # Optional
-    # longitude = db.Column(db.String(255)) # Optional
+    latitude = db.Column(db.Float()) # Optional
+    longitude = db.Column(db.Float()) # Optional
     __table_args__ = (db.UniqueConstraint('user_id', 'date', name='unique_user_date'),)
 
 # Only accepts multiple parameters so far
 # Might need another version where an Entry object can be passed
-def add_entry(user, date, song, link, image, text, location):
+def add_entry(user, date, song, link, image, location, text=None, latitude=None, longitude=None):
     """
     Adds a new entry into the database
 
@@ -47,8 +49,10 @@ def add_entry(user, date, song, link, image, text, location):
         song (str): The name of the song
         link (str): Url to the song on Spotify
         image (str): Url to the song's image (recommend using Spotify api)
-        text (str): Journal Text, use '' if blank
         location (str): The location the journal entry was created
+        text (str): Journal Text
+        latitude (num): latitude coordinate
+        longitude (num): longitude coordinate
 
     Returns:
         bool: The status of adding the entry
@@ -62,7 +66,7 @@ def add_entry(user, date, song, link, image, text, location):
         print('Invalid song data')
         return False
     
-    if not type(text) is str:
+    if not type(text) is str and text is not None:
         print('Invalid journal data')
         return False
 
@@ -70,7 +74,15 @@ def add_entry(user, date, song, link, image, text, location):
         print('Invalid location data')
         return False
     
-    db.session.add(Entry(user_id=user, date=date, song_name=song, spotify_link=link, song_image=image, journal_text=text, location_name=location))
+    db.session.add(Entry(user_id=user,
+                        date=date,
+                        song_name=song,
+                        spotify_link=link,
+                        song_image=image,
+                        location_name=location,
+                        journal_text=text,
+                        latitude=latitude,
+                        longitude=longitude))
     db.session.commit()
     return True
 
@@ -210,6 +222,7 @@ def update_entry(query_user_id, query_id, **kwargs):
         query_user_id: The user id of the Entry being searched
         id: The id of the Entry
         **kwargs: Fields being replaced (eg. location='Space Needle')
+        (Refer to Entry documentation for list of fields)
     
     Returns:
         bool: The status of the update

@@ -33,8 +33,9 @@ if __name__ == '__main__':
                     'Gangnam Style', 
                     'https://open.spotify.com/album/0ZjxizLeMyFEjR27JIvD99',
                     'https://i.scdn.co/image/ab67616d0000e1a36cfc57e5358c5e39e79bccbd',
+                    'On a walk',
                     'A true classic. Cant get enough of this honestly.',
-                    'On a walk')
+                    )
 
         # sample_entry_2 = Entry(date=date(2026, 7, 3),
         #                     song_name='Gangnam Style', 
