@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}Calendar{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center ">
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0 p-4">
+            <div class="card-body">
+                <div class="row align-items-center mb-4">
+                    <div class="col-3"></div>
+                    <div class="col-6 text-center">
+                        <h2 class="fw-bold mb-4">Your Musical Journey</h2>
+                    </div>
+                    <div class="col-3 text-end">
+                        <a href="/proxy/5000/noteMaker", class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
+                    </div>
+                </div>
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/index.global.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth'
+
+    });
+    calendar.render();
+    });
+</script>
+{% endblock %}
