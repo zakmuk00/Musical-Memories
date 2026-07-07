@@ -32,6 +32,15 @@ def note_maker():
     if form.validate_on_submit():
         pass
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
+@app.route("/save-location", methods=["POST"])
+def save_location():
+    data = request.json
+    locations.append(data)
+    return jsonify({"status": "saved", "data": data})
+
+@app.route("/locations")
+def get_locations():
+    return jsonify(locations)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
