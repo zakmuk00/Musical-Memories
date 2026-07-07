@@ -248,3 +248,81 @@ def update_entry(query_user_id, query_id, **kwargs):
         db.session.commit()
         print("Change completed")
         return True
+
+class SpotifyToken(db.Model):
+    """
+    Stores Spotify OAuth tokens for user 
+
+    Note:
+        This is seperate from Entry because tokens belong to each user not entry.
+
+    Attributes:
+        id (int): Auto-incremented primary key
+        user_id (str): Identifies user
+        access_token (str): hour long Spotify access token
+        refresh_token (str): Long lived Spotify refresh token
+        expires_at (float): timestamp for when access token expires
+    """
+
+    __tablename__ = 'spotify_tokens'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(255), nullable=False, unique=True)
+    access_token = db.Column(db.Text, nullable=False)
+    refresh_token = db.Column(db.Text, nullable=False)
+    expires_at = db.Column(db.Float, nullable=False)
+
+def save_spotify_tokens(user_id, token_data):
+    if not type(user_id) is str:
+        print("Invalid user_id")
+        return False
+    
+    if not type(token_data) is dict:
+        print("Invalid token_data")
+        return False
+    
+    access_token = token_data.get("access_token")
+    refresh_token = token_data.get("refresh_token")
+    expires_at = token_data.get("expires_at")
+
+    if not access_token or not refresh_token or not expires_at:
+        print("Missing Spotify token field")
+        return False
+    
+    # need to check if the user already has tokens (query the db for existing token)
+    existing = SpotifyToken.query.filter_by(user_id=user_id).first()
+
+    # replace existing tokens with current tokens 
+    if existing:
+        existing.access_token = access_token
+        existing.refresh_token = refresh_token
+        existing.expires_at = expires_at
+    
+    # if user has no tokens, create a new object
+    else:
+        new_token = SpotifyToken(
+            user_id=user_id,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_at=expires_at
+        )
+        # insert new token object into database
+        db.session.add(new_token)
+
+    db.session.commit()
+    print("Save success")
+    return True
+
+def get_spotify_tokens(user_id):
+    token_row = SpotifyToken.query.filter_by(user_id=user_id).first()
+
+    if token_row is None:
+        print("No Spotify tokens found for user")
+        return None
+    
+
+
+#def delete_spotify_tokens(user_id, token_data):
+    
+
+
