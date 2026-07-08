@@ -2,3 +2,6 @@ __pycache__
 instance
 # Environment variables
 .env
+__pycache__/
+forms/__pycache__/
+instance/
