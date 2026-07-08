@@ -9,7 +9,7 @@ from database import db
 
 from spotify_api import SpotifyClient
 from database import db
-from models import SpotifyToken, save_spotify_tokens
+from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@' #change this when pushing to server
@@ -57,6 +57,39 @@ def spotify_callback():
 
     return redirect("/calendar")
 
+@app.route("/search-song")
+def search_song():
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify([])
+    # user must be logged in  
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify([])
+    
+    token_data = get_spotify_tokens(user_id)
+
+    if token_data is None:
+        return jsonify([])
+    # resets tokens, but needed to call search_track
+    spotify = SpotifyClient()
+
+    # database tokens back into spotify client
+    spotify.access_token = token_data["access_token"]
+    spotify.refresh_access_token = token_data["refresh_token"]
+    spotify.expires_at = token_data["expires_at"]
+
+    songs = spotify.search_track(query)
+
+    # access token might have been refreshed so we need to save new/current tokens in db
+    save_spotify_tokens(user_id, {
+        "access_token": spotify.access_token,
+        "refresh_token": spotify.refresh_token,
+        "expires_at": spotify.expires_at
+    })
+
+    return jsonify(songs)
 
 
 @app.route("/about")
