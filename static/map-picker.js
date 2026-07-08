@@ -16,7 +16,7 @@ searchBox.options = {
     language: 'en'
 };
 searchBox.mapboxgl = mapboxgl
-searchBox.marker = true
+searchBox.marker = false
 
 map.addControl(searchBox)
 
