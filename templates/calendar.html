@@ -28,10 +28,44 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth'
+    //sample data. take out later
+    var userNotes = {
+        '2026-07-07': 'Stuff',
+        '2026-07-08': 'Stuff'
 
+    }
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        editable: true,
+
+        dateClick: function(info){
+            var dateStr = info.dateStr;
+            
+            if (userNotes && userNotes[dateStr]) {
+                window.location.href = '/proxy/5000/note?date=' + dateStr;
+            } else {
+                window.location.href = '/proxy/5000/noteMaker?date=' + dateStr;
+            }
+        },
+
+        dayCellContent: function(arg){
+            var dateStr = arg.date.toISOString().split('T')[0];
+            var noteText = userNotes[dateStr] || '';
+
+            let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
+            if (noteText) {
+                cellHtml += `
+                    <div class="sticky-note-wrapper">
+                        <div class="sticky-note" title="${noteText}">
+                            ${noteText}
+                        </div>
+                    </div>
+                `;
+            }
+            return { html: cellHtml };
+        }
     });
+
     calendar.render();
     });
 </script>

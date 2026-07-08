@@ -2,6 +2,25 @@
 
 {% block title %}Note-Maker{% endblock %}
 
+{% block head %}
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
+<script id="search-js" src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial;
+    }
+
+    #map {
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 150px;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-6">
@@ -19,7 +38,9 @@
                     </div>
                     <!-- Location Section-->
                     <div class="mb-4">
-                        {{ form.location(class="form-control bg-dark text-white fw-semibold", placeholder="Enter Location or Custom Tag?") }}
+                        <div id="map"></div>
+                        {{ form.latitude() }}
+                        {{ form.longitude() }}
                     </div>
                     <!-- Photo Section-->
                     <div class="row g-3 mb-4">
@@ -48,3 +69,8 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script src="./static/map-picker.js"></script>
+{% endblock %}
+
