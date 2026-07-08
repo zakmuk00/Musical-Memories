@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}Map{% endblock %}
+
+{% block head %}
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
+<script id="search-js" src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial;
+    }
+
+    #map {
+        position: fixed;
+        width: 100%;
+        min-height: 100%;
+        left: 0;
+        top: 50px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="map"></div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="./static/map-page.js"></script>
+{% endblock %}
