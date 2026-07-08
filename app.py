@@ -113,18 +113,17 @@ def noteMaker():
             photo_file.save(file_path)
 
         '''
-        add_entry(user='dummy user',
-            date='Date Here',
+        add_entry(user=session.user_id,
+            date=form.date_created,
             song=form.song,
             link='Spotify Song Link Here',
             song_image='Spotify Album Image Here',
             location=form.location,
-            photo=path
+            photo=file_path,
             text=form.notes,
             latitude=lat,
             longitude=lng)
         '''
-
         return redirect(url_for('calendar'))
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
