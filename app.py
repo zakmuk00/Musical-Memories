@@ -68,11 +68,21 @@ def noteMaker():
     if form.validate_on_submit():
         lat = float(form.latitude.data) if form.latitude.data else None
         lng = float(form.longitude.data) if form.longitude.data else None
-        path = None
-        if form.photo:
-            image_file = form.photo.data
-            path = os.path.join(app.root_path, 'static', 'images', image_file.filename)
-            image_file.save(path)
+
+        song = form.song.data
+        location = form.location.data
+        notes = form.notes.data
+        chosen_date = form.date_created.data
+        # Get user ID here and save both id and date to db
+
+        photo_file = form.photo.data
+        filename = None
+
+        if photo_file and photo_file.filename != '':    
+            filename = secure_filename(photo_file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            photo_file.save(file_path)
+
         '''
         add_entry(user='dummy user',
             date='Date Here',
@@ -85,20 +95,7 @@ def noteMaker():
             latitude=lat,
             longitude=lng)
         '''
-        photo_file = form.photo.data
-        filename = None
 
-        if photo_file:
-            filename = secure_filename(photo_file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            photo_file.save(file_path)
-            #save to db here
-
-        song = form.song.data
-        location = form.location.data
-        notes = form.notes.data
-        chosen_date = form.date_created.data
-        # Get user ID here and save both id and date to db
         return redirect(url_for('calendar'))
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
