@@ -332,9 +332,25 @@ def get_spotify_tokens(user_id):
         print("No Spotify tokens found for user")
         return None
     
+    return{
+        "access_token": token_row.access_token,
+        "refresh_token": token_row.refresh_token,
+        "expires_at": token_row.expires_at
+    }
+    
 
+# used if user logs out
+def delete_spotify_tokens(user_id, token_data):
+    token_row = SpotifyToken.query.filter_by(user_id=user_id).first()
 
-#def delete_spotify_tokens(user_id, token_data):
+    if token_row is None:
+        print("No Spotify tokens found to delete")
+    
+        return False
+    db.session.delete(token_row)
+    db.session.commit()
+    return True
+
     
 
 
