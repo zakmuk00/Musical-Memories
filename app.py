@@ -40,7 +40,23 @@ def noteMaker():
     if form.validate_on_submit():
         lat = float(form.latitude.data) if form.latitude.data else None
         lng = float(form.longitude.data) if form.longitude.data else None
-        pass
+        path = None
+        if form.photo:
+            image_file = form.photo.data
+            path = os.path.join(app.root_path, 'static', 'images', image_file.filename)
+            image_file.save(path)
+            '''
+            add_entry(user='dummy user',
+                date='Date Here',
+                song=form.song,
+                link='Spotify Song Link Here',
+                song_image='Spotify Album Image Here',
+                location=form.location,
+                photo=path
+                text=form.notes,
+                latitude=lat,
+                longitude=lng)
+            '''
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
 @app.route("/map")
