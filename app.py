@@ -4,7 +4,7 @@ from datetime import datetime
 from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
 
-from entry import Entry, get_all_by_user, add_entry
+from models import Entry, get_all_by_user, add_entry
 from database import db
 
 from spotify_api import SpotifyClient
