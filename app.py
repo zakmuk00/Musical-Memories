@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
-from datetime import datetime
+from datetime import datetime, date
 from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
 
@@ -112,19 +112,21 @@ def noteMaker():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             photo_file.save(file_path)
 
+        date_array = form.date_created.split('-')
+        entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
+
         '''
-        add_entry(user='dummy user',
-            date='Date Here',
+        add_entry(user=session.user_id,
+            date=entry_date,
             song=form.song,
             link='Spotify Song Link Here',
             song_image='Spotify Album Image Here',
             location=form.location,
-            photo=path
+            photo=file_path,
             text=form.notes,
             latitude=lat,
             longitude=lng)
         '''
-
         return redirect(url_for('calendar'))
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
