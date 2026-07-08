@@ -32,8 +32,12 @@
     var userNotes = {
         '2026-07-07': 'Stuff',
         '2026-07-08': 'Stuff'
-
+        
     }
+    // https://jinja.palletsprojects.com/en/stable/templates/#filters
+    // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.safe
+    // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.tojson
+    // var userNotes = {{ user_notes | tojson | safe }}
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         editable: true,

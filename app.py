@@ -65,7 +65,15 @@ def about():
 
 @app.route("/calendar")
 def calendar():
-    return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page')
+    user_id = session.get("user_id")
+    notes_data = {}
+    if user_id:
+        notes_data = get_all_by_user(user_id)
+        if entries:
+            for entry in entries:
+                entry_date = entry.date.strftime("%Y-%m-%d")
+                notes_data[entry_date] = 'Stuff' # Replace with whatever later
+    return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
 @app.route("/note")
 def note():
