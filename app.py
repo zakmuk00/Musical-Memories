@@ -34,22 +34,18 @@ def calendar():
 def note():
     return render_template('note.html', subtitle='Note page', text='This is the note page')
 
-@app.route("/noteMaker", methods=["GET"])
+@app.route("/noteMaker", methods=["GET", "POST"])
 def noteMaker():
     form = NoteMakerForm()
     if form.validate_on_submit():
+        lat = float(form.latitude.data) if form.latitude.data else None
+        lng = float(form.longitude.data) if form.longitude.data else None
         pass
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
 @app.route("/map")
 def map():
     return render_template('map.html', subtitle='Map page', text='This is the map page')
-
-@app.route("/save-location", methods=["POST"])
-def save_location():
-    data = request.json
-    locations.append(data)
-    return jsonify({"status": "saved", "data": data})
 
 @app.route("/entries/locations")
 def entry_locations():
