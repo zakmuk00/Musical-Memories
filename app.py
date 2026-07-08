@@ -1,12 +1,20 @@
 import os
-from flask import Flask, render_template, url_for, jsonify
+from flask import Flask, render_template, url_for, request, redirect, jsonify
+from datetime import datetime
 from forms.noteMakerForm import NoteMakerForm
+from werkzeug.utils import secure_filename
+
 from entry import Entry, get_all_by_user, add_entry
 from database import db
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@'
+app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@' #change this when pushing to server
+
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///entries.db'
 db.init_app(app)
 
@@ -32,11 +40,31 @@ def calendar():
 
 @app.route("/note")
 def note():
-    return render_template('note.html', subtitle='Note page', text='This is the note page')
+    chosen_date = request.args.get('date')
+    if not chosen_date:
+        return redirect(url_for('calendar'))
+
+    # mock data take out
+    note_data = {
+        "song": "Bohemian Rhapsody",
+        "photo": None, 
+        "notes": "Had this song stuck in my head while driving through the mountains today.",
+        "location": "Seattle, WA"
+    }
+    
+    return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date)
 
 @app.route("/noteMaker", methods=["GET", "POST"])
 def noteMaker():
     form = NoteMakerForm()
+
+    if request.method == "GET":
+        url_date = request.args.get('date')
+        if url_date:
+            form.date_created.data = url_date
+        else:
+            form.date_created.data = datetime.today().strftime('%Y-%m-%d')
+
     if form.validate_on_submit():
         lat = float(form.latitude.data) if form.latitude.data else None
         lng = float(form.longitude.data) if form.longitude.data else None
@@ -57,6 +85,22 @@ def noteMaker():
             latitude=lat,
             longitude=lng)
         '''
+        photo_file = form.photo.data
+        filename = None
+
+        if photo_file:
+            filename = secure_filename(photo_file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            photo_file.save(file_path)
+            #save to db here
+
+        song = form.song.data
+        location = form.location.data
+        notes = form.notes.data
+        chosen_date = form.date_created.data
+        # Get user ID here and save both id and date to db
+        return redirect(url_for('calendar'))
+        
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
 @app.route("/map")
