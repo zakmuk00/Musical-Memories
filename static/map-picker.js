@@ -53,21 +53,13 @@ function moveMarker() {
 
 map.on('moveend', moveMarker);
 
-document.getElementById("saveBtn").addEventListener("click", function() { 
+//  grabs the marker's current position from the Mapbox object and copies it into the hidden inputs' value
+const form = document.querySelector('form');
+const latInput = document.getElementById('latitude');
+const lngInput = document.getElementById('longitude');
+
+form.addEventListener('submit', function () {
     const lngLat = marker.getLngLat();
-
-    const data = {
-        latitude: lngLat.lat,
-        longitude: lngLat.lng
-    };
-
-    fetch('/save-location', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => console.log('Saved:', result))
-    .catch(err => console.error('Save failed:', err));
-
+    latInput.value = lngLat.lat;
+    lngInput.value = lngLat.lng;
 });
