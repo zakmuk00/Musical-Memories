@@ -1,5 +1,6 @@
 from database import db
 import datetime
+import os
 
 # The ORM model of the entry
 class Entry(db.Model):
@@ -17,6 +18,7 @@ class Entry(db.Model):
         song_name (str): Name of the song
         spotify_link (str): Url to the song on Spotify
         song_image (str): Url to the song's image (recommend using Spotify api)
+        photo_path (str): Path to the optional user photo
         journal_text (str): Optional journaling text written by user
         location_name (str): The location the journal entry was created
         latitude (num): latitude coordinate
@@ -30,6 +32,7 @@ class Entry(db.Model):
     spotify_link = db.Column(db.String(255), nullable=False)
     song_image = db.Column(db.String(255), nullable=False)
     location_name = db.Column(db.String(255), nullable=False)
+    photo_path = db.Column(db.String(255))
     journal_text = db.Column(db.Text) # Optional
     # Need to make a backend route for this
     # journal_image = db.Column(db.String(255))
@@ -39,7 +42,7 @@ class Entry(db.Model):
 
 # Only accepts multiple parameters so far
 # Might need another version where an Entry object can be passed
-def add_entry(user, date, song, link, image, location, text=None, latitude=None, longitude=None):
+def add_entry(user, date, song, link, song_image, location, photo=None, text=None, latitude=None, longitude=None):
     """
     Adds a new entry into the database
 
@@ -62,7 +65,7 @@ def add_entry(user, date, song, link, image, location, text=None, latitude=None,
         print('Wrong date format')
         return False
     
-    if not (type(song) is str and type(link) is str and type(image) is str):
+    if not (type(song) is str and type(link) is str and type(song_image) is str):
         print('Invalid song data')
         return False
     
@@ -78,8 +81,9 @@ def add_entry(user, date, song, link, image, location, text=None, latitude=None,
                         date=date,
                         song_name=song,
                         spotify_link=link,
-                        song_image=image,
+                        song_image=song_image,
                         location_name=location,
+                        photo_path=photo,
                         journal_text=text,
                         latitude=latitude,
                         longitude=longitude))
@@ -168,8 +172,16 @@ def delete_by_id(query_user_id, query_id):
     """
     response = Entry.query.filter_by(user_id=query_user_id, id=query_id).first()
     if response is not None:
+        photo_path = response.photo_path
         db.session.delete(response)
         db.session.commit()
+        if photo_path is not None:
+            os.remove(photo_path)
+            if os.path.exists(photo_path):
+                print('Photo deletion failed')
+            else:
+                print('Photo deleted')
+
         print("Delete success")
         return True
     else:
