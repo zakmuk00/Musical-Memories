@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, url_for, jsonify
 from forms.noteMakerForm import NoteMakerForm
-from entry import Entry, get_all_by_user
+from entry import Entry, get_all_by_user, add_entry
 from database import db
 
 app = Flask(__name__)
@@ -45,18 +45,18 @@ def noteMaker():
             image_file = form.photo.data
             path = os.path.join(app.root_path, 'static', 'images', image_file.filename)
             image_file.save(path)
-            '''
-            add_entry(user='dummy user',
-                date='Date Here',
-                song=form.song,
-                link='Spotify Song Link Here',
-                song_image='Spotify Album Image Here',
-                location=form.location,
-                photo=path
-                text=form.notes,
-                latitude=lat,
-                longitude=lng)
-            '''
+        '''
+        add_entry(user='dummy user',
+            date='Date Here',
+            song=form.song,
+            link='Spotify Song Link Here',
+            song_image='Spotify Album Image Here',
+            location=form.location,
+            photo=path
+            text=form.notes,
+            latitude=lat,
+            longitude=lng)
+        '''
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
 @app.route("/map")
