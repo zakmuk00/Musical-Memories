@@ -164,17 +164,29 @@ def noteMaker():
             form.date_created.data = datetime.today().strftime('%Y-%m-%d')
 
     if form.validate_on_submit():
+        # Get user ID here
+        user_id = session.get("user_id")
+
+        if not user_id:
+            return redirect(url_for("spotify_login"))
+
         lat = float(form.latitude.data) if form.latitude.data else None
         lng = float(form.longitude.data) if form.longitude.data else None
 
-        song = form.song.data
-        location = form.location.data
-        notes = form.notes.data
+        
+        song = form.song.data or ""
+        spotify_uri = form.spotify_uri.data or ""
+        spotify_image = form.spotify_image.data or ""
+        spotify_artist = form.spotify_artist.data or ""
+        location = form.location.data or ""
+        notes = form.notes.data or None
         chosen_date = form.date_created.data
-        # Get user ID here and save both id and date to db
+        
 
         photo_file = form.photo.data
         filename = None
+        # if user does not submit a photo
+        file_path = None
 
         if photo_file and photo_file.filename != '':    
             filename = secure_filename(photo_file.filename)
@@ -184,18 +196,23 @@ def noteMaker():
         date_array = form.date_created.data.split('-')
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
-        '''
-        add_entry(user=session.user_id,
+        # testing
+        print("song:", song, type(song))
+        print("spotify_uri:", spotify_uri, type(spotify_uri))
+        print("spotify_image:", spotify_image, type(spotify_image))
+
+        saved = add_entry(user=user_id,
             date=entry_date,
-            song=form.song,
-            link='Spotify Song Link Here',
-            song_image='Spotify Album Image Here',
-            location=form.location,
+            song=song,
+            link=spotify_uri,
+            song_image=spotify_image,
+            location=location,
             photo=file_path,
-            text=form.notes,
+            text=notes,
             latitude=lat,
             longitude=lng)
-        '''
+        print(saved)
+    
         return redirect(url_for('calendar'))
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
