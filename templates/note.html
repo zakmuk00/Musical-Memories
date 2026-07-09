@@ -6,7 +6,6 @@
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
 <script id="search-js" src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
-<link rel="stylesheet" href="/static/main.css"> 
 <style>
     body {
         margin: 0;
@@ -90,5 +89,25 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="./static/map-display.js"></script>
+{% if latitude and longitude %}
+<script>
+    const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yOWxsdGE1MXU1OTM0b20zb2lsZWF6bSJ9.4OpFI6JNjn9X1A3K0Dov5A';
+
+    const map = new mapboxgl.Map({
+        accessToken: mapbox_token,
+        container: 'map',
+        style: 'mapbox://styles/mapbox/standard',
+        center: [{{ longitude }}, {{ latitude }}],
+        zoom: 12,
+        attributionControl: false
+    });
+
+    new mapboxgl.Marker()
+        .setLngLat([{{ longitude }}, {{ latitude }}])
+        .addTo(map);
+
+</script>
+{% else %}
+<p class="text-muted">No location recorded for this entry.</p>
+{% endif %}
 {% endblock %}

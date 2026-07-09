@@ -35,9 +35,9 @@ class Entry(db.Model):
     song_image = db.Column(db.String(255), nullable=False)
     location_name = db.Column(db.String(255), nullable=False)
     photo_path = db.Column(db.String(255))
-    journal_text = db.Column(db.Text) # Optional
-    latitude = db.Column(db.Float()) # Optional
-    longitude = db.Column(db.Float()) # Optional
+    journal_text = db.Column(db.Text)
+    latitude = db.Column(db.Float())
+    longitude = db.Column(db.Float())
     __table_args__ = (db.UniqueConstraint('user_id', 'date', name='unique_user_date'),)
 
 # Only accepts multiple parameters so far

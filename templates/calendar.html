@@ -38,17 +38,17 @@
         // https://jinja.palletsprojects.com/en/stable/templates/#filters
         // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.safe
         // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.tojson
-        // var userNotes = {{ user_notes | tojson | safe }}
+        var userNotes = {{ user_notes | tojson | safe }};
 
         //sample data. take out later
-        var userNotes = {
-            '2026-07-07': {
-                text: 'Bohemian Rhapsody',
-            },
-            '2026-07-30': {
-                text: 'Hotel California',
-            }
-        };
+        //  var userNotes = {
+        //      '2026-07-07': {
+        //          text: 'Bohemian Rhapsody',
+        //      },
+        //      '2026-07-30': {
+        //          text: 'Hotel California',
+        //      }
+        //  };
 
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
