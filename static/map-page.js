@@ -13,7 +13,7 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => {
-    fetch('/proxy/5000/entries/locations')
+    fetch('/entries/locations')
     .then(res => res.json()) // parse into real JS object
     .then(entries => {
         entries.forEach(entry => {
@@ -22,7 +22,7 @@ map.on('load', () => {
                 .addTo(map);
             
             marker.getElement().addEventListener('click', () => {
-                window.location.href = '/proxy/5000/note';
+                window.location.href = '/note';
             })
         })
     })
