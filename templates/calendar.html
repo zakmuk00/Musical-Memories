@@ -5,34 +5,89 @@
 {% block content %}
 
 <div class="row justify-content-center ">
-    <div class="col-md-10">
-        <div class="card shadow-sm border-0 p-4">
-            <div class="card-body">
-                <div class="row align-items-center mb-4">
-                    <div class="col-3"></div>
-                    <div class="col-6 text-center">
-                        <h2 class="fw-bold mb-4">Your Musical Journey</h2>
-                    </div>
-                    <div class="col-3 text-end">
-                        <a href="/proxy/5000/noteMaker", class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
-                    </div>
-                </div>
-                <div id="calendar"></div>
-            </div>
-        </div>
-    </div>
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0 p-4">
+            <div class="card-body">
+                <div class="row align-items-center mb-4">
+                    <div class="col-3"></div>
+                    <div class="col-6 text-center">
+                        <h2 class="fw-bold mb-4">Your Musical Journey</h2>
+                    </div>
+                    <div class="col-3 text-end">
+                        <a href="/noteMaker" id="createNoteBtn" class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
+                    </div>
+                </div>
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/index.global.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth'
+        var calendarEl = document.getElementById('calendar');
 
-    });
-    calendar.render();
-    });
+        const btn = document.getElementById("createNoteBtn");
+        if (btn) {
+            const today = new Date().toISOString().split('T')[0]; 
+            btn.href = `/noteMaker?date=${today}`;
+        }
+        
+        // https://jinja.palletsprojects.com/en/stable/templates/#filters
+        // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.safe
+        // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.tojson
+        // var userNotes = {{ user_notes | tojson | safe }}
+
+        //sample data. take out later
+        var userNotes = {
+            '2026-07-07': {
+                text: 'Bohemian Rhapsody',
+            },
+            '2026-07-30': {
+                text: 'Hotel California',
+            }
+        };
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            editable: true,
+            height: 650,        
+            expandRows: true,   
+            aspectRatio: 1.5,
+
+            dateClick: function(info){
+                var dateStr = info.dateStr;
+                
+                if (userNotes && userNotes[dateStr]) {
+                    window.location.href = '/note?date=' + dateStr;
+                } else {
+                    window.location.href = '/noteMaker?date=' + dateStr;
+                }
+            },
+
+            dayCellContent: function(arg){
+                var dateStr = arg.date.toISOString().split('T')[0];
+                var noteData = userNotes[dateStr] || '';
+
+                let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
+                if (noteData) {
+                    let displayText = typeof noteData === 'string' ? noteData : noteData.text;
+                    cellHtml += `
+                        <div class="custom-sticky-wrapper">
+                            <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
+                            <div class="sticky-overlay-content" title="${displayText}">
+                                <div class="sticky-song-text">${displayText}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return { html: cellHtml };
+            }
+        });
+
+        calendar.render();
+    }); 
 </script>
 {% endblock %}

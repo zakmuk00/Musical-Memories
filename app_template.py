@@ -1,5 +1,5 @@
 from database import db
-from entry import Entry, add_entry, get_by_id, get_by_date, delete_by_id, delete_by_date, delete_table, update_entry
+from models import Entry, add_entry, get_by_id, get_by_date, delete_by_id, delete_by_date, delete_table, update_entry
 from flask import Flask
 from datetime import date
 

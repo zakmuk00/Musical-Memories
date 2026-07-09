@@ -3,16 +3,25 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="card-body">
-        <h2 class="card-title"> Welcome to Musical Memories</h2>
-        <p class="text-muted">Digital scrapbook for your musical memories</p>
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-6 col-lg-5 text-center">
+        <div class="card shadow-sm p-5 border-0 rounded-3">
+            <div class="card-body">
+                <h2 class="card-title fw-bold mb-3">Welcome to Musical Memories</h2>
+                <p class="text-muted mb-4">Digital scrapbook for your musical memories</p>
 
-        <a href="{{ url_for('spotify_login') }}" class="btn btn-success btn-lg rounded-pill">
-            <i>Login with Spotify</i>
-        </a>
+                <a href="{{ url_for('spotify_login') }}" class="btn btn-success btn-lg rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    <i class="fab fa-spotify me-2"></i> Login with Spotify
+                </a>
+
+                <div class="mt-4">
+                    <a href="/login/dev-bypass" class="text-muted small text-decoration-none">
+                        🚧 Bypass Spotify Authentication (Dev Mode)
+                    </a>
+                </div>
+
+            </div>
+        </div>
     </div>
-
-
 </div>
 {% endblock content %}
