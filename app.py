@@ -120,7 +120,7 @@ def noteMaker():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             photo_file.save(file_path)
 
-        date_array = form.date_created.split('-')
+        date_array = form.date_created.data.split('-')
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
         '''

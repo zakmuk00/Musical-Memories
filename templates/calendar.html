@@ -30,17 +30,29 @@
     var calendarEl = document.getElementById('calendar');
     //sample data. take out later
     var userNotes = {
-        '2026-07-07': 'Stuff',
-        '2026-07-08': 'Stuff'
+        '2026-07-07': {
+            text: 'Bohemian Rhapsody',
+            //Replace with spotify method to extract album cover
+            // coverUrl: 'https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody_cover.png' // Sample cover art
+        },
+        '2026-07-30': {
+            text: 'Hotel California',
+            //coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg'
+        }
         
     }
     // https://jinja.palletsprojects.com/en/stable/templates/#filters
     // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.safe
     // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.tojson
     // var userNotes = {{ user_notes | tojson | safe }}
+
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         editable: true,
+
+        height: 650,        
+        expandRows: true,   
+        aspectRatio: 1.5,
 
         dateClick: function(info){
             var dateStr = info.dateStr;
@@ -54,14 +66,17 @@
 
         dayCellContent: function(arg){
             var dateStr = arg.date.toISOString().split('T')[0];
-            var noteText = userNotes[dateStr] || '';
+            var noteData = userNotes[dateStr] || '';
 
             let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
-            if (noteText) {
+            if (noteData) {
+                let displayText = typeof noteData === 'string' ? noteData : noteData.text;
                 cellHtml += `
-                    <div class="sticky-note-wrapper">
-                        <div class="sticky-note" title="${noteText}">
-                            ${noteText}
+                    <div class="custom-sticky-wrapper">
+                        <img src="/proxy/5000/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
+                        <!-- Changed class name below from calendar-sticky-note to sticky-overlay-content -->
+                        <div class="sticky-overlay-content" title="${displayText}">
+                            <div class="sticky-song-text">${displayText}</div>
                         </div>
                     </div>
                 `;

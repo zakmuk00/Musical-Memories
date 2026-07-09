@@ -1,5 +1,5 @@
 from database import db
-from models import SpotifyToken, save_spotify_tokens
+from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
 from flask import Flask
 from datetime import date
 
@@ -28,4 +28,12 @@ if __name__ == '__main__':
         result = save_spotify_tokens(test_user_id, token_data)
         print("Save results: ", result)
 
+        get_saved = get_spotify_tokens(test_user_id)
+
+        print("Get results:", get_saved)
+
+        del_saved = delete_spotify_tokens(test_user_id, token_data)
+        
+
+        
           
