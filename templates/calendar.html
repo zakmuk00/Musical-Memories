@@ -14,7 +14,7 @@
                         <h2 class="fw-bold mb-4">Your Musical Journey</h2>
                     </div>
                     <div class="col-3 text-end">
-                        <a href="/proxy/5000/noteMaker", class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
+                        <a href="/proxy/5000/noteMaker" id="createNoteBtn" class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
                     </div>
                 </div>
                 <div id="calendar"></div>
@@ -27,60 +27,67 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    //sample data. take out later
-    var userNotes = {
-        '2026-07-07': {
-            text: 'Bohemian Rhapsody',
-            //Replace with spotify method to extract album cover
-            // coverUrl: 'https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody_cover.png' // Sample cover art
-        },
-        '2026-07-30': {
-            text: 'Hotel California',
-            //coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg'
+        var calendarEl = document.getElementById('calendar');
+
+        const btn = document.getElementById("createNoteBtn");
+        if (btn) {
+            const today = new Date().toISOString().split('T')[0]; 
+            btn.href = `/proxy/5000/noteMaker?date=${today}`;
         }
-    };
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        editable: true,
-
-        height: 650,        
-        expandRows: true,   
-        aspectRatio: 1.5,
-
-        dateClick: function(info){
-            var dateStr = info.dateStr;
-            
-            if (userNotes && userNotes[dateStr]) {
-                window.location.href = '/proxy/5000/note?date=' + dateStr;
-            } else {
-                window.location.href = '/proxy/5000/noteMaker?date=' + dateStr;
+        //sample data. take out later
+        var userNotes = {
+            '2026-07-07': {
+                text: 'Bohemian Rhapsody',
+                //Replace with spotify method to extract album cover
+                // coverUrl: 'https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody_cover.png' // Sample cover art
+            },
+            '2026-07-30': {
+                text: 'Hotel California',
+                //coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg'
             }
-        },
+        };
 
-        dayCellContent: function(arg){
-            var dateStr = arg.date.toISOString().split('T')[0];
-            var noteData = userNotes[dateStr] || '';
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            editable: true,
 
-            let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
-            if (noteData) {
-                let displayText = typeof noteData === 'string' ? noteData : noteData.text;
-                cellHtml += `
-                    <div class="custom-sticky-wrapper">
-                        <img src="/proxy/5000/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
-                        <!-- Changed class name below from calendar-sticky-note to sticky-overlay-content -->
-                        <div class="sticky-overlay-content" title="${displayText}">
-                            <div class="sticky-song-text">${displayText}</div>
+            height: 650,        
+            expandRows: true,   
+            aspectRatio: 1.5,
+
+            dateClick: function(info){
+                var dateStr = info.dateStr;
+                
+                if (userNotes && userNotes[dateStr]) {
+                    window.location.href = '/proxy/5000/note?date=' + dateStr;
+                } else {
+                    window.location.href = '/proxy/5000/noteMaker?date=' + dateStr;
+                }
+            },
+
+            dayCellContent: function(arg){
+                var dateStr = arg.date.toISOString().split('T')[0];
+                var noteData = userNotes[dateStr] || '';
+
+                let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
+                if (noteData) {
+                    let displayText = typeof noteData === 'string' ? noteData : noteData.text;
+                    cellHtml += `
+                        <div class="custom-sticky-wrapper">
+                            <img src="/proxy/5000/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
+                            <!-- Changed class name below from calendar-sticky-note to sticky-overlay-content -->
+                            <div class="sticky-overlay-content" title="${displayText}">
+                                <div class="sticky-song-text">${displayText}</div>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
+                return { html: cellHtml };
             }
-            return { html: cellHtml };
-        }
-    });
+        });
 
-    calendar.render();
+        calendar.render();
     });
 </script>
 {% endblock %}
