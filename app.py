@@ -10,7 +10,7 @@ from database import db
 
 from spotify_api import SpotifyClient
 from database import db
-from models import SpotifyToken, save_spotify_tokens
+from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@' #change this when pushing to server
@@ -79,6 +79,40 @@ def spotify_callback():
 def logout():
     session.clear()
     return redirect(url_for("home"))
+  
+@app.route("/search-song")
+def search_song():
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify([])
+    # user must be logged in  
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify([])
+    
+    token_data = get_spotify_tokens(user_id)
+
+    if token_data is None:
+        return jsonify([])
+    # resets tokens, but needed to call search_track
+    spotify = SpotifyClient()
+
+    # database tokens back into spotify client
+    spotify.access_token = token_data["access_token"]
+    spotify.refresh_token = token_data["refresh_token"]
+    spotify.expires_at = token_data["expires_at"]
+
+    songs = spotify.search_track(query)
+
+    # access token might have been refreshed so we need to save new/current tokens in db
+    save_spotify_tokens(user_id, {
+        "access_token": spotify.access_token,
+        "refresh_token": spotify.refresh_token,
+        "expires_at": spotify.expires_at
+    })
+
+    return jsonify(songs)
 
 # Protected App Routes
 
@@ -90,7 +124,15 @@ def about():
 @app.route("/calendar")
 @login_required
 def calendar():
-    return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page')
+    user_id = session.get("user_id")
+    notes_data = {}
+    if user_id:
+        notes_data = get_all_by_user(user_id)
+        if entries:
+            for entry in entries:
+                entry_date = entry.date.strftime("%Y-%m-%d")
+                notes_data[entry_date] = 'Stuff' # Replace with whatever later
+    return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
 @app.route("/note")
 @login_required
@@ -139,7 +181,7 @@ def noteMaker():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             photo_file.save(file_path)
 
-        date_array = form.date_created.split('-')
+        date_array = form.date_created.data.split('-')
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
         '''
