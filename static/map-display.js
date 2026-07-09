@@ -12,9 +12,16 @@ const map = new mapboxgl.Map({
     attributionControl: false
 });
 
-function createMap () {
-    new mapboxgl.Marker()
-    .setLngLat([lng, lat])
-    .addTo(map);
-}
-map.on('load', createMap);
+// When the map loads fetches entry data from app.py
+map.on('load', () => {
+    fetch('/entries/locations')
+    .then(res => res.json()) // parse into real JS object
+    .then(entries => { // loops through each entry setting a marker for it
+        entries.forEach(entry => {
+            const marker = new mapboxgl.Marker()
+                .setLngLat([entry.longitude, entry.latitude])
+                .addTo(map);
+        })
+    })
+    .catch(err => console.error('Failed to load entrys', err));
+});

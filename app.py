@@ -233,8 +233,11 @@ def note():
         "song": entry.song_name,
         "photo": entry.photo_path, 
         "notes": entry.journal_text,
-        "location": entry.location_name
+        "location": [entry.latitude, entry.longitude]
     }
+
+    lat = entry.latitude
+    lng = entry.longitude
 
     # gets song recommendations from Gemini
     s_generator = SongGenerator()
@@ -274,7 +277,9 @@ def note():
     })
     
 
-    return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date, songs=songs)
+    return render_template('note.html', subtitle='Note page', text='This is the note page', 
+    note=note_data, date = chosen_date, songs=songs,
+    latitude=lat, longitude=lng)
 
 
 @app.route("/noteMaker", methods=["GET", "POST"])
