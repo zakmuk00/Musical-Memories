@@ -241,8 +241,20 @@ def note():
     recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
 
     # uses Spotify API to search Spotify for the songs from Gemini
-    spotify = SpotifyClient()
+    # load in spotify tokens from user
+    token_data = get_spotify_tokens(user_id)
     songs = []
+
+    if token_data is None:
+        songs = []
+    else:
+        # if token data exists we put in the saved spotify token data into the fresh spotify client so we can search tracks
+        spotify = SpotifyClient()
+
+        spotify.access_token = token_data["access_token"]
+        spotify.refresh_token = token_data["refresh_token"]
+        spotify.expires_at = token_data["expires_at"]
+
     for rec in recs:
         results = spotify.search_track(f"{rec['name']} {rec['artist']}")
         if results:

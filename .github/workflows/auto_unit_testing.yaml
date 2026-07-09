@@ -17,4 +17,4 @@ jobs:
 
       - name: Test with unittest
         working-directory: ./Musical-Memories
-        run: python3 -m unittest unit_test.py
+        run: python3 -m unittest test_gemini test_spotify
