@@ -64,6 +64,7 @@
 
                 <form action="" method="POST" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
+                    {{ form.date_created() if form.date_created else '' }}
                     <!-- Song Section-->
                     <div class="mb-4">
                         <div class="input-group">

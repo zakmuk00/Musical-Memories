@@ -3,6 +3,7 @@ from flask import Flask, render_template, url_for, redirect, request, session, j
 from datetime import datetime, date
 from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
+from functools import wraps
 
 from models import Entry, get_all_by_user, add_entry
 from database import db
@@ -22,6 +23,23 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models.db'
 db.init_app(app)
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            # If not logged in, boot them to the login screen
+            return redirect(url_for("home"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route("/login/dev-bypass")
+def dev_bypass():
+    # Force a mock user into the session
+    session["user_id"] = "dev_test_user_123"
+    
+    # Send them straight into the protected app area
+    return redirect(url_for("calendar"))
 
 
 
@@ -57,6 +75,11 @@ def spotify_callback():
 
     return redirect("/calendar")
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("home"))
+  
 @app.route("/search-song")
 def search_song():
     query = request.args.get("q", "").strip()
@@ -91,12 +114,15 @@ def search_song():
 
     return jsonify(songs)
 
+# Protected App Routes
 
 @app.route("/about")
+@login_required
 def about():
     return render_template('about.html', subtitle='About Page', text='This is the about page')
 
 @app.route("/calendar")
+@login_required
 def calendar():
     user_id = session.get("user_id")
     notes_data = {}
@@ -109,6 +135,7 @@ def calendar():
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
 @app.route("/note")
+@login_required
 def note():
     chosen_date = request.args.get('date')
     if not chosen_date:
@@ -125,6 +152,7 @@ def note():
     return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date)
 
 @app.route("/noteMaker", methods=["GET", "POST"])
+@login_required
 def noteMaker():
     form = NoteMakerForm()
 
@@ -173,12 +201,14 @@ def noteMaker():
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
 @app.route("/map")
+@login_required
 def map():
     return render_template('map.html', subtitle='Map page', text='This is the map page')
 
 @app.route("/entries/locations")
+@login_required
 def entry_locations():
-    user_id = "user1"
+    user_id = "user1" #maybe change to session["user_id"]
     entries = get_all_by_user(user_id)
 
     data = [
