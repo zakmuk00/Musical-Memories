@@ -4,7 +4,7 @@ from datetime import datetime
 from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
 
-from models import Entry, get_all_by_user, add_entry
+from models import Entry, get_all_by_user, add_entry, get_by_date
 from database import db
 
 from spotify_api import SpotifyClient
@@ -27,16 +27,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models.db'
 db.init_app(app)
 
 
-
 @app.route("/")
 def home():
     return render_template('home.html',subtitle='Home Page', text='This is the home page')
+
 
 @app.route("/login/spotify")
 def spotify_login():
     spotify = SpotifyClient()
     login_url = spotify.build_user_login_url()
     return redirect(login_url)
+
 
 # spotify sends user to /callback
 @app.route("/callback")
@@ -61,27 +62,37 @@ def spotify_callback():
     return redirect("/calendar")
 
 
-
 @app.route("/about")
 def about():
     return render_template('about.html', subtitle='About Page', text='This is the about page')
 
+
 @app.route("/calendar")
 def calendar():
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page')
+
 
 @app.route("/note")
 def note():
     chosen_date = request.args.get('date')
     if not chosen_date:
         return redirect(url_for('calendar'))
+    
+    user_id = session.get("user_id", "test_user_1")
+    if not user_id:
+        return redirect(url_for('spotify_login'))
 
-    # mock data take out
+    date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
+    entry = get_by_date(user_id, date)
+
+    if entry is None:
+        return redirect(url_for('calendar'))
+
     note_data = {
-        "song": "Bohemian Rhapsody",
-        "photo": None, 
-        "notes": "Had this song stuck in my head while driving through the mountains today.",
-        "location": "Seattle, WA"
+        "song": entry.song_name,
+        "photo": entry.photo_path, 
+        "notes": entry.journal_text,
+        "location": entry.location_name
     }
 
     # gets song recommendations from Gemini
@@ -104,6 +115,7 @@ def note():
         })
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date, songs=songs)
+
 
 @app.route("/noteMaker", methods=["GET", "POST"])
 def noteMaker():
@@ -134,32 +146,42 @@ def noteMaker():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             photo_file.save(file_path)
 
+        date_array = form.date_created.data.split('-')
+        entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
+
         '''
-        add_entry(user='dummy user',
-            date='Date Here',
+        add_entry(user=session.user_id,
+            date=entry_date,
             song=form.song,
             link='Spotify Song Link Here',
             song_image='Spotify Album Image Here',
             location=form.location,
-            photo=path
+            photo=file_path,
             text=form.notes,
             latitude=lat,
             longitude=lng)
         '''
-
         return redirect(url_for('calendar'))
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
+
 
 @app.route("/map")
 def map():
     return render_template('map.html', subtitle='Map page', text='This is the map page')
 
+
 @app.route("/entries/locations")
 def entry_locations():
-    user_id = "user1"
-    entries = get_all_by_user(user_id)
+    
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for('spotify_login'))
 
+    entries = get_all_by_user(user_id)
+    if entries is None:
+        return redirect(url_for('calendar'))
+    
     data = [
         {
             "id": e.id,
@@ -170,7 +192,9 @@ def entry_locations():
         }
         for e in entries if e.latitude is not None and e.longitude is not None
     ]
+
     return jsonify(data)
+
 
 if __name__ == '__main__':
     with app.app_context():

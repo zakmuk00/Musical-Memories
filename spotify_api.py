@@ -165,19 +165,9 @@ class SpotifyClient:
 
     # fetch track data and extract uris for web player
     def search_track(self, query):
-        AUTH_URL = 'https://accounts.spotify.com/api/token'
+        token = self.get_valid_access_token()
+        headers = {"Authorization": f"Bearer {token}"}
 
-        auth_response = requests.post(AUTH_URL, {
-            'grant_type': 'client_credentials',
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-        })
-        auth_response_data = auth_response.json()
-        access_token = auth_response_data['access_token']
-        headers = {'Authorization': 'Bearer {token}'.format(token=access_token)}
-
-        # token = self.get_valid_access_token()
-        # headers = {"Authorization": f"Bearer {token}"}
         # limit of 3 for dropdown implementation
         params = {"q": query, "type": "track", "limit": 5}
 

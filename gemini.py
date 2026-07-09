@@ -17,6 +17,7 @@ class Generator():
 class SongGenerator(Generator):
     # Calls to Gemini API to generate songs based off of saved data
     def get_songs(self, song, notes = None, location=None):
+
         note_data = {
         "song": song,
         "notes": notes,
