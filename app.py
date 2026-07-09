@@ -338,22 +338,31 @@ def noteMaker():
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
         # testing
-        print("song:", song, type(song))
-        print("spotify_artist:", spotify_artist, type(spotify_artist))
-        print("spotify_uri:", spotify_uri, type(spotify_uri))
-        print("spotify_image:", spotify_image, type(spotify_image))
+        existing_entry = get_by_date(user_id, entry_date)
 
-        add_entry(user=user_id,
-            date=entry_date,
-            song=song,
-            artist=spotify_artist,
-            link=spotify_uri,
-            song_image=spotify_image,
-            location=location,
-            photo=file_path,
-            text=notes,
-            latitude=lat,
-            longitude=lng)
+        if existing_entry:
+            update_entry(existing_entry,
+                song=song,
+                artist=spotify_artist,
+                link=spotify_uri,
+                song_image=spotify_image,
+                location=location,
+                photo=file_path if file_path else existing_entry.photo_path,
+                text=notes,
+                latitude=lat,
+                longitude=lng)
+        else:
+            add_entry(user=user_id,
+                date=entry_date,
+                song=song,
+                artist=spotify_artist,
+                link=spotify_uri,
+                song_image=spotify_image,
+                location=location,
+                photo=file_path,
+                text=notes,
+                latitude=lat,
+                longitude=lng)
         
     
         return redirect(url_for('calendar'))
