@@ -87,7 +87,7 @@ class SpotifyClient:
             url,
             headers=headers
         )
-        response.raise_for_status
+        response.raise_for_status()
         return response.json()
 
     def save_tokens(self, token_data):
