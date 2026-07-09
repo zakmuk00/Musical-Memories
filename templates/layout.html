@@ -23,12 +23,21 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav me-auto text-start">
-                    <a class="nav-link" href="/proxy/5000/">Home</a> <!--Add in /home or just / when moved to production-->                   
-                    <a class="nav-link" href="/proxy/5000/calendar">Calendar</a>
-                    <a class="nav-link" href="/proxy/5000/note">Note</a> <!--TEMP FOR TESTING DELETE THIS WHEN PUSHING-->
-                    <a class="nav-link" href="/proxy/5000/noteMaker">Note-Maker</a> <!--TEMP FOR TESTING DELETE THIS WHEN PUSHING-->
-                    <a class="nav-link" href="/proxy/5000/map">Map</a>
-                    <a class="nav-link" href="/proxy/5000/about">About</a>
+                    {% if session.user_id %}
+                        <a class="nav-link" href="/">Home</a> <!--Add in /home or just / when moved to production-->                   
+                        <a class="nav-link" href="/calendar">Calendar</a>
+                        <!--<a class="nav-link" href="/proxy/5000/note">Note</a> TEMP FOR TESTING DELETE THIS WHEN PUSHING-->
+                        <!--<a class="nav-link" href="/proxy/5000/noteMaker">Note-Maker</a> TEMP FOR TESTING DELETE THIS WHEN PUSHING-->
+                        <a class="nav-link" href="/map">Map</a>
+                        <a class="nav-link" href="/about">About</a>
+                    {% endif %}
+                </div>
+                <div class="navbar-nav ms-auto">
+                    {% if session.user_id %}
+                        <a class="btn btn-outline-light rounded-pill" href="/logout">Logout</a>
+                    {% else %}
+                        <span class="navbar-text text-muted">Please log in</span>
+                    {% endif %}
                 </div>
             </div>
         </div>

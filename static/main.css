@@ -15,6 +15,23 @@
     transition: transform 0.15s ease-in-out;
 }
 
+.fc-daygrid-day-frame {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.custom-sticky-wrapper {
+    position: relative; 
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 auto 8px auto;
+    cursor: pointer;
+    transition: transform 0.15s ease-in-out;
+}
+
 .custom-sticky-wrapper:hover {
     transform: scale(1.1) rotate(1deg);
     z-index: 100;
@@ -50,3 +67,5 @@
     text-overflow: ellipsis;
     margin: 0;
 }
+
+

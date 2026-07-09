@@ -87,7 +87,7 @@ class SpotifyClient:
             url,
             headers=headers
         )
-        response.raise_for_status
+        response.raise_for_status()
         return response.json()
 
     def save_tokens(self, token_data):
@@ -221,6 +221,25 @@ class SpotifyClient:
 if __name__ == "__main__":
     spotify = SpotifyClient()
 
+    login_url = spotify.build_user_login_url()
+    print(login_url)
+    print()
+    # follow the log in link, log in then copy and paste the string after "code=" and before "&state"
+    code = input("Copy and Paste your temporary code string: ")
+    
+
+    token_data = spotify.exchange_code_for_access_token(code)
+
+    # quick get current user profile test
+    print(spotify.get_user_profile())
+    # check if I received tokens
+    print(bool(token_data.get("access_token")))
+    print(bool(token_data.get("refresh_token")))
+
+    # check if client saved tokens
+    print(bool(spotify.access_token))
+    print(bool(spotify.refresh_token))
+
     query = input("search for song: ").strip()
 
     songs = spotify.search_track(query)
@@ -233,3 +252,12 @@ if __name__ == "__main__":
         print("uri:", song["uri"])
         print("image url:", song["image"])
 
+    device_id = input("Your device id: ")
+
+
+    track_uri = input("Your track's URI: ")
+
+
+    check = print(spotify.play_track(device_id, track_uri))
+
+    
