@@ -7,7 +7,7 @@ load_dotenv()
 
 class Generator():
     # Sets up gemini client
-    def __init__(self, model="gemini-3.5-flash"):
+    def __init__(self, model="gemini-3.1-flash.live-preview"):
         api_key = os.getenv('GEMINI_API_KEY')
         genai.api_key = api_key
         self.client = genai.Client(api_key=api_key)
