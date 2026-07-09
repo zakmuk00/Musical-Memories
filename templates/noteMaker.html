@@ -18,6 +18,40 @@
         min-height: 150px;
         border-radius: 10px;
     }
+
+    #song-results{
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-top: 3px;
+        display: none;
+        
+    }
+
+    .song-result{
+        text-align: left;
+        display:flex;
+        align-items: center;
+        gap:10px;
+        border-bottom: 1px solid black;
+        
+
+    }
+
+    .song-result:hover {
+        background: grey
+    }
+
+    .song-result img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .song-title {
+        font-weight: bold;
+    }
+
+    
 </style>
 {% endblock %}
 
@@ -34,8 +68,13 @@
                     <!-- Song Section-->
                     <div class="mb-4">
                         <div class="input-group">
-                            {{ form.song(class="form-control border-success p-3 text-center fw-semibold", placeholder="Song") }}
+                            {{ form.song(class="form-control border-success p-3 text-center fw-semibold", placeholder="Search for song", id="song-search") }}
                         </div>
+                        {{ form.spotify_uri(id="spotify-uri") }}
+                        {{ form.spotify_artist(id="spotify-artist") }}
+                        {{ form.spotify_image(id="spotify-image") }}
+                    <div id="song-results"></div>
+
                     </div>
                     <!-- Location Section-->
                     <div class="mb-4">
@@ -73,5 +112,74 @@
 
 {% block scripts %}
 <script src="./static/map-picker.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+
+    
+    const songInput = document.getElementById("song-search");
+    const resultsBox = document.getElementById("song-results");
+
+    const spotifyUriInput = document.getElementById("spotify-uri");
+    const spotifyArtistInput = document.getElementById("spotify-artist")
+    const spotifyImageInput = document.getElementById("spotify-image")
+
+    songInput.addEventListener("input", function (){
+        const query = songInput.value.trim();
+
+        // if search is less than two characters clear the dropdown and hide it
+        if (query.length < 2){
+            resultsBox.innerHTML ="";
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        // call flask search-song route with encoded user query
+        fetch("search-song?q=" + encodeURIComponent(query))
+
+            .then(function (response){
+                return response.json();
+            })
+            .then(function(songs){
+                resultsBox.innerHTML="";
+
+                if (songs.length == 0){
+                    resultsBox.style.display = "none";
+                    return;
+                }
+
+                songs.forEach(function (song) {
+                    const item = document.createElement("div");
+                    item.className = "song-result";
+
+                    item.innerHTML = ` 
+                        ${song.image && `<img src="${song.image}" alt="Album image">`}
+                        <div class="song-title">${song.name}</div>
+                        <div class="song-artist">${song.artist}</div>`;
+                    
+                    item.addEventListener("click", function(){
+                        songInput.value = song.name;
+                        spotifyUriInput.value = song.uri;
+                        spotifyArtistInput.value = song.artist;
+                        spotifyImageInput.value = song.image || "";
+
+                        resultsBox.innerHTML = "";
+                        resultsBox.style.display = "none";
+                    });
+
+                    resultsBox.appendChild(item);                        
+                });
+                resultsBox.style.display = "block";
+              
+            }).catch(function (error){
+                console.log("Song search error: ", error);
+                resultsBox.innerHTML="";
+                resultsBox.style.display="none";
+            });
+        
+    });
+
+});
+</script>
 {% endblock %}
 
