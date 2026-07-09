@@ -244,3 +244,13 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+@app.route("/update_server", methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('/home/musicalmemories/Musical-Memories')
+        origin = repo.remotes.origin
+        origin.pull()
+        return 'Updated PythonAnywhere successfully', 200
+    else:
+        return 'Wrong event type', 400
