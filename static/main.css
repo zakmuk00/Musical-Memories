@@ -1,34 +1,52 @@
-body {
-    margin: 0;
-    font-family: Arial;
+.fc-daygrid-day-frame {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-#map {
+.custom-sticky-wrapper {
+    position: relative; 
+    display: block;
     width: 100%;
-    flex: 1 1 auto;
-    min-height: 150px;
-    border-radius: 10px;
-}
-
-.sticky-note-wrapper {
-    margin-top: 6px;
-    padding: 0 4px;
-    perspective: 1000px;
-}
-
-.sticky-note {
-    background: #fff799;
-    color: #333;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.75rem;
-    font-weight: bold;
-    padding: 6px;
-    min-height: 45px;
-    border-radius: 1px;
-}
-
-.sticky-note:hover {
-    transform: scale(1.05);
-    box-shadow: 3px 5px 8px rgba(0,0,0,0.25);
+    height: auto;
+    margin: 0 auto 8px auto;
     cursor: pointer;
+    transition: transform 0.15s ease-in-out;
+}
+
+.custom-sticky-wrapper:hover {
+    transform: scale(1.1) rotate(1deg);
+    z-index: 100;
+}
+
+.sticky-bg-asset {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.sticky-overlay-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 25% 12% 10% 12%; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.sticky-song-text {
+    font-size: 0.6rem; 
+    font-weight: 700;
+    color: #33331a;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
 }
