@@ -16,6 +16,7 @@ class Entry(db.Model):
         user_id (str): Identifies who made the Entry
         date (date): The date of the journal Entry
         song_name (str): Name of the song
+        artist_name (str): Name of the artist for the song
         spotify_link (str): Url to the song on Spotify
         song_image (str): Url to the song's image (recommend using Spotify api)
         photo_path (str): Path to the optional user photo
@@ -29,20 +30,19 @@ class Entry(db.Model):
     user_id = db.Column(db.String(255), nullable=False)
     date = db.Column(db.Date, nullable=False)
     song_name = db.Column(db.String(255), nullable=False)
+    artist_name = db.Column(db.String(255), nullable=False)
     spotify_link = db.Column(db.String(255), nullable=False)
     song_image = db.Column(db.String(255), nullable=False)
     location_name = db.Column(db.String(255), nullable=False)
     photo_path = db.Column(db.String(255))
     journal_text = db.Column(db.Text) # Optional
-    # Need to make a backend route for this
-    # journal_image = db.Column(db.String(255))
     latitude = db.Column(db.Float()) # Optional
     longitude = db.Column(db.Float()) # Optional
     __table_args__ = (db.UniqueConstraint('user_id', 'date', name='unique_user_date'),)
 
 # Only accepts multiple parameters so far
 # Might need another version where an Entry object can be passed
-def add_entry(user, date, song, link, song_image, location, photo=None, text=None, latitude=None, longitude=None):
+def add_entry(user, date, song, artist, link, song_image, location, photo=None, text=None, latitude=None, longitude=None):
     """
     Adds a new entry into the database
 
@@ -80,6 +80,7 @@ def add_entry(user, date, song, link, song_image, location, photo=None, text=Non
     db.session.add(Entry(user_id=user,
                         date=date,
                         song_name=song,
+                        artist_name=artist,
                         spotify_link=link,
                         song_image=song_image,
                         location_name=location,
