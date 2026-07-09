@@ -14,7 +14,7 @@
                         <h2 class="fw-bold mb-4">Your Musical Journey</h2>
                     </div>
                     <div class="col-3 text-end">
-                        <a href="/proxy/5000/noteMaker" id="createNoteBtn" class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
+                        <a href="/noteMaker" id="createNoteBtn" class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
                     </div>
                 </div>
                 <div id="calendar"></div>
@@ -32,7 +32,7 @@
         const btn = document.getElementById("createNoteBtn");
         if (btn) {
             const today = new Date().toISOString().split('T')[0]; 
-            btn.href = `/proxy/5000/noteMaker?date=${today}`;
+            btn.href = `/noteMaker?date=${today}`;
         }
         
     }
@@ -66,9 +66,9 @@
                 var dateStr = info.dateStr;
                 
                 if (userNotes && userNotes[dateStr]) {
-                    window.location.href = '/proxy/5000/note?date=' + dateStr;
+                    window.location.href = '/note?date=' + dateStr;
                 } else {
-                    window.location.href = '/proxy/5000/noteMaker?date=' + dateStr;
+                    window.location.href = '/noteMaker?date=' + dateStr;
                 }
             },
 
@@ -81,7 +81,7 @@
                     let displayText = typeof noteData === 'string' ? noteData : noteData.text;
                     cellHtml += `
                         <div class="custom-sticky-wrapper">
-                            <img src="/proxy/5000/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
+                            <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
                             <!-- Changed class name below from calendar-sticky-note to sticky-overlay-content -->
                             <div class="sticky-overlay-content" title="${displayText}">
                                 <div class="sticky-song-text">${displayText}</div>
