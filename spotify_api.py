@@ -225,7 +225,7 @@ if __name__ == "__main__":
     print()
     # follow the log in link, log in then copy and paste the string after "code=" and before "&state"
     code = input("Copy and Paste your temporary code string: ")
-    #AQAT-QzwgJ5MF1mpQOk2q_9DuIOUHCMtDBBO85eoSFVA62tR06_fs7I_UdUrKtWkZFbWIoUG798mv7IcU12KHFLO_AAQPMfnbQ9O7Yc9J9eGVUqIbNbj5iuhtw5GHZznrrtPcuKs3CeOTJzaNUZwuQwXk7wBzWswr114VmH9d6KkRzak5BIZxhJAjfvYhOOBu5liHGTC599JFgidUdMIYac5ni5QISta70_YLo0SZM2Jh49cN36kFi11-wPxcX0nEpgsW9GiAgbm-v8ZRfuaznMpIZDR_W4l1lSCsxpu9XSWIX6_WIt68T86IwtlgYswQxRjtLwHM2HEm70gi2LjmUikSg
+    
 
     token_data = spotify.exchange_code_for_access_token(code)
 
@@ -252,7 +252,7 @@ if __name__ == "__main__":
         print("image url:", song["image"])
 
     device_id = input("Your device id: ")
-    #b83bdd818f510f03897aeff8e12a45dee1ef7b4a
+
 
     track_uri = input("Your track's URI: ")
 
