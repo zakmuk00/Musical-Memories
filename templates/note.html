@@ -33,7 +33,28 @@
                         <h3 class="fw-bold text-success">Your song on {{ date }}:</h3>
                         <h4 class="text-muted">{{ note.song if note.song else 'No song recorded' }}</h4>
                         <hr>
-                        <h5 class="fw-semibold">Want to feel this again?</h5>
+                        <h5 class="fw-semibold">Want to feel like this again? Listen to: </h5>
+                        <div class="mt-2">
+                            <!--Loops through songs and uses iframe to embed-->
+                            {% for song in songs %}
+                                {% if song.track_id %}
+                                <div class="mb-2">
+                                    <iframe
+                                        src ="https://open.spotify.com/embed/track/{{ song.track_id }}"
+                                        width="100%"
+                                        height="80"
+                                        frameborder="0"
+                                        allowfullscreen=""
+                                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                        loading="lazy">
+                                    </iframe>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">{{ song.name }} — {{ song.artist }} (not found on Spotify)</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
                     </div>
                 </div>
 

@@ -6,11 +6,14 @@ from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry
+from models import Entry, get_all_by_user, add_entry, get_by_date
 from database import db
 
 from spotify_api import SpotifyClient
 from database import db
+
+from gemini import SongGenerator
+
 from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
 app = Flask(__name__)
 
@@ -43,7 +46,6 @@ def dev_bypass():
     return redirect(url_for("calendar"))
 
 
-
 @app.route("/")
 def home():
     """
@@ -53,6 +55,7 @@ def home():
         HTML: Renders home.html
     """
     return render_template('home.html',subtitle='Home Page', text='This is the home page')
+
 
 @app.route("/login/spotify")
 def spotify_login():
@@ -65,6 +68,7 @@ def spotify_login():
     spotify = SpotifyClient()
     login_url = spotify.build_user_login_url()
     return redirect(login_url)
+
 
 # spotify sends user to /callback
 @app.route("/callback")
@@ -166,6 +170,7 @@ def about():
     """
     return render_template('about.html', subtitle='About Page', text='This is the about page')
 
+
 @app.route("/calendar")
 @login_required
 def calendar():
@@ -193,6 +198,7 @@ def calendar():
                 }
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
+
 @app.route("/note")
 @login_required
 def note():
@@ -209,16 +215,45 @@ def note():
     chosen_date = request.args.get('date')
     if not chosen_date:
         return redirect(url_for('calendar'))
-
-    # mock data take out
-    note_data = {
-        "song": "Bohemian Rhapsody",
-        "photo": None, 
-        "notes": "Had this song stuck in my head while driving through the mountains today.",
-        "location": "Seattle, WA"
-    }
     
-    return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date)
+    user_id = session.get("user_id", "test_user_1")
+    if not user_id:
+        return redirect(url_for('spotify_login'))
+
+    date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
+    entry = get_by_date(user_id, date)
+
+    if entry is None:
+        return redirect(url_for('calendar'))
+
+    note_data = {
+        "song": entry.song_name,
+        "photo": entry.photo_path, 
+        "notes": entry.journal_text,
+        "location": entry.location_name
+    }
+
+    # gets song recommendations from Gemini
+    s_generator = SongGenerator()
+    recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
+
+    # uses Spotify API to search Spotify for the songs from Gemini
+    spotify = SpotifyClient()
+    songs = []
+    for rec in recs:
+        results = spotify.search_track(f"{rec['name']} {rec['artist']}")
+        if results:
+            track_id = results[0]['uri'].split(':')[-1]
+        else:
+            track_id = None
+        songs.append({
+            "name": rec['name'],
+            "artist": rec['artist'],
+            "track_id": track_id
+        })
+
+    return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date, songs=songs)
+
 
 @app.route("/noteMaker", methods=["GET", "POST"])
 @login_required
@@ -315,6 +350,7 @@ def noteMaker():
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
+
 @app.route("/map")
 @login_required
 def map():
@@ -325,6 +361,7 @@ def map():
         HTML: Renders map.html
     """
     return render_template('map.html', subtitle='Map page', text='This is the map page')
+
 
 @app.route("/entries/locations")
 @login_required
@@ -346,9 +383,15 @@ def entry_locations():
             }
         ]
     """
-    user_id = "user1" #maybe change to session["user_id"]
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for('spotify_login'))
     entries = get_all_by_user(user_id)
 
+    entries = get_all_by_user(user_id)
+    if entries is None:
+        return redirect(url_for('calendar'))
+    
     data = [
         {
             "id": e.id,
@@ -359,7 +402,9 @@ def entry_locations():
         }
         for e in entries if e.latitude is not None and e.longitude is not None
     ]
+
     return jsonify(data)
+
 
 if __name__ == '__main__':
     with app.app_context():

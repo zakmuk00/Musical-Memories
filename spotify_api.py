@@ -167,6 +167,7 @@ class SpotifyClient:
     def search_track(self, query):
         token = self.get_valid_access_token()
         headers = {"Authorization": f"Bearer {token}"}
+
         # limit of 3 for dropdown implementation
         params = {"q": query, "type": "track", "limit": 5}
 

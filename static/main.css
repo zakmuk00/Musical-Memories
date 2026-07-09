@@ -1,13 +1,18 @@
-body {
-    margin: 0;
-    font-family: Arial;
+.fc-daygrid-day-frame {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-#map {
+.custom-sticky-wrapper {
+    position: relative; 
+    display: block;
     width: 100%;
-    flex: 1 1 auto;
-    min-height: 150px;
-    border-radius: 10px;
+    height: auto;
+    margin: 0 auto 8px auto;
+    cursor: pointer;
+    transition: transform 0.15s ease-in-out;
 }
 
 .fc-daygrid-day-frame {
