@@ -84,7 +84,7 @@ def spotify_callback():
     spotify.exchange_code_for_access_token(code)
 
     profile = spotify.get_user_profile()
-    user_id = profile.get("account_id")
+    user_id = profile.get("id")
 
     # store user_id in flask session
     session["user_id"] = user_id
