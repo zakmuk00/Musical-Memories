@@ -1,4 +1,5 @@
 import os
+import git
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 from datetime import datetime, date
 from forms.noteMakerForm import NoteMakerForm
