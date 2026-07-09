@@ -127,11 +127,18 @@ def calendar():
     user_id = session.get("user_id")
     notes_data = {}
     if user_id:
-        notes_data = get_all_by_user(user_id)
+        entries = get_all_by_user(user_id)
         if entries:
             for entry in entries:
                 entry_date = entry.date.strftime("%Y-%m-%d")
-                notes_data[entry_date] = 'Stuff' # Replace with whatever later
+                notes_data[entry_date] = {
+                    "text": entry.song_name,
+                    "artist": entry.artist_name,
+                    "spotify_link": entry.spotify_link,
+                    "song_image": entry.song_image,
+                    "notes": entry.journal_text,
+                    "location": entry.location_name
+                }
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
 @app.route("/note")
@@ -198,12 +205,14 @@ def noteMaker():
 
         # testing
         print("song:", song, type(song))
+        print("spotify_artist:", spotify_artist, type(spotify_artist))
         print("spotify_uri:", spotify_uri, type(spotify_uri))
         print("spotify_image:", spotify_image, type(spotify_image))
 
-        saved = add_entry(user=user_id,
+        add_entry(user=user_id,
             date=entry_date,
             song=song,
+            artist=spotify_artist,
             link=spotify_uri,
             song_image=spotify_image,
             location=location,
@@ -211,7 +220,7 @@ def noteMaker():
             text=notes,
             latitude=lat,
             longitude=lng)
-        print(saved)
+        
     
         return redirect(url_for('calendar'))
         
