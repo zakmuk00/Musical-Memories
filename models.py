@@ -261,7 +261,7 @@ def update_entry(query_user_id, query_id, **kwargs):
                 continue
             if hasattr(entry, key):
                 entry_value = getattr(entry, key)
-                if entry_value == None or type(key) == type(entry_value):
+                if entry_value is None or type(key) == type(entry_value):
                     setattr(entry, key, value)
                     print(f'{key} updated')
                 else:

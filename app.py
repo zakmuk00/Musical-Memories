@@ -14,6 +14,8 @@ from database import db
 
 from gemini import SongGenerator
 
+from dotenv import load_dotenv
+
 from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
 app = Flask(__name__)
 
@@ -24,6 +26,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+load_dotenv()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models.db'
 db.init_app(app)
@@ -241,8 +244,20 @@ def note():
     recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
 
     # uses Spotify API to search Spotify for the songs from Gemini
-    spotify = SpotifyClient()
+    # load in spotify tokens from user
+    token_data = get_spotify_tokens(user_id)
     songs = []
+
+    if token_data is None:
+        songs = []
+    else:
+        # if token data exists we put in the saved spotify token data into the fresh spotify client so we can search tracks
+        spotify = SpotifyClient()
+
+        spotify.access_token = token_data["access_token"]
+        spotify.refresh_token = token_data["refresh_token"]
+        spotify.expires_at = token_data["expires_at"]
+
     for rec in recs:
         results = spotify.search_track(f"{rec['name']} {rec['artist']}")
         if results:
@@ -254,6 +269,13 @@ def note():
             "artist": rec['artist'],
             "track_id": track_id
         })
+        
+    save_spotify_tokens(user_id, {
+        "access_token": spotify.access_token,
+        "refresh_token": spotify.refresh_token,
+        "expires_at": spotify.expires_at
+    })
+    
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
     note=note_data, date = chosen_date, songs=songs,
@@ -333,22 +355,31 @@ def noteMaker():
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
         # testing
-        print("song:", song, type(song))
-        print("spotify_artist:", spotify_artist, type(spotify_artist))
-        print("spotify_uri:", spotify_uri, type(spotify_uri))
-        print("spotify_image:", spotify_image, type(spotify_image))
+        existing_entry = get_by_date(user_id, entry_date)
 
-        add_entry(user=user_id,
-            date=entry_date,
-            song=song,
-            artist=spotify_artist,
-            link=spotify_uri,
-            song_image=spotify_image,
-            location=location,
-            photo=file_path,
-            text=notes,
-            latitude=lat,
-            longitude=lng)
+        if existing_entry:
+            update_entry(user_id, existing_entry.id,
+                song_name=song,
+                artist_name=spotify_artist,
+                spotify_link=spotify_uri,
+                song_image=spotify_image,
+                location_name=location,
+                photo_path=file_path if file_path else existing_entry.photo_path,
+                journal_text=notes,
+                latitude=lat,
+                longitude=lng)
+        else:
+            add_entry(user=user_id,
+                date=entry_date,
+                song=song,
+                artist=spotify_artist,
+                link=spotify_uri,
+                song_image=spotify_image,
+                location=location,
+                photo=file_path,
+                text=notes,
+                latitude=lat,
+                longitude=lng)
         
     
         return redirect(url_for('calendar'))
