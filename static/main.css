@@ -1,3 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@400;600&display=swap');
+
+:root {
+    --paper: #f7f1e3;
+    --paper-dark: #ece3d0;
+    --ink: #3d3626;
+    --accent: #b5674d;      /* muted terracotta, not neon */
+    --accent-soft: #d8c4a8;
+    --shadow: rgba(60, 45, 25, 0.15);
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+        radial-gradient(var(--paper-dark) 1px, transparent 1px);
+    background-size: 22px 22px;
+    background-attachment: fixed;
+}
+
+h1, h2, h3.fw-bold {
+    font-family: 'Caveat', cursive;
+    font-size: 2.2rem;
+    color: var(--accent);
+}
+
+.card {
+    background: #fffdf8;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 6px 16px var(--shadow);
+    position: relative;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+    pointer-events: none;
+}
+
+.navbar.bg-dark {
+    background-color: #3d3626 !important;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.navbar .nav-link {
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.3px;
+}
+
+.btn-primary, .btn-success {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    border-radius: 50px;
+    box-shadow: 0 3px 8px var(--shadow);
+}
+
+.btn-primary:hover, .btn-success:hover {
+    background-color: #a05a41 !important;
+    transform: translateY(-1px);
+}
+
+.polaroid {
+    background: #fff;
+    padding: 10px 10px 30px 10px;
+    box-shadow: 0 8px 16px var(--shadow);
+    transform: rotate(-2deg);
+    display: inline-block;
+}
+
+#map {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 150px;
+    border-radius: 10px;
+}
+
 .fc-daygrid-day-frame {
     overflow: hidden;
     display: flex;
@@ -15,25 +97,16 @@
     transition: transform 0.15s ease-in-out;
 }
 
-.fc-daygrid-day-frame {
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+.custom-sticky-wrapper:nth-child(odd) {
+    transform: rotate(-2deg);
 }
 
-.custom-sticky-wrapper {
-    position: relative; 
-    display: block;
-    width: 100%;
-    height: auto;
-    margin: 0 auto 8px auto;
-    cursor: pointer;
-    transition: transform 0.15s ease-in-out;
+.custom-sticky-wrapper:nth-child(even) {
+    transform: rotate(1.5deg);
 }
 
 .custom-sticky-wrapper:hover {
-    transform: scale(1.1) rotate(1deg);
+    transform: scale(1.08) rotate(0deg);
     z-index: 100;
 }
 
@@ -67,5 +140,3 @@
     text-overflow: ellipsis;
     margin: 0;
 }
-
-
