@@ -341,14 +341,14 @@ def noteMaker():
         existing_entry = get_by_date(user_id, entry_date)
 
         if existing_entry:
-            update_entry(existing_entry,
-                song=song,
-                artist=spotify_artist,
-                link=spotify_uri,
+            update_entry(user_id, existing_entry.id,
+                song_name=song,
+                artist_name=spotify_artist,
+                spotify_link=spotify_uri,
                 song_image=spotify_image,
-                location=location,
-                photo=file_path if file_path else existing_entry.photo_path,
-                text=notes,
+                location_name=location,
+                photo_path=file_path if file_path else existing_entry.photo_path,
+                journal_text=notes,
                 latitude=lat,
                 longitude=lng)
         else:
