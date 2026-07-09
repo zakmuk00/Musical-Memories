@@ -77,7 +77,7 @@ def search_song():
 
     # database tokens back into spotify client
     spotify.access_token = token_data["access_token"]
-    spotify.refresh_access_token = token_data["refresh_token"]
+    spotify.refresh_token = token_data["refresh_token"]
     spotify.expires_at = token_data["expires_at"]
 
     songs = spotify.search_track(query)
