@@ -84,8 +84,11 @@ def note():
         "location": "Seattle, WA"
     }
 
+    # gets song recommendations from Gemini
     s_generator = SongGenerator()
     recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
+
+    # uses Spotify API to search Spotify for the songs from Gemini
     spotify = SpotifyClient()
     songs = []
     for rec in recs:

@@ -33,8 +33,9 @@
                         <h3 class="fw-bold text-success">Your song on {{ date }}:</h3>
                         <h4 class="text-muted">{{ note.song if note.song else 'No song recorded' }}</h4>
                         <hr>
-                        <h5 class="fw-semibold">Songs to feel like this again:</h5>
+                        <h5 class="fw-semibold">Want to feel like this again? Listen to: </h5>
                         <div class="mt-2">
+                            <!--Loops through songs and uses iframe to embed-->
                             {% for song in songs %}
                                 {% if song.track_id %}
                                 <div class="mb-2">
