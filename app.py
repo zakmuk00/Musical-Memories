@@ -254,6 +254,13 @@ def note():
             "artist": rec['artist'],
             "track_id": track_id
         })
+        
+    save_spotify_tokens(user_id, {
+        "access_token": spotify.access_token,
+        "refresh_token": spotify.refresh_token,
+        "expires_at": spotify.expires_at
+    })
+    
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date, songs=songs)
 
