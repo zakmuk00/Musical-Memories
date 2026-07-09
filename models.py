@@ -50,9 +50,11 @@ def add_entry(user, date, song, artist, link, song_image, location, photo=None, 
         user (str): The ID of the user creating the Entry
         date (date): The date the Entry is being created
         song (str): The name of the song
+        artist (str): The name of the artist
         link (str): Url to the song on Spotify
         image (str): Url to the song's image (recommend using Spotify api)
         location (str): The location the journal entry was created
+        photo (str): The directory path to the image
         text (str): Journal Text
         latitude (num): latitude coordinate
         longitude (num): longitude coordinate
@@ -65,7 +67,7 @@ def add_entry(user, date, song, artist, link, song_image, location, photo=None, 
         print('Wrong date format')
         return False
     
-    if not (type(song) is str and type(link) is str and type(song_image) is str):
+    if not (type(song) is str and type(artist) is str and type(link) is str and type(song_image) is str):
         print('Invalid song data')
         return False
     
@@ -204,8 +206,16 @@ def delete_by_date(query_user_id, query_date):
     """
     response = Entry.query.filter_by(user_id=query_user_id, date=query_date).first()
     if response is not None:
+        photo_path = response.photo_path
         db.session.delete(response)
         db.session.commit()
+        if photo_path is not None:
+            os.remove(photo_path)
+            if os.path.exists(photo_path):
+                print('Photo deletion failed')
+            else:
+                print('Photo deleted')
+
         print("Delete success")
         return True
     else:
@@ -286,6 +296,16 @@ class SpotifyToken(db.Model):
     expires_at = db.Column(db.Float, nullable=False)
 
 def save_spotify_tokens(user_id, token_data):
+    """
+    Saves new user tokens to the specified user id
+    
+    Args:
+        user_id (str): The id of the user the tokens will be stored to
+        token_data (obj): Spotify API's token data json for the user
+
+    Returns:
+        bool: The status of the saving
+    """
     if not type(user_id) is str:
         print("Invalid user_id")
         return False
@@ -327,6 +347,15 @@ def save_spotify_tokens(user_id, token_data):
     return True
 
 def get_spotify_tokens(user_id):
+    """
+    Fetches recorded spotify tokens from the table for specified user
+
+    Args:
+        user_id (str): The user to fetch spotify tokens for
+    
+    Return:
+        dict: The tokens of the user, None if user not found
+    """
     token_row = SpotifyToken.query.filter_by(user_id=user_id).first()
 
     if token_row is None:
@@ -342,6 +371,13 @@ def get_spotify_tokens(user_id):
 
 # used if user logs out
 def delete_spotify_tokens(user_id, token_data):
+    """
+    Deletes the stored spotify tokens for the specified user
+
+    Args:
+        user_id (str): The user to delete spotify tokens for
+        token_data (obj):  Spotify API's token data json from the user
+    """
     token_row = SpotifyToken.query.filter_by(user_id=user_id).first()
 
     if token_row is None:
