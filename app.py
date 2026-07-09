@@ -46,10 +46,22 @@ def dev_bypass():
 
 @app.route("/")
 def home():
+    """
+    Renders the initial landing page of the website
+
+    Returns:
+        HTML: Renders home.html
+    """
     return render_template('home.html',subtitle='Home Page', text='This is the home page')
 
 @app.route("/login/spotify")
 def spotify_login():
+    """
+    Redirects user to log in with Spotify OAuth for app access
+
+    Returns:
+        Redirect: Sends the user to Spotify login page
+    """
     spotify = SpotifyClient()
     login_url = spotify.build_user_login_url()
     return redirect(login_url)
@@ -57,6 +69,16 @@ def spotify_login():
 # spotify sends user to /callback
 @app.route("/callback")
 def spotify_callback():
+    """
+    Receives a response from Spotify OAuth after user logs in
+    Exchanges authorization code to access tokens and stores them in the database
+
+    Query Parameters:
+        code: The authorization code received from Spotify OAuth
+
+    Returns:
+        Redirect: Sends the user to the calendar page
+    """
     code = request.args.get("code")
     spotify = SpotifyClient()
     spotify.exchange_code_for_access_token(code)
@@ -78,11 +100,27 @@ def spotify_callback():
 
 @app.route("/logout")
 def logout():
+    """
+    Logs the user out of the app and returns to the homepage
+
+    Returns:
+        Redirect: Sends user back to home
+    """
     session.clear()
     return redirect(url_for("home"))
   
 @app.route("/search-song")
 def search_song():
+    """
+    Queries Spotify API for songs based on user input
+    Requires user to be logged in
+
+    Query Parameters:
+        q (str): the query inputted by the user
+    
+    Returns:
+        JSON: The list of songs returned by Spotify after searching
+    """
     query = request.args.get("q", "").strip()
     if not query:
         return jsonify([])
@@ -120,11 +158,24 @@ def search_song():
 @app.route("/about")
 @login_required
 def about():
+    """
+    Renders the about page of the app
+
+    Returns:
+        HTML: Renders about.html
+    """
     return render_template('about.html', subtitle='About Page', text='This is the about page')
 
 @app.route("/calendar")
 @login_required
 def calendar():
+    """
+    Renders the interactive calendar page with the user's recorded entries
+    The entries are fetched from the database and injected to the calendar
+
+    Returns:
+        HTML: Renders calendar.html with user_notes data from table
+    """
     user_id = session.get("user_id")
     notes_data = {}
     if user_id:
@@ -145,6 +196,16 @@ def calendar():
 @app.route("/note")
 @login_required
 def note():
+    """
+    Renders the detailed note view of a specific date
+
+    Query Parameters:
+        date (str): The specified date in 'YYYY-MM-DD' format
+
+    Returns:
+        HTML: Renders note.html with the specified date if it exists
+        Redirects: Sends the user back to the calendar page if the note doesn't exist
+    """
     chosen_date = request.args.get('date')
     if not chosen_date:
         return redirect(url_for('calendar'))
@@ -162,6 +223,33 @@ def note():
 @app.route("/noteMaker", methods=["GET", "POST"])
 @login_required
 def noteMaker():
+    """
+    Renders the notemaker form to make a new note entry
+    Also processes the form submission and interacts with database
+
+    Query Parameters (GET):
+        date (str, optional): if Get method, prefills the date for form submission
+
+    Methods:
+        GET: Displays an empty form with possibly pre-filled date
+        POST: Receives form data, saves uploaded image, and records in the database
+
+    Form Data (POST):
+        latitude (str, optional): Latitude coordinate of note
+        longitude (str, optional): Longitude coordinate of note
+        song (str): Name of the chosen song
+        location (str): The chosen location name
+        notes (str): User inputted journal text
+        date_created (str): Date formatted in 'YYYY-MM-DD'
+        photo (File, optional): Optional image file uploaded by user
+        spotify_artist (str): The chosen song's artist name
+        spotify_uri (str): The uri to the song on Spotify
+        spotify_image (str): The uri to the song's image on Spotify
+    
+    Returns:
+        HTML: Renders noteMaker.html if GET method is called
+        Redirect: Sends the user back to calendar on successful submission
+    """
     form = NoteMakerForm()
 
     if request.method == "GET":
@@ -230,11 +318,34 @@ def noteMaker():
 @app.route("/map")
 @login_required
 def map():
+    """
+    Renders the map page to see user's journal notes as location pins on the map
+
+    Returns:
+        HTML: Renders map.html
+    """
     return render_template('map.html', subtitle='Map page', text='This is the map page')
 
 @app.route("/entries/locations")
 @login_required
 def entry_locations():
+    """
+    Fetches location based entries to be rendered on the map for the user
+    Ignores entries without a set latitude and longitude coordinate
+
+    Returns:
+        JSON: A list of entry objects
+        Format:
+        [
+            {
+                "id": int,
+                "latitude": float,
+                "longitude": float,
+                "song_name": str,
+                "date": str (YYYY-MM-DD)
+            }
+        ]
+    """
     user_id = "user1" #maybe change to session["user_id"]
     entries = get_all_by_user(user_id)
 
