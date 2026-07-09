@@ -39,7 +39,12 @@
             text: 'Hotel California',
             //coverUrl: 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg'
         }
-    };
+        
+    }
+    // https://jinja.palletsprojects.com/en/stable/templates/#filters
+    // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.safe
+    // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.tojson
+    // var userNotes = {{ user_notes | tojson | safe }}
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
