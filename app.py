@@ -14,6 +14,8 @@ from database import db
 
 from gemini import SongGenerator
 
+from dotenv import load_dotenv
+
 from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
 app = Flask(__name__)
 
@@ -24,6 +26,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+load_dotenv()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models.db'
 db.init_app(app)
