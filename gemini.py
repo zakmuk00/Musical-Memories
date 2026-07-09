@@ -5,16 +5,15 @@ from google import genai
 
 load_dotenv()
 
-
-class MoodInsightGenerator():
-
+class Generator():
     # Sets up gemini client
     def __init__(self, model="gemini-3.5-flash"):
-        api_key = os.getenv('GENAI_KEY')
+        api_key = os.getenv('GEMINI_API_KEY')
         genai.api_key = api_key
-        self.client = genai.Client()
+        self.client = genai.Client(api_key=api_key)
         self.model = model
 
+class MoodInsightGenerator(Generator):
     # Gets data from entry data and returns a string 
     # that can be inputted into Gemini for context
     def format_data(month, day, year):
@@ -29,27 +28,62 @@ class MoodInsightGenerator():
         return data
 
     # Calls to Gemini API to give insight on mood based off entry info
-    def get_mood_insights(self):
-        data = "Song: Karma Police, Song_link: https://open.spotify.com/track/63OQupATfueTdZMWTxW03A?si=3874c5edd575475d, Location: Yosemite"
-        #data = format_data(7, 10, 2026)
-        # f data is None:
-            # print("Error no data")
+    def get_mood_insights(self, song, notes = None, location=None):
+        note_data = {
+        "song": song,
+        "notes": notes,
+        "location": location
+        }
 
-        stream = self.client.interactions.create(
+        interaction = self.client.interactions.create(
             model=self.model,
-            input=f"In three sentences tell me how I was feeling based off of {data}",
+            input=f"Tell me my mood and how I was feeling based off of {note_data} in two sentences",
             system_instruction=(
                 "You are sympathetic and instrospective, taking your speech "
                 "style from Spotify Wrapped"
             ),
-            stream=True
         )
 
-        for event in stream:
-            if event.event_type == "step.delta":
-                if event.delta.type == "text":
-                    print(event.delta.text, end="")
+        return interaction.output_text
 
+class SongGenerator(Generator):
+    # Calls to Gemini API to generate songs based off of saved data
+    def get_songs(self, song, notes = None, location=None):
+        note_data = {
+        "song": song,
+        "notes": notes,
+        "location": location
+        }
+
+        interaction = self.client.interactions.create(
+            model=self.model,
+            input=(
+                f"Give me 3 song recommendations based off of {note_data}. "
+                "Respond with ONLY 3 lines, no numbering, no extra text, "
+                "in this exact format:\n"
+                "Song Name | Artist Name"
+            ),
+            system_instruction=(
+                "You're the spotify dj"
+            ),
+        )
+
+        # splits the output by title and artist and puts into a list
+        songs = []
+        for line in interaction.output_text.strip().split("\n"):
+            line = line.strip()
+            if "|" in line:
+                name, artist = line.split("|", 1)
+                songs.append({
+                    "name":name.strip(),
+                    "artist": artist.strip()
+                })
+
+        return songs 
+
+
+# testing
 if __name__ == "__main__":
     generator = MoodInsightGenerator()
-    generator.get_mood_insights()
+    mood = generator.get_mood_insights("Bohemian Rapsody")
+    print(mood)

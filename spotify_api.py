@@ -165,8 +165,19 @@ class SpotifyClient:
 
     # fetch track data and extract uris for web player
     def search_track(self, query):
-        token = self.get_valid_access_token()
-        headers = {"Authorization": f"Bearer {token}"}
+        AUTH_URL = 'https://accounts.spotify.com/api/token'
+
+        auth_response = requests.post(AUTH_URL, {
+            'grant_type': 'client_credentials',
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+        })
+        auth_response_data = auth_response.json()
+        access_token = auth_response_data['access_token']
+        headers = {'Authorization': 'Bearer {token}'.format(token=access_token)}
+
+        # token = self.get_valid_access_token()
+        # headers = {"Authorization": f"Bearer {token}"}
         # limit of 3 for dropdown implementation
         params = {"q": query, "type": "track", "limit": 5}
 
@@ -220,25 +231,6 @@ class SpotifyClient:
 if __name__ == "__main__":
     spotify = SpotifyClient()
 
-    login_url = spotify.build_user_login_url()
-    print(login_url)
-    print()
-    # follow the log in link, log in then copy and paste the string after "code=" and before "&state"
-    code = input("Copy and Paste your temporary code string: ")
-    #AQAT-QzwgJ5MF1mpQOk2q_9DuIOUHCMtDBBO85eoSFVA62tR06_fs7I_UdUrKtWkZFbWIoUG798mv7IcU12KHFLO_AAQPMfnbQ9O7Yc9J9eGVUqIbNbj5iuhtw5GHZznrrtPcuKs3CeOTJzaNUZwuQwXk7wBzWswr114VmH9d6KkRzak5BIZxhJAjfvYhOOBu5liHGTC599JFgidUdMIYac5ni5QISta70_YLo0SZM2Jh49cN36kFi11-wPxcX0nEpgsW9GiAgbm-v8ZRfuaznMpIZDR_W4l1lSCsxpu9XSWIX6_WIt68T86IwtlgYswQxRjtLwHM2HEm70gi2LjmUikSg
-
-    token_data = spotify.exchange_code_for_access_token(code)
-
-    # quick get current user profile test
-    print(spotify.get_user_profile())
-    # check if I received tokens
-    print(bool(token_data.get("access_token")))
-    print(bool(token_data.get("refresh_token")))
-
-    # check if client saved tokens
-    print(bool(spotify.access_token))
-    print(bool(spotify.refresh_token))
-
     query = input("search for song: ").strip()
 
     songs = spotify.search_track(query)
@@ -251,12 +243,3 @@ if __name__ == "__main__":
         print("uri:", song["uri"])
         print("image url:", song["image"])
 
-    device_id = input("Your device id: ")
-    #b83bdd818f510f03897aeff8e12a45dee1ef7b4a
-
-    track_uri = input("Your track's URI: ")
-
-
-    check = print(spotify.play_track(device_id, track_uri))
-
-    

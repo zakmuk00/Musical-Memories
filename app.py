@@ -10,6 +10,9 @@ from database import db
 from spotify_api import SpotifyClient
 from database import db
 from models import SpotifyToken, save_spotify_tokens
+
+from gemini import SongGenerator
+
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@' #change this when pushing to server
@@ -80,8 +83,24 @@ def note():
         "notes": "Had this song stuck in my head while driving through the mountains today.",
         "location": "Seattle, WA"
     }
-    
-    return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date)
+
+    s_generator = SongGenerator()
+    recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
+    spotify = SpotifyClient()
+    songs = []
+    for rec in recs:
+        results = spotify.search_track(f"{rec['name']} {rec['artist']}")
+        if results:
+            track_id = results[0]['uri'].split(':')[-1]
+        else:
+            track_id = None
+        songs.append({
+            "name": rec['name'],
+            "artist": rec['artist'],
+            "track_id": track_id
+        })
+
+    return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date, songs=songs)
 
 @app.route("/noteMaker", methods=["GET", "POST"])
 def noteMaker():
