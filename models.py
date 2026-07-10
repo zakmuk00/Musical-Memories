@@ -370,7 +370,7 @@ def get_spotify_tokens(user_id):
     
 
 # used if user logs out
-def delete_spotify_tokens(user_id, token_data):
+def delete_spotify_tokens(user_id):
     """
     Deletes the stored spotify tokens for the specified user
 
