@@ -247,8 +247,16 @@ def note():
     lng = entry.longitude
 
     # gets song recommendations from Gemini
-    s_generator = SongGenerator()
-    recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
+    TESTING_MODE = os.getenv("SKIP_GEMINI", "false").lower() == "true"
+    if TESTING_MODE:
+        recs = [
+            {"name": "Africa", "artist": "Toto"},
+            {"name": "Landslide", "artist": "Fleetwood Mac"},
+            {"name": "Somebody to Love", "artist": "Queen"},
+        ]
+    else:
+        s_generator = SongGenerator()
+        recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
 
     # uses Spotify API to search Spotify for the songs from Gemini
     # load in spotify tokens from user
@@ -283,9 +291,7 @@ def note():
             "expires_at": spotify.expires_at
         })
     
-    print("DEBUG spotify_link:", repr(entry.spotify_link))
-    print("DEBUG track_id:", repr(track_id))
-    print("DEBUG note_data:", note_data)    
+
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
     note=note_data, date = chosen_date, songs=songs,
     latitude=lat, longitude=lng)
