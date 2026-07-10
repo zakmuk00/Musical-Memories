@@ -269,7 +269,7 @@ def note():
 
         # look up the saved song directly instead of parsing spotify_link
         saved_results = spotify.search_track(f"{entry.song_name} {entry.artist_name}")
-        track_id = saved_results[0]['uri'].split(':')[-1] if saved_results else None
+        saved_track_id = saved_results[0]['uri'].split(':')[-1] if saved_results else None
 
         for rec in recs:
             results = spotify.search_track(f"{rec['name']} {rec['artist']}")
