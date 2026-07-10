@@ -231,8 +231,7 @@ def note():
 
     # spotify_link actually stores a URI (spotify:track:ID), not a URL
     if entry.spotify_link:
-        parts = entry.spotify_link.split(':')
-        track_id = parts[-1] if len(parts) == 3 else None
+        track_id = entry.spotify_link.split(':')[-1]
     else:
         track_id = None
 
@@ -284,7 +283,9 @@ def note():
             "expires_at": spotify.expires_at
         })
     
-
+    print("DEBUG spotify_link:", repr(entry.spotify_link))
+    print("DEBUG track_id:", repr(track_id))
+    print("DEBUG note_data:", note_data)    
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
     note=note_data, date = chosen_date, songs=songs,
     latitude=lat, longitude=lng)
