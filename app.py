@@ -229,8 +229,14 @@ def note():
     if entry is None:
         return redirect(url_for('calendar'))
 
+    if entry.spotify_link:
+        track_id = entry.spotify_link.split('track/')[-1].split('?')[0]
+    else:
+        track_id = None
+
     note_data = {
         "song": entry.song_name,
+        "track_id": track_id,
         "photo": entry.photo_path, 
         "notes": entry.journal_text,
         "location": [entry.latitude, entry.longitude]
@@ -258,23 +264,23 @@ def note():
         spotify.refresh_token = token_data["refresh_token"]
         spotify.expires_at = token_data["expires_at"]
 
-    for rec in recs:
-        results = spotify.search_track(f"{rec['name']} {rec['artist']}")
-        if results:
-            track_id = results[0]['uri'].split(':')[-1]
-        else:
-            track_id = None
-        songs.append({
-            "name": rec['name'],
-            "artist": rec['artist'],
-            "track_id": track_id
+        for rec in recs:
+            results = spotify.search_track(f"{rec['name']} {rec['artist']}")
+            if results:
+                track_id = results[0]['uri'].split(':')[-1]
+            else:
+                track_id = None
+            songs.append({
+                "name": rec['name'],
+                "artist": rec['artist'],
+                "track_id": track_id
+            })
+            
+        save_spotify_tokens(user_id, {
+            "access_token": spotify.access_token,
+            "refresh_token": spotify.refresh_token,
+            "expires_at": spotify.expires_at
         })
-        
-    save_spotify_tokens(user_id, {
-        "access_token": spotify.access_token,
-        "refresh_token": spotify.refresh_token,
-        "expires_at": spotify.expires_at
-    })
     
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
