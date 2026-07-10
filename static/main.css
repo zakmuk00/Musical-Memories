@@ -147,3 +147,7 @@ h1, h2, h3.fw-bold {
     text-overflow: ellipsis;
     margin: 0;
 }
+
+.tilt-odd { transform: translateX(-50%) rotate(-3deg); }
+.tilt-even { transform: translateX(-50%) rotate(2deg); }
+.tilt-odd:hover, .tilt-even:hover { transform: translateX(-50%) scale(1.08) rotate(0deg); }
