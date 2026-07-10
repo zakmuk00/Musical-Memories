@@ -52,24 +52,26 @@
                 }
             },
 
-            dayCellContent: function(arg){
+            dayCellDidMount: function(arg){
                 var dateStr = arg.date.toISOString().split('T')[0];
                 var noteData = userNotes[dateStr] || '';
-
-                let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
-              let tiltClass = arg.date.getDate() % 2 === 0 ? 'tilt-even' : 'tilt-odd';
-                if (noteData) {
-                    let displayText = typeof noteData === 'string' ? noteData : noteData.text;
-                    cellHtml += `
-                        <div class="custom-sticky-wrapper ${tiltClass}">
-                            <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
-                            <div class="sticky-overlay-content" title="${displayText}">
-                                <div class="sticky-song-text">${displayText}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                return { html: cellHtml };
+                if (!noteData) return;
+        
+                let displayText = typeof noteData === 'string' ? noteData : noteData.text;
+                let tiltClass = arg.date.getDate() % 2 === 0 ? 'tilt-even' : 'tilt-odd';
+        
+                let frame = arg.el.querySelector('.fc-daygrid-day-frame');
+                frame.style.position = 'relative';
+        
+                let wrapper = document.createElement('div');
+                wrapper.className = `custom-sticky-wrapper ${tiltClass}`;
+                wrapper.innerHTML = `
+                    <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
+                    <div class="sticky-overlay-content" title="${displayText}">
+                        <div class="sticky-song-text">${displayText}</div>
+                    </div>
+                `;
+                frame.appendChild(wrapper);
             }
         });
 
