@@ -6,7 +6,7 @@ from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry, get_by_date
+from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry
 from database import db
 
 from spotify_api import SpotifyClient
