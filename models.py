@@ -160,7 +160,7 @@ def get_by_date(query_user_id, query_date):
 
 # Deletes rows with the given id
 # Returns boolean value of deletion status
-def delete_by_id(query_user_id, query_id):
+def delete_by_id(query_user_id, query_id, upload_folder=None):
     """
     Deletes a Entry object based on the id
     
@@ -179,11 +179,12 @@ def delete_by_id(query_user_id, query_id):
         db.session.delete(response)
         db.session.commit()
         if photo_path is not None:
-            os.remove(photo_path)
-            if os.path.exists(photo_path):
-                print('Photo deletion failed')
-            else:
+            full_path = os.path.join(upload_folder, photo_path) if upload_folder else photo_path
+            try:
+                os.remove(full_path)
                 print('Photo deleted')
+            except OSError as e:
+                print(f'Photo deletion failed: {e}')
 
         print("Delete success")
         return True
