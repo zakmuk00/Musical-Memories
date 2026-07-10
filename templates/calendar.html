@@ -35,16 +35,6 @@
         // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.tojson
         var userNotes = {{ user_notes | tojson | safe }}
 
-        //sample data. take out later
-        // var userNotes = {
-        //     '2026-07-07': {
-        //         text: 'Bohemian Rhapsody',
-        //     },
-        //     '2026-07-30': {
-        //         text: 'Hotel California',
-        //     }
-        // };
-
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             editable: true,
@@ -67,10 +57,11 @@
                 var noteData = userNotes[dateStr] || '';
 
                 let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
+              let tiltClass = arg.date.getDate() % 2 === 0 ? 'tilt-even' : 'tilt-odd';
                 if (noteData) {
                     let displayText = typeof noteData === 'string' ? noteData : noteData.text;
                     cellHtml += `
-                        <div class="custom-sticky-wrapper">
+                        <div class="custom-sticky-wrapper ${tiltClass}">
                             <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
                             <div class="sticky-overlay-content" title="${displayText}">
                                 <div class="sticky-song-text">${displayText}</div>
