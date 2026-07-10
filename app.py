@@ -113,6 +113,9 @@ def logout():
     Returns:
         Redirect: Sends user back to home
     """
+    user_id = session.get("user_id")
+    if user_id:
+        delete_spotify_tokens(user_id)
     session.clear()
     return redirect(url_for("home"))
   
