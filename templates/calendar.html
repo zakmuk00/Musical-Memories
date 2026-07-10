@@ -8,9 +8,8 @@
     <div class="col-md-10">
         <div class="card shadow-sm border-0 p-4">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-end position-relative mb-4">
-                    <h2 class="fw-bold mb-0 position-absolute top-50 start-50 translate-middle text-center">Your Musical Journey</h2>
-                    <a href="/noteMaker" id="createNoteBtn" class="btn btn-primary fw-bold">Create Note</a>
+                <div class="d-flex align-items-center justify-content-center mb-4">
+                    <h2 class="fw-bold mb-0 text-center">Your Musical Journey</h2>
                 </div>
                 <div id="calendar"></div>
             </div>
@@ -23,12 +22,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
-
-        const btn = document.getElementById("createNoteBtn");
-        if (btn) {
-            const today = new Date().toISOString().split('T')[0]; 
-            btn.href = `/noteMaker?date=${today}`;
-        }
         
         // https://jinja.palletsprojects.com/en/stable/templates/#filters
         // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.safe
