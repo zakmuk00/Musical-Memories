@@ -242,7 +242,7 @@ def note():
         ]
     else:
         s_generator = SongGenerator()
-        recs = s_generator.get_songs(note_data['song'], note_data['notes'], note_data['location'])
+        recs = s_generator.get_songs(entry.song_name, entry.journal_text, entry.location_name)
 
     # uses Spotify API to search Spotify for the songs from Gemini
     # load in spotify tokens from user
@@ -270,8 +270,7 @@ def note():
 
         # look up the saved song directly instead of parsing spotify_link
         saved_results = spotify.search_track(f"{entry.song_name} {entry.artist_name}")
-        if saved_results:
-            saved_track_id = saved_results[0]['uri'].split(':')[-1]
+        track_id = saved_results[0]['uri'].split(':')[-1] if saved_results else None
 
         for rec in recs:
             results = spotify.search_track(f"{rec['name']} {rec['artist']}")
