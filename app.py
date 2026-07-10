@@ -229,8 +229,10 @@ def note():
     if entry is None:
         return redirect(url_for('calendar'))
 
+    # spotify_link actually stores a URI (spotify:track:ID), not a URL
     if entry.spotify_link:
-        track_id = entry.spotify_link.split('track/')[-1].split('?')[0]
+        parts = entry.spotify_link.split(':')
+        track_id = parts[-1] if len(parts) == 3 else None
     else:
         track_id = None
 
