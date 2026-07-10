@@ -40,13 +40,13 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.route("/login/dev-bypass")
-def dev_bypass():
-    # Force a mock user into the session
-    session["user_id"] = "dev_test_user_123"
+# @app.route("/login/dev-bypass")
+# def dev_bypass():
+#     # Force a mock user into the session
+#     session["user_id"] = "dev_test_user_123"
     
-    # Send them straight into the protected app area
-    return redirect(url_for("calendar"))
+#     # Send them straight into the protected app area
+#     return redirect(url_for("calendar"))
 
 
 @app.route("/")
