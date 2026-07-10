@@ -229,26 +229,9 @@ def note():
     if entry is None:
         return redirect(url_for('calendar'))
 
-    # spotify_link actually stores a URI (spotify:track:ID), not a URL
-    if entry.spotify_link:
-        track_id = entry.spotify_link.split(':')[-1]
-    else:
-        track_id = None
-
-    note_data = {
-        "song": entry.song_name,
-        "track_id": track_id,
-        "photo": entry.photo_path, 
-        "notes": entry.journal_text,
-        "location": [entry.latitude, entry.longitude]
-    }
-
-    lat = entry.latitude
-    lng = entry.longitude
-
     # gets song recommendations from Gemini
-    TESTING_MODE = os.getenv("SKIP_GEMINI", "false").lower() == "true"
-    if TESTING_MODE:
+    testing_mode = os.getenv("SKIP_GEMINI", "false").lower() == "true"
+    if testing_mode:
         recs = [
             {"name": "Africa", "artist": "Toto"},
             {"name": "Landslide", "artist": "Fleetwood Mac"},
@@ -273,6 +256,11 @@ def note():
         spotify.refresh_token = token_data["refresh_token"]
         spotify.expires_at = token_data["expires_at"]
 
+        # look up the saved song directly instead of parsing spotify_link
+        saved_results = spotify.search_track(f"{entry.song_name} {entry.artist_name}")
+        if saved_results:
+            track_id = saved_results[0]['uri'].split(':')[-1]
+
         for rec in recs:
             results = spotify.search_track(f"{rec['name']} {rec['artist']}")
             if results:
@@ -291,6 +279,16 @@ def note():
             "expires_at": spotify.expires_at
         })
     
+    note_data = {
+        "song": entry.song_name,
+        "track_id": track_id,
+        "photo": entry.photo_path, 
+        "notes": entry.journal_text,
+        "location": [entry.latitude, entry.longitude]
+    }
+
+    lat = entry.latitude
+    lng = entry.longitude
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
     note=note_data, date = chosen_date, songs=songs,
