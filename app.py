@@ -256,6 +256,8 @@ def note():
         "location": [entry.latitude, entry.longitude]
     }
 
+    saved_track_id = None
+
     if token_data is None:
         songs = []
     else:
@@ -269,14 +271,11 @@ def note():
         # look up the saved song directly instead of parsing spotify_link
         saved_results = spotify.search_track(f"{entry.song_name} {entry.artist_name}")
         if saved_results:
-            track_id = saved_results[0]['uri'].split(':')[-1]
+            saved_track_id = saved_results[0]['uri'].split(':')[-1]
 
         for rec in recs:
             results = spotify.search_track(f"{rec['name']} {rec['artist']}")
-            if results:
-                track_id = results[0]['uri'].split(':')[-1]
-            else:
-                track_id = None
+            track_id = results[0]['uri'].split(':')[-1]
             songs.append({
                 "name": rec['name'],
                 "artist": rec['artist'],
@@ -289,7 +288,7 @@ def note():
             "expires_at": spotify.expires_at
         })
     
-    note_data["track_id"] = track_id
+    note_data["track_id"] = saved_track_id
 
     lat = entry.latitude
     lng = entry.longitude
