@@ -85,29 +85,40 @@ h1, h2, h3.fw-bold {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-height: 110px;
+    height: 110px;
+}
+
+.fc-daygrid-day-events {
+    min-height: 0 !important;
+}
+
+.fc-daygrid-day-number {
+    font-size: 12px;
+    padding: 4px 6px;
 }
 
 .custom-sticky-wrapper {
     position: relative;
     display: block;
-    width: 100%;
-    height: auto;
-    margin: 0 auto 8px auto;
+    width: 70px;
+    height: 70px;
+    margin: 4px auto 0 auto;
     cursor: pointer;
     transition: transform 0.15s ease-in-out;
 }
 
+.custom-sticky-wrapper:hover {
+    transform: scale(1.12) rotate(0deg);
+    z-index: 100;
+}
+
 .custom-sticky-wrapper:nth-child(odd) {
-    transform: rotate(-2deg);
+    transform: rotate(-3deg);
 }
 
 .custom-sticky-wrapper:nth-child(even) {
-    transform: rotate(1.5deg);
-}
-
-.custom-sticky-wrapper:hover {
-    transform: scale(1.08) rotate(0deg);
-    z-index: 100;
+    transform: rotate(2deg);
 }
 
 .sticky-bg-asset {
