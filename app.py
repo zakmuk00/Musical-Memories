@@ -246,6 +246,13 @@ def note():
     token_data = get_spotify_tokens(user_id)
     songs = []
 
+    note_data = {
+        "song": entry.song_name,
+        "photo": entry.photo_path, 
+        "notes": entry.journal_text,
+        "location": [entry.latitude, entry.longitude]
+    }
+
     if token_data is None:
         songs = []
     else:
@@ -279,13 +286,7 @@ def note():
             "expires_at": spotify.expires_at
         })
     
-    note_data = {
-        "song": entry.song_name,
-        "track_id": track_id,
-        "photo": entry.photo_path, 
-        "notes": entry.journal_text,
-        "location": [entry.latitude, entry.longitude]
-    }
+    note_data["track_id"] = track_id
 
     lat = entry.latitude
     lng = entry.longitude
