@@ -380,7 +380,7 @@ def noteMaker():
                 spotify_link=spotify_uri,
                 song_image=spotify_image,
                 location_name=location,
-                photo_path=file_path if file_path else existing_entry.photo_path,
+                photo_path=file_path if filename else existing_entry.photo_path,
                 journal_text=notes,
                 latitude=lat,
                 longitude=lng)
@@ -392,7 +392,7 @@ def noteMaker():
                 link=spotify_uri,
                 song_image=spotify_image,
                 location=location,
-                photo=file_path,
+                photo=filename,
                 text=notes,
                 latitude=lat,
                 longitude=lng)
