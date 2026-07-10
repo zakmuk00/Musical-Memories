@@ -232,6 +232,13 @@ def note():
     if entry is None:
         return redirect(url_for('calendar'))
 
+    note_data = {
+        "song": entry.song_name,
+        "photo": entry.photo_path, 
+        "notes": entry.journal_text,
+        "location": [entry.latitude, entry.longitude]
+    }
+
     # gets song recommendations from Gemini
     testing_mode = os.getenv("SKIP_GEMINI", "false").lower() == "true"
     if testing_mode:
@@ -248,14 +255,6 @@ def note():
     # load in spotify tokens from user
     token_data = get_spotify_tokens(user_id)
     songs = []
-
-    note_data = {
-        "song": entry.song_name,
-        "photo": entry.photo_path, 
-        "notes": entry.journal_text,
-        "location": [entry.latitude, entry.longitude]
-    }
-
     saved_track_id = None
 
     if token_data is None:
