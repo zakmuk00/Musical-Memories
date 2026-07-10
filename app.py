@@ -6,7 +6,7 @@ from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry
+from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id
 from database import db
 
 from spotify_api import SpotifyClient
@@ -403,6 +403,31 @@ def noteMaker():
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
 
+@app.route("/note/delete", methods=["POST"])
+@login_required
+def delete_note():
+    """
+    Deletes an existing note entry (and its photo, if any) for the current user
+
+    Form Data:
+        date (str): The date of the entry to delete, formatted 'YYYY-MM-DD'
+
+    Returns:
+        Redirect: Sends the user back to the calendar page
+    """
+    user_id = session.get("user_id")
+    chosen_date = request.form.get("date")
+
+    if not chosen_date:
+        return redirect(url_for('calendar'))
+
+    entry_date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
+    entry = get_by_date(user_id, entry_date)
+
+    if entry:
+        delete_by_id(user_id, entry.id, upload_folder=app.config['UPLOAD_FOLDER'])
+
+    return redirect(url_for('calendar'))
 
 @app.route("/map")
 @login_required
