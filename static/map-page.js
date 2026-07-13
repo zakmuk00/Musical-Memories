@@ -1,4 +1,4 @@
-const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yOWxsdGE1MXU1OTM0b20zb2lsZWF6bSJ9.4OpFI6JNjn9X1A3K0Dov5A'
+const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yam91N2xkMDdnOTMwb3IxaTNoODQ0ZyJ9.ZQC96yG54XDK5i4AcGgnQQ'
 const mapDiv = document.getElementById('map');
 const lat = 39.8282;
 const lng = -98.5795;
