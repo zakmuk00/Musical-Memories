@@ -9,7 +9,7 @@
 <style>
     body {
         margin: 0;
-        font-family: Arial;
+        font-family: Arial, sans-serif;
     }
 
     #map {
@@ -19,39 +19,44 @@
         border-radius: 10px;
     }
 
-    #song-results{
+    #song-results {
         background: white;
         border: 1px solid #ddd;
         border-radius: 8px;
         margin-top: 3px;
         display: none;
-        
+        max-height: 300px;
+        overflow-y: auto;
     }
 
-    .song-result{
+    .song-result {
         text-align: left;
-        display:flex;
+        display: flex;
         align-items: center;
-        gap:10px;
-        border-bottom: 1px solid black;
-        
+        gap: 10px;
+        padding: 8px 12px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
 
+    .song-result:last-child {
+        border-bottom: none;
     }
 
     .song-result:hover {
-        background: grey
+        background: #f0f0f0;
     }
 
     .song-result img {
-        width: 20px;
-        height: 20px;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        object-fit: cover;
     }
 
     .song-title {
         font-weight: bold;
     }
-
-    
 </style>
 {% endblock %}
 
@@ -60,12 +65,13 @@
     <div class="col-md-6 col-lg-6">
         <div class="card shadow mb-4 p-4 text-center bg-light">
             <div class="card-body">
-                <h3 class="fw-bold text-uppercase text-secondary">Enter Note Information</h3>
+                <h3 class="fw-bold text-uppercase text-secondary mb-4">Enter Note Information</h3>
 
                 <form action="" method="POST" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     {{ form.date_created() if form.date_created else '' }}
-                    <!-- Song Section-->
+                    
+                    <!-- Song Section -->
                     <div class="mb-4">
                         <div class="input-group">
                             {{ form.song(class="form-control border-success p-3 text-center fw-semibold", placeholder="Search for song", id="song-search") }}
@@ -73,36 +79,38 @@
                         {{ form.spotify_uri(id="spotify-uri") }}
                         {{ form.spotify_artist(id="spotify-artist") }}
                         {{ form.spotify_image(id="spotify-image") }}
-                    <div id="song-results"></div>
-
+                        <div id="song-results"></div>
                     </div>
-                    <!-- Location Section-->
+
+                    <!-- Location Section -->
                     <div class="mb-4">
                         <div id="map"></div>
                         {{ form.latitude() }}
                         {{ form.longitude() }}
                     </div>
-                    <!-- Photo Section-->
+
+                    <!-- Photo Section -->
                     <div class="row g-3 mb-4">
-                        <div>
-                            <div class="border rounded d-flex flex-column align-items-center justify-content-center bg-white">
+                        <div class="col-12">
+                            <div class="border rounded d-flex flex-column align-items-center justify-content-center bg-white p-3">
                                 <label class="form-label fw-semibold text-muted mb-2">Photo</label>
                                 {{ form.photo(class="form-control") }}
                             </div>
                         </div>
                     </div>
-                    <!-- Notes Section-->
-                    <div>
-                        <div class="border rounded h-100 d-flex flex-column align-items-center justify-content-center bg-white">
+
+                    <!-- Notes Section -->
+                    <div class="mb-4">
+                        <div class="border rounded d-flex flex-column align-items-center justify-content-center bg-white p-3">
                             <label class="form-label fw-semibold text-muted mb-2">Notes</label>
-                            {{ form.notes(class="form-control", rows="2", placeholder="Write...") }}
+                            {{ form.notes(class="form-control", rows="3", placeholder="Write...") }}
                         </div>
                     </div>
-                    <!-- Submit Section-->
+
+                    <!-- Submit Section -->
                     <div class="d-grid gap-2 col-8 mx-auto mt-4">
                         {{ form.submit(class="btn btn-lg btn-outline-secondary fw-bold text-uppercase") }}
                     </div>
-
                 </form>
             </div> 
         </div>
@@ -111,75 +119,79 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="./static/map-picker.js"></script>
+<script src="{{ url_for('static', filename='map-picker.js') }}"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function(){
+    document.addEventListener("DOMContentLoaded", () => {
+        const songInput = document.getElementById("song-search");
+        const resultsBox = document.getElementById("song-results");
 
-    
-    const songInput = document.getElementById("song-search");
-    const resultsBox = document.getElementById("song-results");
+        const spotifyUriInput = document.getElementById("spotify-uri");
+        const spotifyArtistInput = document.getElementById("spotify-artist");
+        const spotifyImageInput = document.getElementById("spotify-image");
 
-    const spotifyUriInput = document.getElementById("spotify-uri");
-    const spotifyArtistInput = document.getElementById("spotify-artist")
-    const spotifyImageInput = document.getElementById("spotify-image")
+        songInput.addEventListener("input", () => {
+            const query = songInput.value.trim();
 
-    songInput.addEventListener("input", function (){
-        const query = songInput.value.trim();
+            // Clear drop down and hide if search string is less than 2 characters
+            if (query.length < 2) {
+                resultsBox.innerHTML = "";
+                resultsBox.style.display = "none";
+                return;
+            }
 
-        // if search is less than two characters clear the dropdown and hide it
-        if (query.length < 2){
-            resultsBox.innerHTML ="";
-            resultsBox.style.display = "none";
-            return;
-        }
+            // Call Flask search-song route with encoded user query
+            fetch(`search-song?q=${encodeURIComponent(query)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(songs => {
+                    resultsBox.innerHTML = "";
 
-        // call flask search-song route with encoded user query
-        fetch("search-song?q=" + encodeURIComponent(query))
-
-            .then(function (response){
-                return response.json();
-            })
-            .then(function(songs){
-                resultsBox.innerHTML="";
-
-                if (songs.length == 0){
-                    resultsBox.style.display = "none";
-                    return;
-                }
-
-                songs.forEach(function (song) {
-                    const item = document.createElement("div");
-                    item.className = "song-result";
-
-                    item.innerHTML = ` 
-                        ${song.image && `<img src="${song.image}" alt="Album image">`}
-                        <div class="song-title">${song.name}</div>
-                        <div class="song-artist">${song.artist}</div>`;
-                    
-                    item.addEventListener("click", function(){
-                        songInput.value = song.name;
-                        spotifyUriInput.value = song.uri;
-                        spotifyArtistInput.value = song.artist;
-                        spotifyImageInput.value = song.image || "";
-
-                        resultsBox.innerHTML = "";
+                    if (songs.length === 0) {
                         resultsBox.style.display = "none";
+                        return;
+                    }
+
+                    songs.forEach(song => {
+                        const item = document.createElement("div");
+                        item.className = "song-result";
+
+                        // Conditionally render album image asset securely
+                        const imgTag = song.image ? `<img src="${song.image}" alt="Album art">` : "";
+
+                        item.innerHTML = ` 
+                            ${imgTag}
+                            <div>
+                                <div class="song-title">${song.name}</div>
+                                <div class="song-artist text-muted small">${song.artist}</div>
+                            </div>
+                        `;
+                        
+                        item.addEventListener("click", () => {
+                            songInput.value = song.name;
+                            spotifyUriInput.value = song.uri;
+                            spotifyArtistInput.value = song.artist;
+                            spotifyImageInput.value = song.image || "";
+
+                            resultsBox.innerHTML = "";
+                            resultsBox.style.display = "none";
+                        });
+
+                        resultsBox.appendChild(item);                        
                     });
-
-                    resultsBox.appendChild(item);                        
+                    
+                    resultsBox.style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Song search error: ", error);
+                    resultsBox.innerHTML = "";
+                    resultsBox.style.display = "none";
                 });
-                resultsBox.style.display = "block";
-              
-            }).catch(function (error){
-                console.log("Song search error: ", error);
-                resultsBox.innerHTML="";
-                resultsBox.style.display="none";
-            });
-        
+        });
     });
-
-});
 </script>
 {% endblock %}
-
