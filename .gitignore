@@ -5,3 +5,7 @@ instance
 __pycache__/
 forms/__pycache__/
 instance/
+node_modules
+eslint.config.mjs
+package-lock.json
+package.json

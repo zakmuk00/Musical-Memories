@@ -2,11 +2,12 @@ from database import db
 import datetime
 import os
 
+
 # The ORM model of the entry
 class Entry(db.Model):
     """
     This is the class that defines a journal entry in our app
-    
+
     Note:
         There is a unique constraint to user_id and date.
         One user can only have one entry per day.
@@ -38,11 +39,21 @@ class Entry(db.Model):
     journal_text = db.Column(db.Text)
     latitude = db.Column(db.Float())
     longitude = db.Column(db.Float())
-    __table_args__ = (db.UniqueConstraint('user_id', 'date', name='unique_user_date'),)
+    __table_args__ = (
+        db.UniqueConstraint(
+            'user_id',
+            'date',
+            name='unique_user_date'
+            ),
+        )
+
 
 # Only accepts multiple parameters so far
 # Might need another version where an Entry object can be passed
-def add_entry(user, date, song, artist, link, song_image, location, photo=None, text=None, latitude=None, longitude=None):
+def add_entry(
+        user, date, song, artist, link, song_image, location,
+        photo=None, text=None, latitude=None, longitude=None
+    ):
     """
     Adds a new entry into the database
 
@@ -66,11 +77,16 @@ def add_entry(user, date, song, artist, link, song_image, location, photo=None, 
     if not type(date) is datetime.date:
         print('Wrong date format')
         return False
-    
-    if not (type(song) is str and type(artist) is str and type(link) is str and type(song_image) is str):
-        print('Invalid song data')
-        return False
-    
+
+    if not (
+            type(song) is str and type(artist) is str
+        ):
+        if not (
+            type(link) is str and type(song_image) is str
+        ):
+            print('Invalid song data')
+            return False
+
     if not type(text) is str and text is not None:
         print('Invalid journal data')
         return False
@@ -78,8 +94,9 @@ def add_entry(user, date, song, artist, link, song_image, location, photo=None, 
     if not type(location) is str:
         print('Invalid location data')
         return False
-    
-    db.session.add(Entry(user_id=user,
+
+    db.session.add(Entry(
+                        user_id=user,
                         date=date,
                         song_name=song,
                         artist_name=artist,
@@ -89,22 +106,25 @@ def add_entry(user, date, song, artist, link, song_image, location, photo=None, 
                         photo_path=photo,
                         journal_text=text,
                         latitude=latitude,
-                        longitude=longitude))
+                        longitude=longitude
+                        )
+                )
     db.session.commit()
     return True
+
 
 # Returns Entry object based on the id
 # Only prints results for now, will return object later
 def get_by_id(query_user_id, id):
     """
     Returns a Entry object based on the id
-    
+
     Note: The current user id and the entry's user_id needs to match
-    
+
     Args:
         query_user_id (str): The user id of entry being searched
         id (str): The id of the entry
-    
+
     Returns:
         Entry: the Entry object if it exists and None otherwise
     """
@@ -118,13 +138,14 @@ def get_by_id(query_user_id, id):
         return None
     return response
 
+
 def get_all_by_user(query_user_id):
     """
     Returns all the entries made by a user
 
     Args:
         query_user_id: The user id of entries being searched
-    
+
     Returns:
         [Entry]: A list of entries made by the user
     """
@@ -133,21 +154,24 @@ def get_all_by_user(query_user_id):
         print('No entries by user')
     return response
 
+
 def get_by_date(query_user_id, query_date):
     """
     Returns a Entry object based on the date created
-    
+
     Note: The current user id and the entry's user_id needs to match
-    
+
     Args:
         query_user_id (str): The user id of entry being searched
         query_date (date): The date of the entry
-    
+
     Returns:
         Entry: the Entry object if it exists and None otherwise
     """
     # Validation needed
-    response = Entry.query.filter_by(user_id=query_user_id, date=query_date).first()
+    response = Entry.query.filter_by(
+        user_id=query_user_id,
+        date=query_date).first()
     if response is None:
         print('Date not in table')
         print()
@@ -158,18 +182,19 @@ def get_by_date(query_user_id, query_date):
         print()
     return response
 
+
 # Deletes rows with the given id
 # Returns boolean value of deletion status
 def delete_by_id(query_user_id, query_id, upload_folder=None):
     """
     Deletes a Entry object based on the id
-    
+
     Note: The current user id and the entry's user_id needs to match
-    
+
     Args:
         query_user_id (str): The user id of entry being searched
         id (str): The id of the entry
-    
+
     Returns:
         bool: The status of the deletion
     """
@@ -191,6 +216,7 @@ def delete_by_id(query_user_id, query_id, upload_folder=None):
     else:
         print("Deletion failed")
         return False
+
 
 def delete_by_date(query_user_id, query_date):
     """
@@ -223,12 +249,14 @@ def delete_by_date(query_user_id, query_date):
         print("Deletion failed")
         return False
 
+
 # Deletes the entire table
 # Will not be that useful but good to have
 def delete_table():
     Entry.query.delete()
     db.session.commit()
     print('Table deleted')
+
 
 # Use this when we update an entry and send all changes
 # after clicking save button
@@ -247,7 +275,7 @@ def update_entry(query_user_id, query_id, **kwargs):
         id: The id of the Entry
         **kwargs: Fields being replaced (eg. location='Space Needle')
         (Refer to Entry documentation for list of fields)
-    
+
     Returns:
         bool: The status of the update
     """
@@ -273,12 +301,14 @@ def update_entry(query_user_id, query_id, **kwargs):
         print("Change completed")
         return True
 
+
 class SpotifyToken(db.Model):
     """
-    Stores Spotify OAuth tokens for user 
+    Stores Spotify OAuth tokens for user
 
     Note:
-        This is seperate from Entry because tokens belong to each user not entry.
+        This is seperate from Entry because tokens
+        belong to each user not entry.
 
     Attributes:
         id (int): Auto-incremented primary key
@@ -296,10 +326,11 @@ class SpotifyToken(db.Model):
     refresh_token = db.Column(db.Text, nullable=False)
     expires_at = db.Column(db.Float, nullable=False)
 
+
 def save_spotify_tokens(user_id, token_data):
     """
     Saves new user tokens to the specified user id
-    
+
     Args:
         user_id (str): The id of the user the tokens will be stored to
         token_data (obj): Spotify API's token data json for the user
@@ -310,11 +341,11 @@ def save_spotify_tokens(user_id, token_data):
     if not type(user_id) is str:
         print("Invalid user_id")
         return False
-    
+
     if not type(token_data) is dict:
         print("Invalid token_data")
         return False
-    
+
     access_token = token_data.get("access_token")
     refresh_token = token_data.get("refresh_token")
     expires_at = token_data.get("expires_at")
@@ -322,16 +353,17 @@ def save_spotify_tokens(user_id, token_data):
     if not access_token or not refresh_token or not expires_at:
         print("Missing Spotify token field")
         return False
-    
-    # need to check if the user already has tokens (query the db for existing token)
+
+    # need to check if the user already has tokens
+    # (query the db for existing token)
     existing = SpotifyToken.query.filter_by(user_id=user_id).first()
 
-    # replace existing tokens with current tokens 
+    # replace existing tokens with current tokens
     if existing:
         existing.access_token = access_token
         existing.refresh_token = refresh_token
         existing.expires_at = expires_at
-    
+
     # if user has no tokens, create a new object
     else:
         new_token = SpotifyToken(
@@ -347,13 +379,14 @@ def save_spotify_tokens(user_id, token_data):
     print("Save success")
     return True
 
+
 def get_spotify_tokens(user_id):
     """
     Fetches recorded spotify tokens from the table for specified user
 
     Args:
         user_id (str): The user to fetch spotify tokens for
-    
+
     Return:
         dict: The tokens of the user, None if user not found
     """
@@ -362,13 +395,13 @@ def get_spotify_tokens(user_id):
     if token_row is None:
         print("No Spotify tokens found for user")
         return None
-    
-    return{
+
+    return {
         "access_token": token_row.access_token,
         "refresh_token": token_row.refresh_token,
         "expires_at": token_row.expires_at
     }
-    
+
 
 # used if user logs out
 def delete_spotify_tokens(user_id):
@@ -383,12 +416,8 @@ def delete_spotify_tokens(user_id):
 
     if token_row is None:
         print("No Spotify tokens found to delete")
-    
+
         return False
     db.session.delete(token_row)
     db.session.commit()
     return True
-
-    
-
-

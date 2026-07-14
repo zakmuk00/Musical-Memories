@@ -1,3 +1,9 @@
+"""
+Gemini.py is used to call and retrieve data from the Gemini API.
+Generator class sets up Gemini API client, and children of generator
+are made for different functionality of the Gemini API.
+"""
+
 import os
 from dotenv import load_dotenv
 from google import genai
@@ -6,7 +12,7 @@ load_dotenv()
 
 
 class Generator():
-    # Sets up gemini client
+    ''' Sets up gemini client '''
     def __init__(self, model="gemini-3.1-flash-lite-preview"):
         api_key = os.getenv('GEMINI_API_KEY')
         genai.api_key = api_key
@@ -15,13 +21,17 @@ class Generator():
 
 
 class SongGenerator(Generator):
-    # Calls to Gemini API to generate songs based off of saved data
-    def get_songs(self, song, notes = None, location=None):
+    ''' Calls to Gemini API to generate songs based off of saved data '''
+    def get_songs(self, song, notes=None, location=None):
+        '''
+            Takes entry info and returns a formatted list of
+            recommended songs
+        '''
 
         note_data = {
-        "song": song,
-        "notes": notes,
-        "location": location
+            "song": song,
+            "notes": notes,
+            "location": location
         }
 
         interaction = self.client.interactions.create(
@@ -44,17 +54,17 @@ class SongGenerator(Generator):
             if "|" in line:
                 name, artist = line.split("|", 1)
                 songs.append({
-                    "name":name.strip(),
+                    "name": name.strip(),
                     "artist": artist.strip()
                 })
 
-        return songs 
+        return songs
 
 
 # feature not being used currently
 """
 class MoodInsightGenerator(Generator):
-    # Gets data from entry data and returns a string 
+    # Gets data from entry data and returns a string
     # that can be inputted into Gemini for context
     def format_data(month, day, year):
         entry = get_by_date(month, day, year)
@@ -77,7 +87,10 @@ class MoodInsightGenerator(Generator):
 
         interaction = self.client.interactions.create(
             model=self.model,
-            input=f"Tell me my mood and how I was feeling based off of {note_data} in two sentences",
+            input=(
+                f"Tell me my mood and how I was feeling"
+                "based off of {note_data} in two sentences"
+            ),
             system_instruction=(
                 "You are sympathetic and instrospective, taking your speech "
                 "style from Spotify Wrapped"
@@ -86,10 +99,3 @@ class MoodInsightGenerator(Generator):
 
         return interaction.output_text
 """
-
-
-# testing
-if __name__ == "__main__":
-    generator = MoodInsightGenerator()
-    mood = generator.get_mood_insights("Bohemian Rapsody")
-    print(mood)
