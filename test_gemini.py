@@ -1,14 +1,17 @@
-# Unit tests for SongGenerator
-
+''' Unit tests for SongGenerator from Gemini.py'''
 
 import unittest
 from unittest.mock import patch, MagicMock
 from gemini import SongGenerator
 
+
 class TestSongGenerator(unittest.TestCase):
+    '''TestSongGenerator is the class for unit tests on SongGenerator'''
 
     @patch('gemini.genai.Client')
     def test_valid_get_songs(self, mock_gemini_client):
+        ''' tests get_songs with a valid input'''
+
         # fake the Gemini client so no real API call happens
         mock_instance = MagicMock()
         mock_gemini_client.return_value = mock_instance
@@ -25,16 +28,30 @@ class TestSongGenerator(unittest.TestCase):
         mock_instance.interactions.create.return_value = f_response
 
         generator = SongGenerator()
-        songs = generator.get_songs("Test Song", notes="Feeling nostalgic", location="Seattle")
+        songs = generator.get_songs(
+            "Test Song",
+            notes="Feeling nostalgic",
+            location="Seattle"
+            )
 
         self.assertEqual(len(songs), 3)
-        self.assertEqual(songs[0], {"name": "Bohemian Rhapsody", "artist": "Queen"})
-        self.assertEqual(songs[1], {"name": "Africa", "artist": "Toto"})
-        self.assertEqual(songs[2], {"name": "Landslide", "artist": "Fleetwood Mac"})
-
+        self.assertEqual(
+            songs[0],
+            {"name": "Bohemian Rhapsody", "artist": "Queen"}
+            )
+        self.assertEqual(
+            songs[1],
+            {"name": "Africa", "artist": "Toto"}
+            )
+        self.assertEqual(
+            songs[2],
+            {"name": "Landslide", "artist": "Fleetwood Mac"}
+            )
 
     @patch('gemini.genai.Client')
     def test_invalid_get_songs(self, mock_gemini_client):
+        '''test get_songs with an invalid input'''
+
         # fake the Gemini client so no real API call happens
         mock_instance = MagicMock()
         mock_gemini_client.return_value = mock_instance
@@ -53,11 +70,22 @@ class TestSongGenerator(unittest.TestCase):
         mock_instance.interactions.create.return_value = f_response
 
         generator = SongGenerator()
-        songs = generator.get_songs("Test Song", notes="Feeling nostalgic", location="Seattle")
+        songs = generator.get_songs(
+            "Test Song",
+            notes="Feeling nostalgic",
+            location="Seattle"
+            )
 
         self.assertEqual(len(songs), 2)
-        self.assertEqual(songs[0], {"name": "Bohemian Rhapsody", "artist": "Queen"})
-        self.assertEqual(songs[1], {"name": "Landslide", "artist": "Fleetwood Mac"})
+        self.assertEqual(
+            songs[0],
+            {"name": "Bohemian Rhapsody", "artist": "Queen"}
+            )
+        self.assertEqual(
+            songs[1],
+            {"name": "Landslide", "artist": "Fleetwood Mac"}
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
