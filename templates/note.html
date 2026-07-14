@@ -9,7 +9,7 @@
 <style>
     body {
         margin: 0;
-        font-family: Arial;
+        font-family: Arial, sans-serif;
     }
 
     #map {
@@ -25,43 +25,43 @@
 <div class="row justify-content-center">
     <div class="card shadow mb-4 p-4">
         <div class="card-body">
+            
             <div class="d-flex justify-content-end mb-2">
                 <form action="{{ url_for('delete_note') }}" method="POST" onsubmit="return confirm('Delete this note? This cannot be undone.');">
                     <input type="hidden" name="date" value="{{ date }}">
                     <button type="submit" class="btn btn-outline-danger btn-sm">Delete Note</button>
                 </form>
             </div>
+
             <div class="row g-4 mb-4">
                 <div class="col-md-8">
                     <div class="card shadow-sm p-3 h-100 bg-light">
                         <h3 class="fw-bold text-success">Your song on {{ date }}:</h3>
                         <div class="mt-2">
-                            <!--Embeds song connected to entry-->
-                                {% if note.track_id %}
-                                <div class="mb-2">
-                                    <iframe
-                                        src ="https://open.spotify.com/embed/track/{{ note.track_id }}"
-                                        width="100%"
-                                        height="153"
-                                        frameborder="0"
-                                        allowfullscreen=""
-                                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                        loading="lazy">
-                                    </iframe>
-                                </div>
-                                {% else %}
-                                <p class="text-muted">No song response</p>
-                                {% endif %}
+                            {% if note.track_id %}
+                            <div class="mb-2">
+                                <iframe
+                                    src="https://open.spotify.com/embed/track/{{ note.track_id }}"
+                                    width="100%"
+                                    height="153"
+                                    frameborder="0"
+                                    allowfullscreen=""
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                    loading="lazy">
+                                </iframe>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No song response</p>
+                            {% endif %}
                         </div>
                         <hr>
-                        <h5 class="fw-semibold">Want to feel like this again? Listen to: </h5>
+                        <h5 class="fw-semibold">Want to feel like this again? Listen to:</h5>
                         <div class="mt-2">
-                            <!--Loops through songs and uses iframe to embed-->
                             {% for song in songs %}
                                 {% if song.track_id %}
                                 <div class="mb-2">
                                     <iframe
-                                        src ="https://open.spotify.com/embed/track/{{ song.track_id }}"
+                                        src="https://open.spotify.com/embed/track/{{ song.track_id }}"
                                         width="100%"
                                         height="80"
                                         frameborder="0"
@@ -75,7 +75,6 @@
                                 {% endif %}
                             {% endfor %}
                         </div>
-
                     </div>
                 </div>
 
@@ -92,33 +91,31 @@
                 </div>
             </div>
 
-            <!--Map Display canvas target-->
             <div class="row g-4">
                 <div class="col-md-8">
                     <div class="card shadow-sm p-3">
-                        <h2 class="fw-bold border-bottom pb-2"> Notes</h2>
+                        <h2 class="fw-bold border-bottom pb-2">Notes</h2>
                         <p class="text-secondary mt-2">{{ note.notes if note.notes else 'Empty entry.' }}</p>
                     </div>
                 </div>
                 
                 <div class="col-md-4">
-                        <div id="map"></div>
+                    <div id="map"></div>
                 </div>
             </div>
 
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 {% if latitude and longitude %}
 <script>
-    const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yOWxsdGE1MXU1OTM0b20zb2lsZWF6bSJ9.4OpFI6JNjn9X1A3K0Dov5A';
+    const mapboxToken = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yOWxsdGE1MXU1OTM0b20zb2lsZWF6bSJ9.4OpFI6JNjn9X1A3K0Dov5A';
 
     const map = new mapboxgl.Map({
-        accessToken: mapbox_token,
+        accessToken: mapboxToken,
         container: 'map',
         style: 'mapbox://styles/mapbox/standard',
         center: [{{ longitude }}, {{ latitude }}],
@@ -129,7 +126,6 @@
     new mapboxgl.Marker()
         .setLngLat([{{ longitude }}, {{ latitude }}])
         .addTo(map);
-
 </script>
 {% else %}
 <p class="text-muted">No location recorded for this entry.</p>

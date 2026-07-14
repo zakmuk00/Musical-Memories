@@ -10,7 +10,7 @@
     body {
         margin: 0;
         padding: 0;
-        font-family: Arial;
+        font-family: Arial, sans-serif;
     }
 
     #map {
@@ -25,8 +25,8 @@
 
 {% block content %}
     <div id="map"></div>
-{% endblock content %}
+{% endblock %}
 
 {% block scripts %}
-<script src="./static/map-page.js"></script>
+<script src="{{ url_for('static', filename='map-page.js') }}"></script>
 {% endblock %}
