@@ -2,7 +2,7 @@ import os
 import git
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 from datetime import datetime, date
-from forms.noteMakerForm import NoteMakerForm
+from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
