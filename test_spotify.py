@@ -24,23 +24,40 @@ class TestSpotifyClient(unittest.TestCase):
         self.assertIn("response_type=code", result_url)
         self.assertIn("client_id=test_client_id", result_url)
         self.assertIn("state=fixed_mock_state_123", result_url)
-        self.assertIn("show_dialog=false", result_url)
+        self.assertIn("show_dialog=true", result_url)
 
-"""
-    @patch
-    def test_get_user_profile_returns_profile():
-
+    @patch("spotify_api.requests.get")
+    @patch("spotify_api.SpotifyClient.get_valid_access_token")
+    def test_get_user_profile_returns_profile(self, mock_get_token, mock_get_request):
+        mock_get_token.return_value = "fake_access_token"
         spotify = SpotifyClient()
-        spotify.access_token = "fake_access_token"
-        spotify.expires_at = 9999999999
+        spotify.base_url = "https://spotify.com"
+
+        fake_profile_data = {
+            "id": "spotify_user_100",
+            "display_name": "Test User",
+            "email":"test@example.com"
+        }
 
         fake_response = Mock()
-
         fake_response.status_code = 200
+        fake_response.json.return_value = fake_profile_data
+        
+        mock_get_request.return_value = fake_response
 
-        fake_response.json.return_value = {
-            #"id":
-        }
-"""
+        profile = spotify.get_user_profile()
+
+        self.assertEqual(profile["id"], "spotify_user_100")
+        self.assertEqual(profile["display_name"], "Test User")
+
+        expected_url = "https://spotify.comme"
+        expected_headers = {"Authorization": "Bearer fake_access_token"}
+
+        self.assertEqual(mock_get_request.call_args[0][0], expected_url)
+        self.assertEqual(mock_get_request.call_args[1]['headers'], expected_headers)
+
+        self.assertTrue(mock_get_request.called)
+        self.assertTrue(fake_response.raise_for_status.called)
+
 if __name__ == '__main__':
     unittest.main()
