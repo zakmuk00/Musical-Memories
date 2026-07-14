@@ -31,7 +31,7 @@ class SpotifyClient:
         # checks to see if env file has the necessasry values
         if not self.client_id:
             raise RuntimeError("Client id not found")
-    
+
         if not self.client_secret:
             raise RuntimeError("Client secret id not found")
 
@@ -49,7 +49,7 @@ class SpotifyClient:
         auth_base64 = base64.b64encode(auth_bytes).decode("utf-8")
 
         return {
-            "Authorization" : "Basic " + auth_base64,
+            "Authorization": "Basic " + auth_base64,
             "Content-Type": "application/x-www-form-urlencoded"
         }
 
@@ -57,23 +57,26 @@ class SpotifyClient:
     def generate_random_string(self):
         return ''.join(random.choices(self.characters, k=self.length))
 
-
-    # requests user authorization and builds the url that the user would login to
+    # requests user authorization and builds login url
     def build_user_login_url(self):
         state = self.generate_random_string()
-        scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state'
-
+        scope = (
+                'user-read-private '
+                'user-read-email '
+                'user-read-playback-state '
+                'user-modify-playback-state '
+        )
         query_params = {
             'response_type': 'code',
             'client_id': self.client_id,
             'scope': scope,
             'redirect_uri': self.redirect_uri,
             'state': state,
-            'show_dialog' : 'true' #was 'false'
+            'show_dialog': 'true'  # was 'false'
         }
 
         return f"{self.auth_url}?{urllib.parse.urlencode(query_params)}"
-    
+
     # added to assign user_id to account_id
     def get_user_profile(self):
         token = self.get_valid_access_token()
@@ -92,14 +95,15 @@ class SpotifyClient:
 
     def save_tokens(self, token_data):
         now = time.time()
-        # update access token and expires_at to save the token used to call Spotify
+        # update access token and expires_at
+        # to save the token used to call Spotify
         self.access_token = token_data.get("access_token")
         self.expires_at = now + token_data.get("expires_in", 3600) - 60
 
         # saves the refresh token if available
         if token_data.get("refresh_token"):
             self.refresh_token = token_data.get("refresh_token")
-    
+
     def exchange_code_for_access_token(self, code):
         data = {
             "grant_type": "authorization_code",
@@ -110,15 +114,15 @@ class SpotifyClient:
         response = requests.post(
             self.token_url,
             headers=self.get_auth_header(),
-            data=data,        
+            data=data,
         )
         # call save_tokens to save needed token data
         response.raise_for_status()
         token_data = response.json()
         self.save_tokens(token_data)
-        
+
         return token_data
-    
+
     # obtain new access token when old access expires
     def refresh_access_token(self):
         if not self.refresh_token:
@@ -142,7 +146,9 @@ class SpotifyClient:
                 self.access_token = None
                 self.refresh_token = None
                 self.expires_at = 0
-                raise RuntimeError("Refresh token is invalid. User must log in again")
+                raise RuntimeError(
+                    "Refresh token is invalid."
+                    "User must log in again")
 
         if "refresh_token" not in response_data:
             response_data["refresh_token"] = self.refresh_token
@@ -155,7 +161,7 @@ class SpotifyClient:
         # if token is present and not expired
         if self.access_token and time.time() < self.expires_at:
             return self.access_token
-        
+
         # if there is a refresh token we can obtain a new token
         if self.refresh_token:
             token_data = self.refresh_access_token()
@@ -171,7 +177,9 @@ class SpotifyClient:
         # limit of 3 for dropdown implementation
         params = {"q": query, "type": "track", "limit": 5}
 
-        response = requests.get(f"{self.base_url}search", headers=headers, params=params)
+        response = requests.get(f"{self.base_url}search",
+                                headers=headers,
+                                params=params)
 
         if response.status_code == 200:
             data = response.json()
@@ -193,8 +201,9 @@ class SpotifyClient:
             # returns a list containing up to 3 song objects
             return results_list
         return []
-    
-    # start playback of the user's chosen track on their specific Web Player SDK device ID
+
+    # start playback of the user's chosen track
+    # on their specific Web Player SDK device ID
     def play_track(self, device_id, track_uri):
         token = self.get_valid_access_token()
 
@@ -206,15 +215,12 @@ class SpotifyClient:
         url = f"{self.base_url}me/player/play?device_id={device_id}"
 
         data = {
-            "uris" : [track_uri]
+            "uris": [track_uri]
         }
 
         response = requests.put(url, headers=headers, json=data)
 
         return response.status_code == 204
-
-
-
 
 
 # testing
@@ -224,9 +230,10 @@ if __name__ == "__main__":
     login_url = spotify.build_user_login_url()
     print(login_url)
     print()
-    # follow the log in link, log in then copy and paste the string after "code=" and before "&state"
+    # follow the log in link,
+    # log in then copy and paste the string after
+    # "code=" and before "&state"
     code = input("Copy and Paste your temporary code string: ")
-    
 
     token_data = spotify.exchange_code_for_access_token(code)
 
@@ -254,10 +261,6 @@ if __name__ == "__main__":
 
     device_id = input("Your device id: ")
 
-
     track_uri = input("Your track's URI: ")
 
-
     check = print(spotify.play_track(device_id, track_uri))
-
-    
