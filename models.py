@@ -53,7 +53,7 @@ class Entry(db.Model):
 def add_entry(
         user, date, song, artist, link, song_image, location,
         photo=None, text=None, latitude=None, longitude=None
-    ):
+        ):
     """
     Adds a new entry into the database
 
@@ -80,10 +80,10 @@ def add_entry(
 
     if not (
             type(song) is str and type(artist) is str
-        ):
+            ):
         if not (
-            type(link) is str and type(song_image) is str
-        ):
+                type(link) is str and type(song_image) is str
+                ):
             print('Invalid song data')
             return False
 
@@ -95,20 +95,21 @@ def add_entry(
         print('Invalid location data')
         return False
 
-    db.session.add(Entry(
-                        user_id=user,
-                        date=date,
-                        song_name=song,
-                        artist_name=artist,
-                        spotify_link=link,
-                        song_image=song_image,
-                        location_name=location,
-                        photo_path=photo,
-                        journal_text=text,
-                        latitude=latitude,
-                        longitude=longitude
-                        )
-                )
+    db.session.add(
+        Entry(
+            user_id=user,
+            date=date,
+            song_name=song,
+            artist_name=artist,
+            spotify_link=link,
+            song_image=song_image,
+            location_name=location,
+            photo_path=photo,
+            journal_text=text,
+            latitude=latitude,
+            longitude=longitude
+        )
+    )
     db.session.commit()
     return True
 
@@ -198,13 +199,17 @@ def delete_by_id(query_user_id, query_id, upload_folder=None):
     Returns:
         bool: The status of the deletion
     """
-    response = Entry.query.filter_by(user_id=query_user_id, id=query_id).first()
+    response = Entry.query.filter_by(
+        user_id=query_user_id,
+        id=query_id).first()
     if response is not None:
         photo_path = response.photo_path
         db.session.delete(response)
         db.session.commit()
         if photo_path is not None:
-            full_path = os.path.join(upload_folder, photo_path) if upload_folder else photo_path
+            full_path = os.path.join(
+                upload_folder,
+                photo_path) if upload_folder else photo_path
             try:
                 os.remove(full_path)
                 print('Photo deleted')
@@ -231,7 +236,10 @@ def delete_by_date(query_user_id, query_date):
     Returns:
         bool: The status of the deletion
     """
-    response = Entry.query.filter_by(user_id=query_user_id, date=query_date).first()
+    response = Entry.query.filter_by(
+        user_id=query_user_id,
+        date=query_date
+        ).first()
     if response is not None:
         photo_path = response.photo_path
         db.session.delete(response)

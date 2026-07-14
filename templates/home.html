@@ -9,8 +9,8 @@
             <div class="card-body">
                 <h2 class="card-title fw-bold mb-3">Welcome to Musical Memories</h2>
                 <p class="text-muted mb-4">Digital scrapbook for your musical memories</p>
-
-                <a href="{{ url_for('spotify_login') }}" class="btn btn-success btn-lg rounded-pill px-4 py-2 fw-bold shadow-sm">
+                <!-- replace with for production {{ url_for('spotify_login') }} --> 
+                <a href="/proxy/5000/login/spotify" class="btn btn-success btn-lg rounded-pill px-4 py-2 fw-bold shadow-sm">
                     <i class="fab fa-spotify me-2"></i> Login with Spotify
                 </a>
             </div>
