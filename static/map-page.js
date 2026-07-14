@@ -1,5 +1,10 @@
+// Public key from Mapbox
 const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yam91N2xkMDdnOTMwb3IxaTNoODQ0ZyJ9.ZQC96yG54XDK5i4AcGgnQQ'
+
+// Grabs map element from HTML
 const mapDiv = document.getElementById('map');
+
+// Map is automatically set to the middle of the U.S.A.
 const lat = 39.8282;
 const lng = -98.5795;
 
