@@ -6,11 +6,16 @@ from forms.noteMakerForm import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry
+from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id
 from database import db
 
 from spotify_api import SpotifyClient
 from database import db
+
+from gemini import SongGenerator
+
+from dotenv import load_dotenv
+
 from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
 app = Flask(__name__)
 
@@ -21,6 +26,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+load_dotenv()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models.db'
 db.init_app(app)
@@ -34,14 +40,13 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.route("/login/dev-bypass")
-def dev_bypass():
-    # Force a mock user into the session
-    session["user_id"] = "dev_test_user_123"
+# @app.route("/login/dev-bypass")
+# def dev_bypass():
+#     # Force a mock user into the session
+#     session["user_id"] = "dev_test_user_123"
     
-    # Send them straight into the protected app area
-    return redirect(url_for("calendar"))
-
+#     # Send them straight into the protected app area
+#     return redirect(url_for("calendar"))
 
 
 @app.route("/")
@@ -54,6 +59,7 @@ def home():
     """
     return render_template('home.html',subtitle='Home Page', text='This is the home page')
 
+
 @app.route("/login/spotify")
 def spotify_login():
     """
@@ -65,6 +71,7 @@ def spotify_login():
     spotify = SpotifyClient()
     login_url = spotify.build_user_login_url()
     return redirect(login_url)
+
 
 # spotify sends user to /callback
 @app.route("/callback")
@@ -106,6 +113,9 @@ def logout():
     Returns:
         Redirect: Sends user back to home
     """
+    user_id = session.get("user_id")
+    if user_id:
+        delete_spotify_tokens(user_id)
     session.clear()
     return redirect(url_for("home"))
   
@@ -166,6 +176,7 @@ def about():
     """
     return render_template('about.html', subtitle='About Page', text='This is the about page')
 
+
 @app.route("/calendar")
 @login_required
 def calendar():
@@ -193,6 +204,7 @@ def calendar():
                 }
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
+
 @app.route("/note")
 @login_required
 def note():
@@ -209,16 +221,80 @@ def note():
     chosen_date = request.args.get('date')
     if not chosen_date:
         return redirect(url_for('calendar'))
-
-    # mock data take out
-    note_data = {
-        "song": "Bohemian Rhapsody",
-        "photo": None, 
-        "notes": "Had this song stuck in my head while driving through the mountains today.",
-        "location": "Seattle, WA"
-    }
     
-    return render_template('note.html', subtitle='Note page', text='This is the note page', note=note_data, date = chosen_date)
+    user_id = session.get("user_id", "test_user_1")
+    if not user_id:
+        return redirect(url_for('spotify_login'))
+
+    date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
+    entry = get_by_date(user_id, date)
+
+    if entry is None:
+        return redirect(url_for('calendar'))
+
+    note_data = {
+        "song": entry.song_name,
+        "photo": entry.photo_path, 
+        "notes": entry.journal_text,
+        "location": [entry.latitude, entry.longitude]
+    }
+
+    # gets song recommendations from Gemini
+    testing_mode = os.getenv("SKIP_GEMINI", "false").lower() == "true"
+    if testing_mode:
+        recs = [
+            {"name": "Africa", "artist": "Toto"},
+            {"name": "Landslide", "artist": "Fleetwood Mac"},
+            {"name": "Somebody to Love", "artist": "Queen"},
+        ]
+    else:
+        s_generator = SongGenerator()
+        recs = s_generator.get_songs(entry.song_name, entry.journal_text, entry.location_name)
+
+    # uses Spotify API to search Spotify for the songs from Gemini
+    # load in spotify tokens from user
+    token_data = get_spotify_tokens(user_id)
+    songs = []
+    saved_track_id = None
+
+    if token_data is None:
+        songs = []
+    else:
+        # if token data exists we put in the saved spotify token data into the fresh spotify client so we can search tracks
+        spotify = SpotifyClient()
+
+        spotify.access_token = token_data["access_token"]
+        spotify.refresh_token = token_data["refresh_token"]
+        spotify.expires_at = token_data["expires_at"]
+
+        # look up the saved song directly instead of parsing spotify_link
+        saved_results = spotify.search_track(f"{entry.song_name} {entry.artist_name}")
+        saved_track_id = saved_results[0]['uri'].split(':')[-1] if saved_results else None
+
+        for rec in recs:
+            results = spotify.search_track(f"{rec['name']} {rec['artist']}")
+            track_id = results[0]['uri'].split(':')[-1]
+            songs.append({
+                "name": rec['name'],
+                "artist": rec['artist'],
+                "track_id": track_id
+            })
+            
+        save_spotify_tokens(user_id, {
+            "access_token": spotify.access_token,
+            "refresh_token": spotify.refresh_token,
+            "expires_at": spotify.expires_at
+        })
+    
+    note_data["track_id"] = saved_track_id
+
+    lat = entry.latitude
+    lng = entry.longitude
+
+    return render_template('note.html', subtitle='Note page', text='This is the note page', 
+    note=note_data, date = chosen_date, songs=songs,
+    latitude=lat, longitude=lng)
+
 
 @app.route("/noteMaker", methods=["GET", "POST"])
 @login_required
@@ -293,27 +369,62 @@ def noteMaker():
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
         # testing
-        print("song:", song, type(song))
-        print("spotify_artist:", spotify_artist, type(spotify_artist))
-        print("spotify_uri:", spotify_uri, type(spotify_uri))
-        print("spotify_image:", spotify_image, type(spotify_image))
+        existing_entry = get_by_date(user_id, entry_date)
 
-        add_entry(user=user_id,
-            date=entry_date,
-            song=song,
-            artist=spotify_artist,
-            link=spotify_uri,
-            song_image=spotify_image,
-            location=location,
-            photo=file_path,
-            text=notes,
-            latitude=lat,
-            longitude=lng)
+        if existing_entry:
+            update_entry(user_id, existing_entry.id,
+                song_name=song,
+                artist_name=spotify_artist,
+                spotify_link=spotify_uri,
+                song_image=spotify_image,
+                location_name=location,
+                photo_path=file_path if filename else existing_entry.photo_path,
+                journal_text=notes,
+                latitude=lat,
+                longitude=lng)
+        else:
+            add_entry(user=user_id,
+                date=entry_date,
+                song=song,
+                artist=spotify_artist,
+                link=spotify_uri,
+                song_image=spotify_image,
+                location=location,
+                photo=filename,
+                text=notes,
+                latitude=lat,
+                longitude=lng)
         
     
         return redirect(url_for('calendar'))
         
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
+
+@app.route("/note/delete", methods=["POST"])
+@login_required
+def delete_note():
+    """
+    Deletes an existing note entry (and its photo, if any) for the current user
+
+    Form Data:
+        date (str): The date of the entry to delete, formatted 'YYYY-MM-DD'
+
+    Returns:
+        Redirect: Sends the user back to the calendar page
+    """
+    user_id = session.get("user_id")
+    chosen_date = request.form.get("date")
+
+    if not chosen_date:
+        return redirect(url_for('calendar'))
+
+    entry_date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
+    entry = get_by_date(user_id, entry_date)
+
+    if entry:
+        delete_by_id(user_id, entry.id, upload_folder=app.config['UPLOAD_FOLDER'])
+
+    return redirect(url_for('calendar'))
 
 @app.route("/map")
 @login_required
@@ -325,6 +436,7 @@ def map():
         HTML: Renders map.html
     """
     return render_template('map.html', subtitle='Map page', text='This is the map page')
+
 
 @app.route("/entries/locations")
 @login_required
@@ -346,9 +458,15 @@ def entry_locations():
             }
         ]
     """
-    user_id = "user1" #maybe change to session["user_id"]
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for('spotify_login'))
     entries = get_all_by_user(user_id)
 
+    entries = get_all_by_user(user_id)
+    if entries is None:
+        return redirect(url_for('calendar'))
+    
     data = [
         {
             "id": e.id,
@@ -359,7 +477,9 @@ def entry_locations():
         }
         for e in entries if e.latitude is not None and e.longitude is not None
     ]
+
     return jsonify(data)
+
 
 if __name__ == '__main__':
     with app.app_context():

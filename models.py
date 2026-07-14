@@ -35,9 +35,9 @@ class Entry(db.Model):
     song_image = db.Column(db.String(255), nullable=False)
     location_name = db.Column(db.String(255), nullable=False)
     photo_path = db.Column(db.String(255))
-    journal_text = db.Column(db.Text) # Optional
-    latitude = db.Column(db.Float()) # Optional
-    longitude = db.Column(db.Float()) # Optional
+    journal_text = db.Column(db.Text)
+    latitude = db.Column(db.Float())
+    longitude = db.Column(db.Float())
     __table_args__ = (db.UniqueConstraint('user_id', 'date', name='unique_user_date'),)
 
 # Only accepts multiple parameters so far
@@ -160,7 +160,7 @@ def get_by_date(query_user_id, query_date):
 
 # Deletes rows with the given id
 # Returns boolean value of deletion status
-def delete_by_id(query_user_id, query_id):
+def delete_by_id(query_user_id, query_id, upload_folder=None):
     """
     Deletes a Entry object based on the id
     
@@ -179,11 +179,12 @@ def delete_by_id(query_user_id, query_id):
         db.session.delete(response)
         db.session.commit()
         if photo_path is not None:
-            os.remove(photo_path)
-            if os.path.exists(photo_path):
-                print('Photo deletion failed')
-            else:
+            full_path = os.path.join(upload_folder, photo_path) if upload_folder else photo_path
+            try:
+                os.remove(full_path)
                 print('Photo deleted')
+            except OSError as e:
+                print(f'Photo deletion failed: {e}')
 
         print("Delete success")
         return True
@@ -261,7 +262,7 @@ def update_entry(query_user_id, query_id, **kwargs):
                 continue
             if hasattr(entry, key):
                 entry_value = getattr(entry, key)
-                if entry_value == None or type(key) == type(entry_value):
+                if entry_value is None or type(key) == type(entry_value):
                     setattr(entry, key, value)
                     print(f'{key} updated')
                 else:
@@ -370,7 +371,7 @@ def get_spotify_tokens(user_id):
     
 
 # used if user logs out
-def delete_spotify_tokens(user_id, token_data):
+def delete_spotify_tokens(user_id):
     """
     Deletes the stored spotify tokens for the specified user
 

@@ -8,15 +8,9 @@
     <div class="col-md-10">
         <div class="card shadow-sm border-0 p-4">
             <div class="card-body">
-                <div class="row align-items-center mb-4">
-                    <div class="col-3"></div>
-                    <div class="col-6 text-center">
-                        <h2 class="fw-bold mb-4">Your Musical Journey</h2>
-                    </div>
-                    <div class="col-3 text-end">
-                        <a href="/noteMaker" id="createNoteBtn" class="btn btn-primary fw-bold">Create Note</a> <!--Add an href for the note-maker page-->
-                    </div>
-                </div>
+                <div class="d-flex align-items-center justify-content-center mb-4">
+                    <h2 class="fw-bold mb-0 text-center">Your Musical Journey</h2>
+                </div>
                 <div id="calendar"></div>
             </div>
         </div>
@@ -28,27 +22,11 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
-
-        const btn = document.getElementById("createNoteBtn");
-        if (btn) {
-            const today = new Date().toISOString().split('T')[0]; 
-            btn.href = `/noteMaker?date=${today}`;
-        }
         
         // https://jinja.palletsprojects.com/en/stable/templates/#filters
         // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.safe
         // https://jinja.palletsprojects.com/en/stable/templates/#jinja-filters.tojson
-        // var userNotes = {{ user_notes | tojson | safe }}
-
-        //sample data. take out later
-        var userNotes = {
-            '2026-07-07': {
-                text: 'Bohemian Rhapsody',
-            },
-            '2026-07-30': {
-                text: 'Hotel California',
-            }
-        };
+        var userNotes = {{ user_notes | tojson | safe }}
 
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -67,23 +45,26 @@
                 }
             },
 
-            dayCellContent: function(arg){
+            dayCellDidMount: function(arg){
                 var dateStr = arg.date.toISOString().split('T')[0];
                 var noteData = userNotes[dateStr] || '';
-
-                let cellHtml = `<div class="fc-daygrid-day-number">${arg.dayNumberText}</div>`;
-                if (noteData) {
-                    let displayText = typeof noteData === 'string' ? noteData : noteData.text;
-                    cellHtml += `
-                        <div class="custom-sticky-wrapper">
-                            <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
-                            <div class="sticky-overlay-content" title="${displayText}">
-                                <div class="sticky-song-text">${displayText}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-                return { html: cellHtml };
+                if (!noteData) return;
+        
+                let displayText = typeof noteData === 'string' ? noteData : noteData.text;
+                let tiltClass = arg.date.getDate() % 2 === 0 ? 'tilt-even' : 'tilt-odd';
+        
+                let frame = arg.el.querySelector('.fc-daygrid-day-frame');
+                frame.style.position = 'relative';
+        
+                let wrapper = document.createElement('div');
+                wrapper.className = `custom-sticky-wrapper ${tiltClass}`;
+                wrapper.innerHTML = `
+                    <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
+                    <div class="sticky-overlay-content" title="${displayText}">
+                        <div class="sticky-song-text">${displayText}</div>
+                    </div>
+                `;
+                frame.appendChild(wrapper);
             }
         });
 
