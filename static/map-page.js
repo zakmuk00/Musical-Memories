@@ -33,4 +33,4 @@ map.on("load", () => {
       });
     })
     .catch((err) => console.error("Failed to load entrys", err));
-});npx prettier --write static/map-page.js
+});
