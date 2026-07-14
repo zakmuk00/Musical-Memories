@@ -1,64 +1,65 @@
 // Public key from Mapbox
-const mapbox_token = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yam91N2xkMDdnOTMwb3IxaTNoODQ0ZyJ9.ZQC96yG54XDK5i4AcGgnQQ'
+const mapbox_token =
+  "pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yam91N2xkMDdnOTMwb3IxaTNoODQ0ZyJ9.ZQC96yG54XDK5i4AcGgnQQ";
 
 // Creates Mapbox map
 const map = new mapboxgl.Map({
-    accessToken: mapbox_token,
-    container: 'map',
-    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
-    style: 'mapbox://styles/mapbox/standard',
-    center: [-98.5795, 39.8282],
-    zoom: 5,
-    attributionControl: false
+  accessToken: mapbox_token,
+  container: "map",
+  // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+  style: "mapbox://styles/mapbox/standard",
+  center: [-98.5795, 39.8282],
+  zoom: 5,
+  attributionControl: false,
 });
 
 // Creates and adds a search box for Map
 const searchBox = new MapboxSearchBox();
 searchBox.accessToken = mapbox_token;
 searchBox.options = {
-    language: 'en'
+  language: "en",
 };
-searchBox.mapboxgl = mapboxgl
-searchBox.marker = false
-map.addControl(searchBox)
+searchBox.mapboxgl = mapboxgl;
+searchBox.marker = false;
+map.addControl(searchBox);
 
 // Creates and adds a Geolocate button to navigate to users current location
 const geolocate = new mapboxgl.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true
-    },
-    trackUserLocation: true,
-    showUserHeading: true
+  positionOptions: {
+    enableHighAccuracy: true,
+  },
+  trackUserLocation: true,
+  showUserHeading: true,
 });
 map.addControl(geolocate);
 
 // Creates a marker at the center of the map
 const marker = new mapboxgl.Marker({
-    draggable: true
+  draggable: true,
 })
-    .setLngLat(map.getCenter())
-    .addTo(map);
+  .setLngLat(map.getCenter())
+  .addTo(map);
 
 // Moves Marker to the new center when the user moves the map
-marker.on('dragend', () => {});
+marker.on("dragend", () => {});
 function geoLocateHelp(e) {
-    const lngLat = {lng: e.coords.longitude, lat: e.coords.latitude};
-    marker.setLngLat(lngLat);
+  const lngLat = { lng: e.coords.longitude, lat: e.coords.latitude };
+  marker.setLngLat(lngLat);
 }
-geolocate.on('geolocate', geoLocateHelp);
+geolocate.on("geolocate", geoLocateHelp);
 geolocate.trigger();
 function moveMarker() {
-    marker.setLngLat(map.getCenter());
+  marker.setLngLat(map.getCenter());
 }
-map.on('moveend', moveMarker);
+map.on("moveend", moveMarker);
 
 //  grabs the marker's current position from the Mapbox object and copies it into the hidden inputs' value
-const form = document.querySelector('form');
-const latInput = document.getElementById('latitude');
-const lngInput = document.getElementById('longitude');
+const form = document.querySelector("form");
+const latInput = document.getElementById("latitude");
+const lngInput = document.getElementById("longitude");
 
-form.addEventListener('submit', function () {
-    const lngLat = marker.getLngLat();
-    latInput.value = lngLat.lat;
-    lngInput.value = lngLat.lng;
+form.addEventListener("submit", function () {
+  const lngLat = marker.getLngLat();
+  latInput.value = lngLat.lat;
+  lngInput.value = lngLat.lng;
 });
