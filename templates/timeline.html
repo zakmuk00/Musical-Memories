@@ -5,7 +5,7 @@
 {% block content %}
 
 
-<div class="'container">
+<div class="container">
     <h2 class=".fw-bold justify-content-center">Your Memory Timeline</h2>
 
     <div class="d-flex justify-content-end gap-2 mb-4">
@@ -39,6 +39,19 @@
                     <h5 class="fw-bold mb-1">{{ entry.song_name }}</h5>
                     <div class="text-muted mb-1" style="font-size: 10px">{{ entry.artist_name }} {{ entry.date }}</div>
                 </div>
+
+                {% if entry.journal_text %}
+                <div class="mb-2" style="font-size:small">
+                    {{ entry.journal_text[:150] }}
+                    {% if entry.journal_text|length > 150 %}...{% endif %}
+                </div>
+                {% endif %}
+
+                {% if entry.location_name %}
+                <div class="text-muted mb-2" style="font-size:small">
+                    Location: {{ entry.location_name }}
+                </div>
+                {% endif %}
             </div>
             
         
