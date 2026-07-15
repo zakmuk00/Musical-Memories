@@ -1,0 +1,11 @@
+# Core web framework
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-WTF==1.2.1
+
+# Spotify + Gemini integrations
+requests==2.32.3
+google-genai==0.3.0
+
+# Deployment webhook (git pull on push)
+GitPython==3.1.43
