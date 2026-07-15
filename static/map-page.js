@@ -1,6 +1,8 @@
-// Public key from Mapbox
-const mapbox_token =
-  "pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yam91N2xkMDdnOTMwb3IxaTNoODQ0ZyJ9.ZQC96yG54XDK5i4AcGgnQQ";
+// Grab the map element from the HTML
+const mapElement = document.getElementById('map');
+
+// Read the token value we stored in the data-token attribute
+const mapboxToken = mapElement.dataset.token;
 
 // Map is automatically set to the middle of the U.S.A.
 const lat = 39.8282;
@@ -8,7 +10,7 @@ const lng = -98.5795;
 
 // sets up map for map page
 const map = new mapboxgl.Map({
-  accessToken: mapbox_token,
+  accessToken: mapboxToken,
   container: "map",
   style: "mapbox://styles/mapbox/standard",
   center: [lng, lat],

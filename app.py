@@ -221,6 +221,8 @@ def note():
         HTML: Renders note.html with the specified date if it exists
         Redirects: Sends the user back to the calendar page if the note doesn't exist
     """
+    mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
+
     chosen_date = request.args.get('date')
     if not chosen_date:
         return redirect(url_for('calendar'))
@@ -296,7 +298,7 @@ def note():
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
     note=note_data, date = chosen_date, songs=songs,
-    latitude=lat, longitude=lng)
+    latitude=lat, longitude=lng, mapbox_token=mapbox_token)
 
 
 @app.route("/noteMaker", methods=["GET", "POST"])
@@ -329,6 +331,8 @@ def noteMaker():
         HTML: Renders noteMaker.html if GET method is called
         Redirect: Sends the user back to calendar on successful submission
     """
+    mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
+
     form = NoteMakerForm()
 
     if request.method == "GET":
@@ -401,7 +405,7 @@ def noteMaker():
 
         return redirect(url_for('calendar'))
 
-    return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
+    return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form, mapbox_token=mapbox_token)
 
 
 @app.route("/note/delete", methods=["POST"])
@@ -439,7 +443,9 @@ def map():
     Returns:
         HTML: Renders map.html
     """
-    return render_template('map.html', subtitle='Map page', text='This is the map page')
+    mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
+
+    return render_template('map.html', subtitle='Map page', text='This is the map page', mapbox_token=mapbox_token)
 
 @app.route("/timeline")
 @login_required
