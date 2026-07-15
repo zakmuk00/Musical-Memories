@@ -4,6 +4,7 @@
 
 {% block head %}
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
 <script id="search-js" src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
 <style>
@@ -84,7 +85,7 @@
 
                     <!-- Location Section -->
                     <div class="mb-4">
-                        <div id="map" data-token="{{ mapbox_token }}"></div>
+                        <div id="map"></div>
                         {{ form.latitude() }}
                         {{ form.longitude() }}
                     </div>
@@ -102,8 +103,14 @@
                     <!-- Notes Section -->
                     <div class="mb-4">
                         <div class="border rounded d-flex flex-column align-items-center justify-content-center bg-white p-3">
-                            <label class="form-label fw-semibold text-muted mb-2">Notes</label>
-                            {{ form.notes(class="form-control", rows="3", placeholder="Write...") }}
+                            <div class="d-flex justify-content-between align-items-center w-100 mb-2">
+                                <label class="form-label fw-semibold text-muted mb-0">Notes</label>
+                                <button type="button" id="mic-btn" class="btn btn-sm btn-outline-secondary rounded-circle" title="Dictate notes">
+                                    <i class="bi bi-mic-fill"></i>
+                                </button>
+                            </div>
+                            {{ form.notes(class="form-control", rows="3", placeholder="Write...", id="notes-field") }}
+                            <small id="mic-status" class="text-muted mt-1" style="display:none;">Listening…</small>
                         </div>
                     </div>
 
@@ -191,6 +198,105 @@
                     resultsBox.innerHTML = "";
                     resultsBox.style.display = "none";
                 });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const micBtn = document.getElementById("mic-btn");
+        const notesField = document.getElementById("notes-field");
+        const micStatus = document.getElementById("mic-status");
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            micBtn.disabled = true;
+            micBtn.title = "Speech-to-text not supported in this browser";
+            micBtn.classList.add("opacity-50");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-US";
+
+        let listening = false;
+        let baseText = "";
+
+        function formatText(text) {
+            let formatted = text
+                // Replace spoken punctuation
+                .replace(/\bperiod\b/gi, ".")
+                .replace(/\bcomma\b/gi, ",")
+                .replace(/\bquestion mark\b/gi, "?")
+                .replace(/\bexclamation point\b/gi, "!")
+                .replace(/\bnew line\b/gi, "\n")
+                .replace(/\bnew paragraph\b/gi, "\n\n");
+
+                formatted = formatted
+                    .replace(/\s+([.,?!])/g, "$1") // "word . " -> "word."
+                    .replace(/([.,?!])(?=[^\s])/g, "$1 ");
+                    
+            // Capitalize the first letter of sentences
+            formatted = formatted.replace(/(^\s*|[.!?]\s+)([a-z])/g, (match, separator, letter) => {
+                return separator + letter.toUpperCase();
+            });
+
+            return formatted;
+        }
+
+        micBtn.addEventListener("click", () => {
+            if (listening) {
+                recognition.stop();
+                return;
+            }
+            baseText = notesField.value ? notesField.value + " " : "";
+            recognition.start();
+        });
+
+        recognition.addEventListener("start", () => {
+            listening = true;
+            micBtn.classList.remove("btn-outline-secondary");
+            micBtn.classList.add("btn-danger");
+            micStatus.style.display = "block";
+        });
+
+        recognition.addEventListener("end", () => {
+            listening = false;
+            micBtn.classList.remove("btn-danger");
+            micBtn.classList.add("btn-outline-secondary");
+            micStatus.style.display = "none";
+        });
+ 
+        recognition.addEventListener("error", (event) => {
+            console.error("Speech recognition error:", event.error);
+            listening = false;
+            micBtn.classList.remove("btn-danger");
+            micBtn.classList.add("btn-outline-secondary");
+            micStatus.style.display = "none";
+        });
+ 
+        recognition.addEventListener("result", (event) => {
+            let finalTranscript = "";
+            let interimTranscript = "";
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript + " ";
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            const rawOutput = baseText + finalTranscript + interimTranscript;
+            notesField.value = formatText(rawOutput);
+
+            if (finalTranscript) {
+                baseText += finalTranscript;
+            }
         });
     });
 </script>
