@@ -441,6 +441,18 @@ def map():
     """
     return render_template('map.html', subtitle='Map page', text='This is the map page')
 
+@app.route("/timeline")
+@login_required
+def timeline():
+    """
+    Renders the timeline page to see user's journal notes as a timeline
+
+    Returns:
+        HTML: Renders timeline.html
+    """
+
+    return render_template('timeline.html', subtitle='Timeline page', text='This is the timeline page')
+
 
 @app.route("/entries/locations")
 @login_required
