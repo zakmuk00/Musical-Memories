@@ -445,13 +445,33 @@ def map():
 @login_required
 def timeline():
     """
-    Renders the timeline page to see user's journal notes as a timeline
+    Renders the timeline page to see user's journal notes as a vertical timeline.
+    Sorted from newest to oldest. User can choose to sort oldest to newest.
 
     Returns:
         HTML: Renders timeline.html
     """
 
-    return render_template('timeline.html', subtitle='Timeline page', text='This is the timeline page')
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for("spotify_login"))
+    
+    entries = get_all_by_user(user_id)
+
+    # from the url we can get the sort query parameter
+    sort_order = request.args.get("sort", "newest")
+
+    if entries:
+        if sort_order == "oldest":
+            entries = sorted(entries, key=lambda entry: entry.date)
+        else:
+            entries = sorted(entries, key=lambda entry: entry.date, reverse=True)
+    else:
+        entries = []
+    
+
+    return render_template('timeline.html', subtitle='Timeline page', text='This is the timeline page', entries=entries, sort_order=sort_order)
 
 
 @app.route("/entries/locations")
