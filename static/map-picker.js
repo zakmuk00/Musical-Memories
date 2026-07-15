@@ -1,10 +1,12 @@
-// Public key from Mapbox
-const mapbox_token =
-  "pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yam91N2xkMDdnOTMwb3IxaTNoODQ0ZyJ9.ZQC96yG54XDK5i4AcGgnQQ";
+// Grab the map element from the HTML
+const mapElement = document.getElementById('map');
+
+// Read the token value we stored in the data-token attribute
+const mapboxToken = mapElement.dataset.token;
 
 // Creates Mapbox map
 const map = new mapboxgl.Map({
-  accessToken: mapbox_token,
+  accessToken: mapboxToken,
   container: "map",
   // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
   style: "mapbox://styles/mapbox/standard",
@@ -15,7 +17,7 @@ const map = new mapboxgl.Map({
 
 // Creates and adds a search box for Map
 const searchBox = new MapboxSearchBox();
-searchBox.accessToken = mapbox_token;
+searchBox.accessToken = mapboxToken;
 searchBox.options = {
   language: "en",
 };
