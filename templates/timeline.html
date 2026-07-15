@@ -5,3 +5,21 @@
 {% block content %}
 
 
+<div class="'container">
+    <h2 class=".fw-bold justify-content-center">Your Memory Timeline</h2>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+        <a href="timeline?sort=newest"
+            class="btn btn-sm {% if sort_order == 'newest' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Sort by Newest
+        </a>
+        <a href="timeline?sort=oldest"
+            class="btn btn-sm {% if sort_order == 'oldest' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Sort by Oldest
+        </a>
+    </div>
+</div>
+
+
+
+{% endblock %}
