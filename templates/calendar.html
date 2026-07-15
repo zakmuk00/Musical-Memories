@@ -54,12 +54,9 @@
                 frame.style.position = 'relative';
         
                 const wrapper = document.createElement('div');
-                wrapper.className = `custom-sticky-wrapper ${tiltClass}`;
+                wrapper.className = `album-cover`;
                 wrapper.innerHTML = `
-                    <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
-                    <div class="sticky-overlay-content" title="${displayText}">
-                        <div class="sticky-song-text">${displayText}</div>
-                    </div>
+                    <img src="${noteData.song_image}" class="sticky-bg-asset" alt="">
                 `;
                 frame.appendChild(wrapper);
             }
