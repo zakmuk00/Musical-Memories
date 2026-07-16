@@ -7,52 +7,59 @@
 {% endblock %}
 {% block content %}
 
-<div class="row justify-content-center g-4">
-    <!--Right side-->
-    <div class="col-xl-8 col-lg-7 col-md-12">
-        <div class="card shadow-sm border-0 p-4 h-100" style="background-color: #FAF6EE; border-radius: 16px;">
+<div class="row justify-content-center">
+    
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card shadow-sm border-0 p-4" style="background-color: #FAF6EE; border-radius: 16px;">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-center mb-4">
-                    <h2 class="fw-bold mb-0 text-center" style="font-family: 'Georgia', cursive, sans-serif; color: #8C6239;">Your Musical Journey</h2>
+                
+                
+                <div class="d-flex flex-column align-items-center mb-4">
+                    <h2 class="fw-bold mb-2 text-center" style="font-family: 'Georgia', cursive, sans-serif; color: #8C6239;">
+                        Your Musical Journey
+                    </h2>
+                    
+                    
+                    <div class="position-relative w-100" style="max-width: 450px;">
+                        <input 
+                            type="text" 
+                            id="entry-search" 
+                            class="form-control shadow-sm" 
+                            placeholder="Search song or artist..." 
+                            style="border-radius: 20px; border: 1px solid #e1dddd; padding: 10px 18px; font-size: 0.95rem;"
+                            autocomplete="off"
+                        />
+                        
+                        
+                        <div 
+                            id="search-results" 
+                            class="shadow-lg"
+                            style="
+                                display: none;
+                                position: absolute;
+                                top: 100%;
+                                left: 0;
+                                right: 0;
+                                z-index: 2000; /* Must be higher than FullCalendar elements (z-index ~1000) */
+                                background-color: #ffffff;
+                                border: 1px solid #eaeaea;
+                                border-radius: 14px;
+                                max-height: 350px; 
+                                overflow-y: auto;
+                                margin-top: 8px;
+                                padding: 8px;
+                            "
+                        >
+                            <div class="text-center text-muted py-4" id="search-placeholder-msg">
+                                <p class="mb-0" style="font-size: 0.9rem;">Start typing to search your memory timeline...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="calendar" class="p-3 bg-white" style="border-radius: 12px;"></div>
             </div>
         </div>
     </div>
-    <!--Right side-->
-    <div class="col-xl-4 col-lg-5 col-md-12">
-        <div class="card shadow-sm border-0 p-4 h-100" style="background-color: #FAF6EE; border-radius: 16px;">
-            <div class="card-body d-flex flex-column" style="min-height: 500px;">
-                <label for="entry-search" class="form-label fw-bold mb-3" style="color: #8C6239; font-size: 1.25rem; font-family: 'Georgia', sans-serif;">Search Memories</label>
-                <input 
-                    type="text" 
-                    id="entry-search" 
-                    class="form-control mb-4 shadow-sm" 
-                    placeholder="Type a song, artist, or note..." 
-                    style="border-radius: 8px; border: 1px solid #ddd; padding: 10px 14px; font-size: 0.95rem;"
-                />
-                
-                <h6 class="text-uppercase tracking-wider fw-bold text-muted mb-3" style="font-size: 0.75rem; letter-spacing: 1px;">Results</h6>
-                
-                <div 
-                    id="search-results" 
-                    style="
-                        display: flex;
-                        flex-direction: column;
-                        gap: 12px;
-                        max-height: 520px; 
-                        overflow-y: auto;
-                        padding-right: 4px;
-                    "
-                >
-                    <div class="text-center text-muted py-5" id="search-placeholder-msg">
-                        <p class="mb-0" style="font-size: 0.9rem;">Start typing to search your memory timeline...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/index.global.min.js"></script>
@@ -61,15 +68,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         const calendarEl = document.getElementById('calendar');
         
-        // Jinja safely injected variables
+        
         const userNotes = {{ user_notes | tojson | safe }};
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             editable: true,
-            height: 820,        
-            // expandRows: true,   
-            // aspectRatio: 1.3,
+            height: 'auto',        
+            expandRows: true,
 
             dateClick: (info) => {
                 const dateStr = info.dateStr;
@@ -103,10 +109,24 @@
 
         calendar.render();
 
-        // --- SEARCH BAR FUNCTIONALITY ---
+        // --- INLINE SEARCH BAR DROPDOWN FUNCTIONALITY ---
         const searchInput = document.getElementById("entry-search");
         const resultsContainer = document.getElementById("search-results");
         const placeholderMsg = document.getElementById("search-placeholder-msg");
+
+        function showDropdown() {
+            resultsContainer.style.display = "block";
+        }
+
+        function hideDropdown() {
+            resultsContainer.style.display = "none";
+        }
+
+        searchInput.addEventListener("focus", function() {
+            if (searchInput.value.trim().length >= 2) {
+                showDropdown();
+            }
+        });
 
         searchInput.addEventListener("input", function() {
             const query = searchInput.value.trim();
@@ -115,8 +135,11 @@
                 resultsContainer.innerHTML = '';
                 resultsContainer.appendChild(placeholderMsg);
                 placeholderMsg.style.display = 'block';
+                hideDropdown();
                 return;
             }
+
+            showDropdown();
 
             fetch(`/search-entries?q=${encodeURIComponent(query)}`)
                 .then(function(response) {
@@ -127,7 +150,7 @@
                     
                     if (data.length === 0) {
                         resultsContainer.innerHTML = `
-                            <div class="text-center text-muted py-5">
+                            <div class="text-center text-muted py-4">
                                 <p class="mb-0" style="font-size: 0.9rem;">No matching memories found.</p>
                             </div>`;
                         return;
@@ -139,53 +162,51 @@
                         
                         item.style.display = "flex";
                         item.style.alignItems = "center";
-                        item.style.padding = "16px";
+                        item.style.padding = "12px";
                         item.style.textDecoration = "none";
                         item.style.color = "#333";
                         item.style.backgroundColor = "#ffffff";
-                        item.style.border = "1px solid #eaeaea";
-                        item.style.borderRadius = "12px";
-                        item.style.transition = "transform 0.2s, box-shadow 0.2s";
-                        item.style.boxShadow = "0 2px 6px rgba(0,0,0,0.02)";
+                        item.style.border = "none";
+                        item.style.borderRadius = "10px";
+                        item.style.transition = "background-color 0.15s ease";
+                        item.style.marginBottom = "4px";
 
-                        item.addEventListener("mouseenter",function() {
-                            item.style.transform = "translateY(-2px)";
-                            item.style.boxShadow = "0 4px 12px rgba(0,0,0,0.06)";
+                        item.addEventListener("mouseenter", function() {
+                            item.style.backgroundColor = "#f8f9fa";
                         });
                         item.addEventListener("mouseleave", function() {
-                            item.style.transform = "translateY(0)";
-                            item.style.boxShadow = "0 2px 6px rgba(0,0,0,0.02)";
+                            item.style.backgroundColor = "#ffffff";
                         });
 
                         let albumHTML = '';
                         if (entry.song_image) {
-                            albumHTML = `<img src="${entry.song_image}" alt="Cover" style="width: 70px; height: 70px; border-radius: 10px; margin-right: 16px; object-fit: cover; flex-shrink: 0;" />`;
+                            albumHTML = `<img src="${entry.song_image}" alt="Cover" style="width: 48px; height: 48px; border-radius: 8px; margin-right: 12px; object-fit: cover; flex-shrink: 0;" />`;
                         } else {
                             albumHTML = `
                                 <div style="
-                                    width: 70px; 
-                                    height: 70px; 
+                                    width: 48px; 
+                                    height: 48px; 
                                     background-color: #E2E2E2; 
-                                    border-radius: 10px; 
-                                    margin-right: 16px; 
+                                    border-radius: 8px; 
+                                    margin-right: 12px; 
                                     display: flex; 
                                     align-items: center; 
                                     justify-content: center;
                                     text-align: center;
-                                    padding: 4px;
+                                    padding: 2px;
                                     flex-shrink: 0;
                                 ">
-                                    <span style="font-size: 9px; font-weight: bold; color: #555; line-height: 1.1;">No Album Picture</span>
+                                    <span style="font-size: 8px; font-weight: bold; color: #555; line-height: 1.1;">No Album</span>
                                 </div>`;
                         }
 
                         item.innerHTML = `
                             ${albumHTML}
-                            <div style="flex-grow: 1; min-width: 0;">
-                                <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2D2D2D;">
+                            <div style="flex-grow: 1; min-width: 0; text-align: left;">
+                                <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2D2D2D;">
                                     ${entry.song_name || "Untitled"}
                                 </div>
-                                <div style="font-size: 0.8rem; color: #888; font-weight: 500;">
+                                <div style="font-size: 0.75rem; color: #888; font-weight: 500;">
                                     ${entry.date}
                                 </div>
                             </div>
@@ -194,6 +215,14 @@
                     });
                 })
                 .catch(err => console.error("Error retrieving matches:", err));
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function(event) {
+            const isClickInside = searchInput.contains(event.target) || resultsContainer.contains(event.target);
+            if (!isClickInside) {
+                hideDropdown();
+            }
         });
     }); 
 </script>
