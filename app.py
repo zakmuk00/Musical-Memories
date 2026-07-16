@@ -241,7 +241,7 @@ def on_this_day():
     
     memories = sorted(memories, key=lambda entry: entry.date)
 
-    return render_template('on_this_day.html', today=today, memories=memories)
+    return render_template("on_this_day.html", today=today, memories=memories)
     
 
 

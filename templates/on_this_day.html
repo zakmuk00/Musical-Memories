@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block title %}On This Day {% endblock %}
+{% block content %}
+
+<div class="modal" id ="onThisDayModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    On This Day
+                </h5>
+
+                <a href="/calendar" class="btn-close">
+                </a>
+            </div>
+        <div class="modal-body">
+            {% if memories %}
+
+            <p class ="text-muted text-center">
+                Memories from {{ today.strftime("%B %d") }} in past years
+            </p>
+
+            <div id="onThisDayCarousel" class="carousel slide" data-bs-ride="carousel">
+
+            </div>
+
+            {% else %}
+            <div class="text-center">
+                <h4 class="fw-bold">No memories from this day yet</h4>
+
+                <p class="text-muted">
+                    You do not have any saved memories from {{ today.strftime('%B %d') }} in past years.
+                </p>
+
+                <a href="/calendar" class="btn btn-primary">
+                    Back to Calendar
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+        const modalElement = document.getElementById('onThisDayModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    });
+</script>
+{% endblock %}
