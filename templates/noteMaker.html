@@ -68,7 +68,8 @@
                 <h3 class="fw-bold text-uppercase text-secondary mb-4">Enter Note Information</h3>
 
                 <form action="" method="POST" enctype="multipart/form-data">
-                    {{ form.hidden_tag() }}
+                    <!-- Manual CSRF Token -->
+                    {{ form.csrf_token() }}
                     {{ form.date_created() if form.date_created else '' }}
                     
                     <!-- Song Section -->
