@@ -14,8 +14,6 @@ body {
     font-family: 'Poppins', Arial, sans-serif;
     color: var(--ink);
     background-color: var(--paper);
-    background-image:
-        radial-gradient(var(--paper-dark) 1px, transparent 1px);
     background-size: 22px 22px;
     background-attachment: fixed;
 }
@@ -24,23 +22,6 @@ h1, h2, h3.fw-bold {
     font-family: 'Caveat', cursive;
     font-size: 2.2rem;
     color: var(--accent);
-}
-
-.card {
-    background: #FFFDF8;
-    border: none;
-    border-radius: 6px;
-    box-shadow: 0 6px 16px var(--shadow);
-    position: relative;
-}
-
-.card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 6px;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
-    pointer-events: none;
 }
 
 .navbar.bg-dark {
@@ -71,13 +52,6 @@ h1, h2, h3.fw-bold {
     box-shadow: 0 8px 16px var(--shadow);
     transform: rotate(-2deg);
     display: inline-block;
-}
-
-#map {
-    width: 100%;
-    flex: 1 1 auto;
-    min-height: 150px;
-    border-radius: 10px;
 }
 
 .fc-daygrid-day-frame {
