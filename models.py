@@ -53,7 +53,7 @@ class Entry(db.Model):
 def add_entry(
         user, date, song, artist, link, song_image, location,
         photo=None, text=None, latitude=None, longitude=None
-    ):
+        ):
     """
     Adds a new entry into the database
 
@@ -80,10 +80,10 @@ def add_entry(
 
     if not (
             type(song) is str and type(artist) is str
-        ):
+            ):
         if not (
-            type(link) is str and type(song_image) is str
-        ):
+                type(link) is str and type(song_image) is str
+                ):
             print('Invalid song data')
             return False
 
@@ -95,20 +95,21 @@ def add_entry(
         print('Invalid location data')
         return False
 
-    db.session.add(Entry(
-                        user_id=user,
-                        date=date,
-                        song_name=song,
-                        artist_name=artist,
-                        spotify_link=link,
-                        song_image=song_image,
-                        location_name=location,
-                        photo_path=photo,
-                        journal_text=text,
-                        latitude=latitude,
-                        longitude=longitude
-                        )
-                )
+    db.session.add(
+        Entry(
+            user_id=user,
+            date=date,
+            song_name=song,
+            artist_name=artist,
+            spotify_link=link,
+            song_image=song_image,
+            location_name=location,
+            photo_path=photo,
+            journal_text=text,
+            latitude=latitude,
+            longitude=longitude
+        )
+    )
     db.session.commit()
     return True
 
@@ -198,13 +199,17 @@ def delete_by_id(query_user_id, query_id, upload_folder=None):
     Returns:
         bool: The status of the deletion
     """
-    response = Entry.query.filter_by(user_id=query_user_id, id=query_id).first()
+    response = Entry.query.filter_by(
+        user_id=query_user_id,
+        id=query_id).first()
     if response is not None:
         photo_path = response.photo_path
         db.session.delete(response)
         db.session.commit()
         if photo_path is not None:
-            full_path = os.path.join(upload_folder, photo_path) if upload_folder else photo_path
+            full_path = os.path.join(
+                upload_folder,
+                photo_path) if upload_folder else photo_path
             try:
                 os.remove(full_path)
                 print('Photo deleted')
@@ -231,7 +236,10 @@ def delete_by_date(query_user_id, query_date):
     Returns:
         bool: The status of the deletion
     """
-    response = Entry.query.filter_by(user_id=query_user_id, date=query_date).first()
+    response = Entry.query.filter_by(
+        user_id=query_user_id,
+        date=query_date
+        ).first()
     if response is not None:
         photo_path = response.photo_path
         db.session.delete(response)
@@ -420,4 +428,160 @@ def delete_spotify_tokens(user_id):
         return False
     db.session.delete(token_row)
     db.session.commit()
+    return True
+
+
+class User(db.Model):
+    """
+    This is the class that defines a user in our app
+
+    id reuses the Spotify account id
+
+    - id (str): Spotify account_id
+    - username (str): unique handle that is used in profile URLs /profile/<username>
+    - display_name (str): the name shown on the profile page
+    - bio (str): an optional short bio text, kinda like Instagram
+    """
+    __tablename__ = 'users'
+    id = db.Column(db.String(255), primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    display_name = db.Column(db.String(150))
+    bio = db.Column(db.Text)
+
+
+def get_or_create_user(user_id, username):
+    """
+    Creates a User row for a given id if it doesn't exist or fetches if does exist.
+    """
+
+    if not type(user_id) is str:
+        print('Invalid user_id')
+        return None
+    
+    if not type(username) is str:
+        print('Invalid username')
+        return None
+    
+    existing = User.query.get(user_id)
+    if existing is not None:
+        return existing
+    
+    db.session.add(User(id=user_id, username=username, display_name=None))
+    db.session.commit()
+    print('User created')
+
+    return User.query.get(user_id)
+
+
+def get_user_by_username(username):
+    """
+    Fetches a User based on username
+    """
+    response = User.query.filter_by(username=username).first()
+    if response is None:
+        print('Username does not exist in the table')
+    return response
+
+
+class Friendship(db.Model):
+    """
+    This is the class that defines a friendship between two users
+
+    Friendship is a two-way accept: requester sends request, other
+    person accepts or declines. A row can be either direction.
+
+    - id (int): auto-incremented unique Friendship key
+    - requester_id (str): user id of who sent the request
+    - receiver_id (str): user id of who received request
+    - status (str): 'pending', 'accepted', or 'declined'
+    """
+    __tablename__ = 'friendships'
+    id = db.Column(db.Integer, primary_key=True)
+    requester_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=False)
+    receiver_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')
+
+
+def is_friend_of(user1, user2):
+    """
+    Checks if two users are friends
+    """
+    response = Friendship.query.filter(
+        db.or_(
+            db.and_(
+                Friendship.requester_id == user1,
+                Friendship.receiver_id == user2
+            ),
+            db.and_(
+                Friendship.requester_id == user2,
+                Friendship.receiver_id == user1
+            )
+        ),
+        Friendship.status == 'accepted'
+    ).first()
+
+    if response is not None:
+        return True
+    return False
+
+def send_request(requester_id, receiver_id):
+    """
+    Creates a pending friend request from the requester to the receiver
+    """
+    if not type(requester_id) is str or not type(receiver_id) is str:
+        print('Invalid user id')
+        return False
+    if requester_id == receiver_id:
+        print('Cannot send a friend request to yourself')
+        return False
+    
+    existing = Friendship.query.filter(
+        db.or_(
+            db.and_(
+                Friendship.requester_id == requester_id,
+                Friendship.receiver_id == receiver_id
+            ),
+            db.and_(
+                Friendship.requester_id == receiver_id,
+                Friendship.receiver_id == requester_id
+            )
+        )
+    ).first()
+    if existing is not None:
+        print('Friendship already exists or pending')
+        return False
+    
+    db.session.add(
+        Friendship(requester_id=requester_id, receiver_id=receiver_id, status='pending')
+    )
+    db.session.commit()
+    
+    print('Friend request sent')
+    return True
+
+def respond_to_request(requester_id, receiver_id, accept):
+    """
+    Accepts or declines a pending friend request,
+    only receiver of request should call this.
+    """
+    if not type(accept) is bool:
+        print('Invalid accept value, must be boolean')
+        return False
+    
+    friendship = Friendship.query.filter_by(
+        requester_id=requester_id,
+        receiver_id=receiver_id,
+        status='pending'
+    ).first()
+
+    if friendship is None:
+        print('No pending request was found')
+        return False
+    if accept:
+        friendship.status = 'accepted'
+    else:
+        friendship.status = 'declined'
+
+    db.session.commit()
+    print('Friend request has been updated')
     return True
