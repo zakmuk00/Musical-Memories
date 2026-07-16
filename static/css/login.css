@@ -18,6 +18,7 @@ body {
     background-attachment: fixed;
     min-height: 100vh;
     overflow: hidden;
+
 }
 
 h1, h2, h3.fw-bold {
@@ -99,7 +100,6 @@ h1, h2, h3.fw-bold {
     height: auto;
     opacity: 0.5;
     z-index: 1;
-    overflow: hidden;
 }
 
 .decor-bottom-right {
@@ -121,5 +121,4 @@ h1, h2, h3.fw-bold {
     height: auto;
     opacity: 0.5;
     z-index: 1;
-    overflow: hidden;
 }
