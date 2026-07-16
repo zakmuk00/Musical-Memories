@@ -14,8 +14,6 @@ body {
     font-family: 'Poppins', Arial, sans-serif;
     color: var(--ink);
     background-color: var(--paper);
-    background-image:
-        radial-gradient(var(--paper-dark) 1px, transparent 1px);
     background-size: 22px 22px;
     background-attachment: fixed;
 }
