@@ -470,9 +470,9 @@ def timeline():
 
     if entries:
         if sort_order == "oldest":
-            entries = sorted(entries, key=lambda entry: entry.date)
-        else:
             entries = sorted(entries, key=lambda entry: entry.date, reverse=True)
+        else:
+            entries = sorted(entries, key=lambda entry: entry.date)
     else:
         entries = []
     
