@@ -236,8 +236,8 @@ def on_this_day():
         same_month = entry.date.month == today.month
         past_year = entry.date.year < today.year
     
-    if same_day and same_month and past_year:
-        memories.append(entry)
+        if same_day and same_month and past_year:
+            memories.append(entry)
     
     memories = sorted(memories, key=lambda entry: entry.date)
 
@@ -507,9 +507,9 @@ def timeline():
 
     if entries:
         if sort_order == "oldest":
-            entries = sorted(entries, key=lambda entry: entry.date, reverse=True)
-        else:
             entries = sorted(entries, key=lambda entry: entry.date)
+        else:
+            entries = sorted(entries, key=lambda entry: entry.date, reverse=True)
     else:
         entries = []
     

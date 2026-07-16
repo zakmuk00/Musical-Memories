@@ -21,7 +21,32 @@
                 Memories from {{ today.strftime("%B %d") }} in past years
             </p>
 
-            <div id="onThisDayCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div id="onThisDayCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                    {% for entry in memories %}
+                        <div class="carousel-item{% if loop.first %}active{% endif %}">
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-body">
+                                    <div class="row g-2 align-items-start">
+                                        <div class="col-auto">
+                                            {% if entry.song_image %}
+                                                <img src="{{ entry.song_image }}" alt="Album picture" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded align-items-center justify-content-center fw-bold"
+                                                    style="width: 100px; height: 100px; background: #e1dddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
+                                                    No Album Picture
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
 
             </div>
 
