@@ -1,7 +1,10 @@
 {% extends "layout.html" %}
 
 {% block title %}Calendar{% endblock %}
-
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-10">
@@ -28,7 +31,7 @@
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             editable: true,
-            height: 700,        
+            height: 750,        
             expandRows: true,   
             aspectRatio: 1.167,
 
