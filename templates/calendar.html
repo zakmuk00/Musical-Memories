@@ -1,7 +1,10 @@
 {% extends "layout.html" %}
 
 {% block title %}Calendar{% endblock %}
-
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+{% endblock %}
 {% block content %}
 
 <div class="row justify-content-center g-4">
@@ -64,7 +67,7 @@
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             editable: true,
-            height: 650,        
+            height: 750,        
             expandRows: true,   
             aspectRatio: 1.3,
 
@@ -90,12 +93,9 @@
                 frame.style.position = 'relative';
         
                 const wrapper = document.createElement('div');
-                wrapper.className = `custom-sticky-wrapper ${tiltClass}`;
+                wrapper.className = `album-wrapper`;
                 wrapper.innerHTML = `
-                    <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
-                    <div class="sticky-overlay-content" title="${displayText}">
-                        <div class="sticky-song-text">${displayText}</div>
-                    </div>
+                    <img src="${noteData.song_image}" class="album-cover" alt="">
                 `;
                 frame.appendChild(wrapper);
             }
