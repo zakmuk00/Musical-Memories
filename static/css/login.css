@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@400;600&display=swap');
+
+:root {
+    --paper: #272727; 
+    /* --paper-dark: #ECE3D0; */
+    --ink: #FFFFFF;
+    --accent: #1DB954;   /* muted terracotta, not neon */
+    --accent-soft: #464646;
+    --shadow: rgba(60, 45, 25, 0.15);
+}
+
+body {
+    position: relative;
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+h1, h2, h3.fw-bold {
+    font-family: 'Poppins';
+    font-size: 2.2rem;
+    color: var(--ink);
+}
+
+.welcome {
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 0.95rem;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.card-body {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    justify-content: center;
+    gap: 20px;
+}
+
+.card {
+    margin: 0 auto;
+    background: #464646;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 5px 6px 16px var(--shadow);
+    position: relative;
+    max-width: 400px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+
+.card::before {
+    display: none;
+}
+
+.btn-primary, .btn-success {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    border-radius: 50px;
+    box-shadow: 0 3px 8px var(--shadow);
+    padding: 14px 42px;
+    font-size: 1.2rem;
+}
+
+.btn-primary:hover, .btn-success:hover {
+    background-color: #15833b !important;
+    transform: translateY(-1px);
+}
+
+.decor-bottom-left {
+    position:absolute;
+    bottom: 0;
+    left: 0;
+    width: 600px;
+    height: auto;
+    opacity: 0.5;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.decor-top-right {
+    position:absolute;
+    top: 0;
+    right: 0px;
+    width: 400px;
+    height: auto;
+    opacity: 0.5;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.decor-bottom-right {
+    position:absolute;
+    bottom: 0;
+    right: 0px;
+    width: 350px;
+    height: auto;
+    opacity: 0.5;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.decor-top-left {
+    position:absolute;
+    top: 0;
+    left: 0px;
+    width: 500px;
+    height: auto;
+    opacity: 0.5;
+    z-index: 1;
+    overflow: hidden;
+}

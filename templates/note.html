@@ -112,7 +112,7 @@
 {% block scripts %}
 {% if latitude and longitude %}
 <script>
-    const mapboxToken = 'pk.eyJ1Ijoic21hbGNhemEiLCJhIjoiY21yOWxsdGE1MXU1OTM0b20zb2lsZWF6bSJ9.4OpFI6JNjn9X1A3K0Dov5A';
+    const mapboxToken = '{{ mapbox_token }}';
 
     const map = new mapboxgl.Map({
         accessToken: mapboxToken,

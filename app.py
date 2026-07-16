@@ -1,8 +1,8 @@
 import os
 import git
-from flask import Flask, render_template, url_for, redirect, request, session, jsonify
+from flask import Flask, render_template, url_for,redirect, request, session, jsonify
 from datetime import datetime, date
-from forms.noteMakerForm import NoteMakerForm
+from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
@@ -30,6 +30,7 @@ load_dotenv()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models.db'
 db.init_app(app)
+
 
 def login_required(f):
     @wraps(f)
@@ -105,6 +106,7 @@ def spotify_callback():
 
     return redirect("/calendar")
 
+
 @app.route("/logout")
 def logout():
     """
@@ -118,7 +120,8 @@ def logout():
         delete_spotify_tokens(user_id)
     session.clear()
     return redirect(url_for("home"))
-  
+
+
 @app.route("/search-song")
 def search_song():
     """
@@ -127,7 +130,7 @@ def search_song():
 
     Query Parameters:
         q (str): the query inputted by the user
-    
+
     Returns:
         JSON: The list of songs returned by Spotify after searching
     """
@@ -139,7 +142,7 @@ def search_song():
 
     if not user_id:
         return jsonify([])
-    
+
     token_data = get_spotify_tokens(user_id)
 
     if token_data is None:
@@ -218,6 +221,8 @@ def note():
         HTML: Renders note.html with the specified date if it exists
         Redirects: Sends the user back to the calendar page if the note doesn't exist
     """
+    mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
+
     chosen_date = request.args.get('date')
     if not chosen_date:
         return redirect(url_for('calendar'))
@@ -279,13 +284,13 @@ def note():
                 "artist": rec['artist'],
                 "track_id": track_id
             })
-            
+
         save_spotify_tokens(user_id, {
             "access_token": spotify.access_token,
             "refresh_token": spotify.refresh_token,
             "expires_at": spotify.expires_at
         })
-    
+
     note_data["track_id"] = saved_track_id
 
     lat = entry.latitude
@@ -293,7 +298,7 @@ def note():
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
     note=note_data, date = chosen_date, songs=songs,
-    latitude=lat, longitude=lng)
+    latitude=lat, longitude=lng, mapbox_token=mapbox_token)
 
 
 @app.route("/noteMaker", methods=["GET", "POST"])
@@ -321,11 +326,13 @@ def noteMaker():
         spotify_artist (str): The chosen song's artist name
         spotify_uri (str): The uri to the song on Spotify
         spotify_image (str): The uri to the song's image on Spotify
-    
+
     Returns:
         HTML: Renders noteMaker.html if GET method is called
         Redirect: Sends the user back to calendar on successful submission
     """
+    mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
+
     form = NoteMakerForm()
 
     if request.method == "GET":
@@ -345,7 +352,7 @@ def noteMaker():
         lat = float(form.latitude.data) if form.latitude.data else None
         lng = float(form.longitude.data) if form.longitude.data else None
 
-        
+
         song = form.song.data or ""
         spotify_uri = form.spotify_uri.data or ""
         spotify_image = form.spotify_image.data or ""
@@ -353,7 +360,7 @@ def noteMaker():
         location = form.location.data or ""
         notes = form.notes.data or None
         chosen_date = form.date_created.data
-        
+
 
         photo_file = form.photo.data
         filename = None
@@ -394,11 +401,12 @@ def noteMaker():
                 text=notes,
                 latitude=lat,
                 longitude=lng)
-        
-    
+
+
         return redirect(url_for('calendar'))
-        
-    return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form)
+
+    return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form, mapbox_token=mapbox_token)
+
 
 @app.route("/note/delete", methods=["POST"])
 @login_required
@@ -435,7 +443,9 @@ def map():
     Returns:
         HTML: Renders map.html
     """
-    return render_template('map.html', subtitle='Map page', text='This is the map page')
+    mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
+
+    return render_template('map.html', subtitle='Map page', text='This is the map page', mapbox_token=mapbox_token)
 
 
 @app.route("/entries/locations")

@@ -2,14 +2,26 @@
 
 {% block title %}Login{% endblock %}
 
-{% block content %}
-<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="col-md-6 col-lg-5 text-center">
-        <div class="card shadow-sm p-5 border-0 rounded-3">
-            <div class="card-body">
-                <h2 class="card-title fw-bold mb-3">Welcome to Musical Memories</h2>
-                <p class="text-muted mb-4">Digital scrapbook for your musical memories</p>
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
 
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<img src="{{ url_for('static', filename='images/Group 32.svg') }}" class="decor-bottom-left" alt="">
+<img src="{{ url_for('static', filename='images/Group 33.svg') }}" class="decor-top-right" alt="">
+<img src="{{ url_for('static', filename='images/Group 34.svg') }}" class="decor-bottom-right" alt="">
+<img src="{{ url_for('static', filename='images/Group 35.svg') }}" class="decor-top-left" alt="">
+
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-6 col-lg-5 mx-auto text-center">
+        <div class="card shadow-lg py-5 px-3 border-1 rounded-3">
+            <div class="card-body">
+                <div class="welcome">WELCOME TO</div>
+                <h2 class="card-title fw-bold mb-3">Musical Memories</h2>
+                <p class="text-muted mb-6">Digital scrapbook for your musical memories</p>
+                <!-- replace with for production {{ url_for('spotify_login') }} --> 
                 <a href="{{ url_for('spotify_login') }}" class="btn btn-success btn-lg rounded-pill px-4 py-2 fw-bold shadow-sm">
                     <i class="fab fa-spotify me-2"></i> Login with Spotify
                 </a>
