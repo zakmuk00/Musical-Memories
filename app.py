@@ -207,6 +207,43 @@ def calendar():
                 }
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
+@app.route("/on-this-day")
+@login_required
+def on_this_day():
+    """
+    Renders the on_this_day view that showcases the notes created
+    by the user from past years on the same day and month.
+    """
+
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for('spotify_login'))
+
+    today = date.today()
+
+    entries = get_all_by_user(user_id)
+
+    if entries is None:
+        entries = []
+    
+    # keeps track of memories from the same day and month
+    memories = []
+
+    for entry in entries:
+        # check if entry has the same day and month as today 
+        same_day = entry.date.day == today.day
+        same_month = entry.date.month == today.month
+        past_year = entry.date.year < today.year
+    
+    if same_day and same_month and past_year:
+        memories.append(entry)
+    
+    memories = sorted(memories, key=lambda entry: entry.date)
+
+    return render_template('on_this_day.html', today=today, memories=memories)
+    
+
 
 @app.route("/note")
 @login_required
