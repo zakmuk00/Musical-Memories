@@ -28,9 +28,9 @@
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             editable: true,
-            height: 650,        
+            height: 700,        
             expandRows: true,   
-            aspectRatio: 1.5,
+            aspectRatio: 1.167,
 
             dateClick: (info) => {
                 const dateStr = info.dateStr;
@@ -54,9 +54,9 @@
                 frame.style.position = 'relative';
         
                 const wrapper = document.createElement('div');
-                wrapper.className = `album-cover`;
+                wrapper.className = `album-wrapper`;
                 wrapper.innerHTML = `
-                    <img src="${noteData.song_image}" class="sticky-bg-asset" alt="">
+                    <img src="${noteData.song_image}" class="album-cover" alt="">
                 `;
                 frame.appendChild(wrapper);
             }
