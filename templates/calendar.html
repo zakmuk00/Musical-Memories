@@ -9,8 +9,8 @@
 
 <div class="row justify-content-center">
     
-    <div class="col-12">
-        <div class="card shadow-sm border-0 p-4" style="background-color: #FAF6EE; border-radius: 16px;">
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card shadow-sm border-0 p-4" style="background-color: #2d2d2d; border-radius: 16px;">
             <div class="card-body">
                 
                 
@@ -56,8 +56,7 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="calendar" class="p-3 bg-white shadow-sm" style="border-radius: 12px;"></div>
+                <div id="calendar" class="p-3 bg-white" style="border-radius: 12px;"></div>
             </div>
         </div>
     </div>
@@ -75,9 +74,8 @@
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             editable: true,
-            height: 750,        
-            expandRows: true,   
-            aspectRatio: 1.5, 
+            height: 'auto',        
+            expandRows: true,
 
             dateClick: (info) => {
                 const dateStr = info.dateStr;
@@ -92,19 +90,20 @@
             dayCellDidMount: (arg) => {
                 const dateStr = arg.date.toISOString().split('T')[0];
                 const noteData = userNotes[dateStr] || '';
-                if (!noteData) return;
-        
-                const displayText = typeof noteData === 'string' ? noteData : noteData.text;
-                const tiltClass = arg.date.getDate() % 2 === 0 ? 'tilt-even' : 'tilt-odd';
-        
                 const frame = arg.el.querySelector('.fc-daygrid-day-frame');
                 frame.style.position = 'relative';
-        
                 const wrapper = document.createElement('div');
-                wrapper.className = `album-wrapper`;
-                wrapper.innerHTML = `
-                    <img src="${noteData.song_image}" class="album-cover" alt="">
-                `;
+                if (noteData) {
+                    wrapper.className = `album-wrapper`;
+                    wrapper.innerHTML = `
+                        <img src="${noteData.song_image}" class="album-cover" alt="">
+                    `;
+                } else {
+                    wrapper.className = 'empty-add-button';
+                    wrapper.innerHTML = `
+                        <div class="add-icon">+</div>
+                    `;
+                }
                 frame.appendChild(wrapper);
             }
         });

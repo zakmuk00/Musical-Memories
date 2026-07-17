@@ -17,7 +17,6 @@ body {
     background-color: var(--paper);
     background-attachment: fixed;
     min-height: 100vh;
-    overflow: hidden;
 }
 
 h1, h2, h3.fw-bold {
