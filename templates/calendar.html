@@ -94,6 +94,7 @@
                 const wrapper = document.createElement('div');
                 if (noteData) {
                     wrapper.className = `album-wrapper`;
+                    wrapper.style.setProperty('--bg-image', `url(${noteData.song_image})`);
                     wrapper.innerHTML = `
                         <img src="${noteData.song_image}" class="album-cover" alt="">
                     `;
