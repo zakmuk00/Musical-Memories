@@ -1,6 +1,6 @@
 import os
 import git
-from flask import Flask, render_template, url_for,redirect, request, session, jsonify
+from flask import Flask, render_template, url_for,redirect, request, session, jsonify, flash
 from datetime import datetime, date
 from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
@@ -104,7 +104,9 @@ def spotify_callback():
         "expires_at": spotify.expires_at
     })
 
-    get_or_create_user(user_id, profile.get("display_name"))
+    user = get_or_create_user(user_id, profile.get("display_name"))
+    # store useranme in flask session
+    session["username"] = user.username
 
     return redirect("/calendar")
 
@@ -569,10 +571,6 @@ def search_entries():
 
     return jsonify(results)
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(host='0.0.0.0', port=5000, debug=True)
 
 @app.route("/update_server", methods=['POST'])
 def webhook():
@@ -585,22 +583,29 @@ def webhook():
         return 'Wrong event type', 400
 
 
-@app.route("/friends/request/<username>", methods=["POST"])
+@app.route("/friends/request", methods=["POST"])
 @login_required
-def friend_request(username):
+def friend_request():
     """
     - Sends friend request from current user to given username
     - username (str): username of person being requested
-    - Sends user back to the calendar page
+    - Sends user back to their own profile page
     """
     user_id = session.get("user_id")
+    username = request.form.get("username")
 
     target_user = get_user_by_username(username)
     if target_user is None:
-        return redirect(url_for('calendar'))
+        flash("User not found.")
+        return redirect(url_for('profile', username=session.get("username")))
     
-    send_request(user_id, target_user.id)
-    return redirect(url_for('calendar'))
+    success = send_request(user_id, target_user.id)
+    if success:
+        flash(f"Friend request sent to {username}!")
+    else:
+        flash("Could not send friend request.")
+
+    return redirect(url_for('profile', username=session.get("username")))
 
 @app.route("/friends/accept/<requester_username>", methods=["POST"])
 @login_required
@@ -657,3 +662,8 @@ def profile(username):
     friends = get_friends(target_user.id) if is_curr_user else []
 
     return render_template('profile.html', subtitle='Profile Page', text='This is the profile page', viewing_user=target_user, is_curr_user=is_curr_user, entries=entries, friends=friends)
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(host='0.0.0.0', port=5000, debug=True)

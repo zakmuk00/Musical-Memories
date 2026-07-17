@@ -28,6 +28,9 @@
                         <a class="nav-link" href="/map">Map</a>
                         <a class="nav-link" href="/timeline">Timeline</a>
                         <a class="nav-link" href="/about">About</a>
+                        {% if session.username %}
+                            <a class="nav-link" href="/profile/{{ session.username }}">Profile</a>
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div class="navbar-nav ms-auto">
@@ -43,6 +46,13 @@
     {% endblock %}
 
     {% block container_start %}<div class="container mt-4">{% endblock %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
     {% block container_end %}</div>{% endblock %}
 
