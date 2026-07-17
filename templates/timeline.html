@@ -1,6 +1,10 @@
 {%extends "layout.html" %}
 
 {% block title %}Memory Timeline{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/timeline.css') }}">
+{% endblock %}
 
 {% block content %}
 
@@ -34,42 +38,56 @@
         <div id="timelineContainer">
             {% for entry in entries %}
             
-            <div class="card shadow-sm border-0 mb-4 memory-card">
-                <div class="card-body d-flex gap-3 align-items-start">
-                    {% if entry.song_image %}
-                        <img src="{{ entry.song_image }}"
-                            alt="Album cover"
-                            style="width: 90px; height: 90px; object-fit:cover; border-radius: 12px;">
-                    {% else %}
-                        <div style="width: 90px; height: 90px; background: #e1dddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
-                            No Album Picture
-                        </div>
-                    {% endif %}
+            <div class="card shadow-sm border-0 mb-4 memory-card" {% if entry.song_image %}style="--bg-image: url('{{ entry.song_image }}');"{% endif %}>
+                
+                <div class="card-body d-flex gap-3 align-items-center justify-content-between">
                     
-                    <div class="flex-grow-1">
-                        <h5 class="fw-bold mb-1 song-name">{{ entry.song_name }}</h5>
-                        <div class="text-muted mb-1" style="font-size: 10px">
-                            <span class="artist-name">{{ entry.artist_name }}</span> | <span>{{ entry.date }}</span>
-                        </div>
                     
-                        {% if entry.journal_text %}
-                        <div class="text-wrap text-break mb-2 journal-text" style="font-size:small">
-                            {{ entry.journal_text[:150] }}
-                            {% if entry.journal_text|length > 150 %}...{% endif %}
-                        </div>
+                    <div class="d-flex gap-3 align-items-start flex-grow-1">
+                        {% if entry.song_image %}
+                            <img src="{{ entry.song_image }}"
+                                alt="Album cover"
+                                style="width: 90px; height: 90px; object-fit:cover; border-radius: 12px; flex-shrink: 0;">
+                        {% else %}
+                            <div style="width: 90px; height: 90px; background: #e1dddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; flex-shrink: 0; color: #6c757d;">
+                                No Album Picture
+                            </div>
                         {% endif %}
                         
-                        {% if entry.location_name %}
-                        <div class="text-muted mb-2 location-name" style="font-size:small">
-                            Location: {{ entry.location_name }}
+                        
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold mb-1 song-name">{{ entry.song_name }}</h5>
+                            <div class="text-muted mb-1" style="font-size: 10px">
+                                
+                                {% if entry.artist_name %}
+                                    <span class="artist-name">{{ entry.artist_name }}</span> | 
+                                {% endif %}
+                                <span class="memory-date">{{ entry.date }}</span>
+                            </div>
+                        
+                            {% if entry.journal_text %}
+                            <div class="text-wrap text-break mb-2 journal-text" style="font-size:small">
+                                {{ entry.journal_text[:150] }}
+                                {% if entry.journal_text|length > 150 %}...{% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            {% if entry.location_name %}
+                            <div class="text-muted mb-0 location-name" style="font-size:small">
+                                Location: {{ entry.location_name }}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
+                    </div>
 
+                    
+                    <div class="ms-3 flex-shrink-0">
                         <a href="/note?date={{ entry.date }}"
-                            class="btn btn-sm btn-primary mt-2">
+                            class="btn btn-sm btn-primary rounded-pill px-3 view-note-button">
                             View Full Note
                         </a>
                     </div>
+
                 </div>
             </div>
             {% endfor %}
@@ -107,11 +125,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const songName = card.querySelector('.song-name')?.textContent || '';
             const artistName = card.querySelector('.artist-name')?.textContent || '';
+            const memoryDate = card.querySelector('.memory-date')?.textContent || '';
             const journalText = card.querySelector('.journal-text')?.textContent || '';
             const locationName = card.querySelector('.location-name')?.textContent || '';
 
            
-            const searchableContent = `${songName} ${artistName} ${journalText} ${locationName}`.toLowerCase();
+            const searchableContent = `${songName} ${artistName} ${memoryDate} ${journalText} ${locationName}`.toLowerCase();
 
             if (searchableContent.includes(query)) {
                 card.classList.remove('d-none'); 

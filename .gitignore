@@ -5,6 +5,7 @@ instance
 __pycache__/
 forms/__pycache__/
 instance/
+static/uploads/
 node_modules
 eslint.config.mjs
 package-lock.json
