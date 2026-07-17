@@ -45,7 +45,6 @@
                                         {% endif %}
 
                                         {% if entry.artist_name and entry.date %}
-
                                         <div class="col-auto">
                                             <span class="text-muted">
                                             {{ entry.artist_name }} | {{ entry.date.strftime('%B %d %Y') }}
@@ -54,39 +53,38 @@
                                         {% endif %}
 
                                         {% if entry.journal_text %}
-
-                                        <div class="col text-wrap" style="font-size:small">
-                                            {{ entry.journal_text[:150] }}
+                                        <div class="row mb-2">
+                                            <div class="text-wrap" style="font-size:small">
+                                                {{ entry.journal_text[:150] }}{% if entry.journal_text | length > 150 %}...{% endif %}
+                                            </div>
                                         </div>
 
                                         {% endif %}
-                                        <div class="col-auto">
+                                        <div class="col-auto text-end">
                                             <a href="/note?date={{ entry.date }}"
                                             class="btn btn-sm btn-primary mt-2">
                                             View Full Note
                                             </a>
                                         </div>
-                                        
-                                        
-
                                     </div>
                                 </div>
-
                             </div>
-
                         </div>
                     {% endfor %}
                 </div>
                 {% if memories | length > 1 %}
-                <button class="carousel-control-prev" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="prev">
+                <div class="d-flex justify-content-between gap-2">
+                <button class="carousel-control-prev position-relative bg-dark" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
                 </button>
 
-                <button class="carousel-control-next" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="next">
+                <button class="carousel-control-next position-relative bg-dark" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
                 </button>
+                </div>
+                
                 {% endif %}
             </div>
 
