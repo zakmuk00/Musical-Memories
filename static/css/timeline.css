@@ -1,0 +1,100 @@
+:root {
+    --fc-page-bg-color: #2d2d2d; 
+    
+    --fc-neutral-text-color: #ffffff; 
+    
+    --fc-border-color: #555555; 
+
+    --button-bg-color: #1DB954;
+}
+
+.card {
+    background-color: var(--fc-page-bg-color) !important;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.btn-primary {
+    font-family: 'Poppins', sans-serif !important;
+    font-style: normal;
+    font-weight: 400;
+    text-decoration: none;
+    color: var(--fc-neutral-text-color);
+    background-color: var(--button-bg-color) !important;
+    border: 1px solid var(--fc-border-color) !important;
+}
+
+.btn-outline-primary {
+    font-family: 'Poppins', sans-serif !important;
+    font-style: normal;
+    font-weight: 400;
+    text-decoration: none;
+    color: var(--fc-neutral-text-color);
+    background-color: transparent !important;
+    border: 1px solid var(--fc-border-color) !important;
+}
+
+.view-note-button {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease-in-out;
+}
+
+.card:hover .view-note-button {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.memory-card {
+    overflow: hidden;
+}
+
+.memory-card .card-body {
+    position: relative;
+    z-index: 1; 
+}
+
+.memory-card::before {
+    content: "";
+    position: absolute;
+    /* Stretch slightly outside the bounds to prevent sharp white blur edges */
+    top: -20px; left: -20px; bottom: -20px; right: -20px; 
+    
+    background-image: var(--bg-image);
+    background-size: 200% 300%;
+    background-position: left center;
+    
+    /* Heavy blur and darkened brightness so text remains legible */
+    filter: blur(30px) brightness(0.5);
+    
+    /* The Magic Fade: Solid black (visible) on the left, fading to transparent (invisible) at 50% */
+    -webkit-mask-image: linear-gradient(to right, black 0%, transparent 50%);
+    mask-image: linear-gradient(to right, black 0%, transparent 50%);
+    
+    opacity: 0;
+    z-index: 0;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-out;
+}
+
+/* 3. Reveal the glow on hover */
+.memory-card:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+    animation: breathe-colors 20s linear infinite;
+}
+
+@keyframes breathe-colors {
+    0%, 100% {
+        background-position: 0% 0%;
+    }
+    33% {
+        background-position: 100% 100%;
+    }
+    66% {
+        background-position: 0% 100%;
+    }
+}
