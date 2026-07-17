@@ -24,7 +24,7 @@
             <div id="onThisDayCarousel" class="carousel slide" data-bs-ride="false">
                 <div class="carousel-inner">
                     {% for entry in memories %}
-                        <div class="carousel-item{% if loop.first %}active{% endif %}">
+                        <div class="carousel-item{% if loop.first %} active{% endif %}">
                             <div class="card shadow-sm border-0 mb-4">
                                 <div class="card-body">
                                     <div class="row g-2 align-items-start">
@@ -37,6 +37,7 @@
                                                     No Album Picture
                                                 </div>
                                             {% endif %}
+                                        </div>
                                         {% if entry.song_name %}
                                         <div class="col-auto">
                                             <h5 class="fw-bold"> {{ entry.song_name }} </h5>
@@ -54,18 +55,19 @@
 
                                         {% if entry.journal_text %}
 
-                                        <div class="col-auto text-break text-wrap" style="font-size:small">
+                                        <div class="col text-wrap" style="font-size:small">
                                             {{ entry.journal_text[:150] }}
                                         </div>
 
                                         {% endif %}
-
-                                        <a href="/note?date={{ entry.date }}"
+                                        <div class="col-auto">
+                                            <a href="/note?date={{ entry.date }}"
                                             class="btn btn-sm btn-primary mt-2">
                                             View Full Note
-                                        </a>
-                                        
+                                            </a>
                                         </div>
+                                        
+                                        
 
                                     </div>
                                 </div>
@@ -75,7 +77,17 @@
                         </div>
                     {% endfor %}
                 </div>
+                {% if memories | length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
 
+                <button class="carousel-control-next" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                {% endif %}
             </div>
 
             {% else %}

@@ -239,7 +239,7 @@ def on_this_day():
         if same_day and same_month and past_year:
             memories.append(entry)
     
-    memories = sorted(memories, key=lambda entry: entry.date)
+    memories = sorted(memories, key=lambda entry: entry.date, reverse=True)
 
     return render_template("on_this_day.html", today=today, memories=memories)
     
