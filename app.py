@@ -550,13 +550,14 @@ def search_entries():
 
     results = []
     for entry in entries:
-        # Check if the query matches the song name, artist, location, or notes
+        # Check if the query matches the song name, artist, or date
+        date_str = entry.date.strftime("%Y-%m-%d") if entry.date else ""
         song_match = query in (entry.song_name or "").lower()
         artist_match = query in (entry.artist_name or "").lower()
-        #location_match = query in (entry.location_name or "").lower() 
-        #notes_match = query in (entry.journal_text or "").lower()
 
-        if song_match or artist_match: # or location_match or notes_match:
+        date_match = query in date_str
+
+        if song_match or artist_match or date_match: 
             results.append({
                 "date": entry.date.strftime("%Y-%m-%d"),
                 "song_name": entry.song_name,
