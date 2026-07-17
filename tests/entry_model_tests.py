@@ -2,12 +2,12 @@ import unittest
 import datetime
 from flask import Flask
 from database import db
-from models import Entry, add_entry, get_by_date
+from models import Entry, add_entry, get_entries_by_date
 
 class EntryTest(unittest.TestCase):
     def setUp(self):
         self.app = Flask(__name__)
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///models.db'
         self.app.config['TESTING'] = True
         db.init_app(self.app)
 
@@ -47,6 +47,7 @@ class EntryTest(unittest.TestCase):
     def test_get_by_date(self):
         with self.app.app_context():
             test_date = datetime.date(2026, 7, 9)
+            test_date2 = datetime.date(2026, 7, 17)
 
             dummy_entry = Entry(user_id='test_user_2',
                                 date=test_date,
@@ -56,17 +57,28 @@ class EntryTest(unittest.TestCase):
                                 song_image='https://i.scdn.co/image/ab67616d0000e1a3540c6a5c78bd857c85bb256d',
                                 location_name='Molly Tea Bellevue',
                                 journal_text="They don't know I'm listening to peak fr.")
+            dummy_entry2 = Entry(user_id='test_user_2',
+                                date=test_date,
+                                song_name='money longer',
+                                artist_name='lil uzi vert',
+                                spotify_link='https://open.spotify.com/track/0B8QzDH7YWih85V5SEMnyJ',
+                                song_image='https://i.scdn.co/image/ab67616d0000b273fc3a56b8b1c442030716c98b',
+                                location_name='Boston, MA',
+                                journal_text="This is peak.")
+            
             db.session.add(dummy_entry)
+            db.session.add(dummy_entry2)
             db.session.commit()
 
-            valid_request = get_by_date('test_user_2', test_date)
+            valid_request = get_entries_by_date('test_user_2', test_date)
             self.assertIsNotNone(valid_request)
             print('Entry found')
-            self.assertEqual(valid_request.song_name, "bake shop")
+            self.assertEqual(len(valid_request), 2)
+            self.assertEqual(valid_request[0].song_name, "bake shop")
             print('Song name matches')
 
-            invalid_request = get_by_date('fake_user_id', test_date)
-            self.assertIsNone(invalid_request)
+            invalid_request = get_entries_by_date('fake_user_id', test_date)
+            self.assertEqual(len(invalid_request), 0)
             print('Fake entry not found')
 
 if __name__ == '__main__':

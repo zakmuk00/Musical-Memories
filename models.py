@@ -39,13 +39,7 @@ class Entry(db.Model):
     journal_text = db.Column(db.Text)
     latitude = db.Column(db.Float())
     longitude = db.Column(db.Float())
-    __table_args__ = (
-        db.UniqueConstraint(
-            'user_id',
-            'date',
-            name='unique_user_date'
-            ),
-        )
+    
 
 
 # Only accepts multiple parameters so far
@@ -155,9 +149,9 @@ def get_all_by_user(query_user_id):
         print('No entries by user')
     return response
 
-
+"""
 def get_by_date(query_user_id, query_date):
-    """
+    
     Returns a Entry object based on the date created
 
     Note: The current user id and the entry's user_id needs to match
@@ -168,7 +162,7 @@ def get_by_date(query_user_id, query_date):
 
     Returns:
         Entry: the Entry object if it exists and None otherwise
-    """
+    
     # Validation needed
     response = Entry.query.filter_by(
         user_id=query_user_id,
@@ -182,7 +176,46 @@ def get_by_date(query_user_id, query_date):
         print('created:', response.date)
         print()
     return response
+"""
+def get_entries_by_date(query_user_id, query_date):
+    """
+    Returns Entry object(s) based on the date created
 
+    Note: The current user id and the entry's user_id needs to match
+
+    Args:
+        query_user_id (str): The user id of entry being searched
+        query_date (date): The date of the entry
+
+    Returns:
+        A list with entries
+    """
+    # Validation needed
+    response = Entry.query.filter_by(
+        user_id=query_user_id,
+        date=query_date).all()
+    if not response:
+        print('Date not in table')
+        print()
+    else:
+        for entry in response:
+            print('id:', entry.id)
+            print('song name:', entry.song_name)
+            print('created:', entry.date)
+            print()
+    return response
+
+def get_entry_by_id_for_user(entry_id, user_id):
+    """
+    Returns one specific entry by id, but only if it belongs to the 
+    logged-in user.
+
+    Prevent users from opening entries that do not belong to them
+    """
+    return Entry.query.filter_by(
+        id=entry_id,
+        user_id=user_id
+    ).first()
 
 # Deletes rows with the given id
 # Returns boolean value of deletion status
