@@ -34,3 +34,13 @@ h1, h2, h3.fw-bold {
     font-family: 'Poppins', sans-serif;
     letter-spacing: 0.3px;
 }
+
+.navbar .nav-link:hover {
+    color: var(--accent) !important;
+}
+
+.navbar-brand {
+    font-family: 'Caveat', cursive;
+    font-size: 1.8rem;
+    color: var(--accent) !important;
+}
