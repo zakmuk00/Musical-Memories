@@ -3,17 +3,36 @@
 {% block title %}On This Day {% endblock %}
 {% block content %}
 
-<style>
-    .card {
-    background: #2d2d2d;
-    border: none;
-    border-radius: 6px;
-    box-shadow: 0 6px 16px var(--shadow);
-    position: relative;
-}
+{% block head %}
+    <style>
+        .btn-primary, .btn-success {
+            background-color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            border-radius: 30px;
+            box-shadow: 0 3px 8px var(--shadow);
+            padding: 10px 16px;
+            font-size: .9rem;
+        }
 
+        .btn-primary:hover, .btn-success:hover {
+            background-color: #15833b !important;
+            transform: translateY(-1px);
+        }
+        
+        .modal {
+            background-color: transparent;
+        }
+      
+        .card {
+            background: #2d2d2d;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 6px 16px var(--shadow);
+            position: relative;
+        }
 
-</style>
+    </style>
+{% endblock %}
 
 <div class="modal" id ="onThisDayModal">
     <div class="modal-dialog modal-dialog-centered modal-lg">
