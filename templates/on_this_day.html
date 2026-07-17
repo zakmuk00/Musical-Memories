@@ -3,6 +3,29 @@
 {% block title %}On This Day {% endblock %}
 {% block content %}
 
+{% block head %}
+    <style>
+        .btn-primary, .btn-success {
+            background-color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            border-radius: 30px;
+            box-shadow: 0 3px 8px var(--shadow);
+            padding: 10px 16px;
+            font-size: .9rem;
+        }
+
+        .btn-primary:hover, .btn-success:hover {
+            background-color: #15833b !important;
+            transform: translateY(-1px);
+        }
+        
+        .modal {
+            background-color: transparent;
+        }
+
+    </style>
+{% endblock %}
+
 <div class="modal" id ="onThisDayModal">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
