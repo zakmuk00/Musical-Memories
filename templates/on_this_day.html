@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+
+{% block title %}On This Day {% endblock %}
+{% block content %}
+
+<div class="modal" id ="onThisDayModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-dark">
+                    On This Day
+                </h5>
+
+                <a href="/calendar" class="btn-close">
+                </a>
+            </div>
+        <div class="modal-body">
+            {% if memories %}
+
+            <p class ="text-muted text-center">
+                Memories from {{ today.strftime("%B %d") }} in past years
+            </p>
+
+            <div id="onThisDayCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                    {% for entry in memories %}
+                        <div class="carousel-item{% if loop.first %} active{% endif %}">
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-body">
+                                    <div class="row g-2 align-items-start">
+                                        <div class="col-auto">
+                                            {% if entry.song_image %}
+                                                <img src="{{ entry.song_image }}" alt="Album picture" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded align-items-center justify-content-center fw-bold"
+                                                    style="width: 100px; height: 100px; background: #e1dddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
+                                                    No Album Picture
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        {% if entry.song_name %}
+                                        <div class="col-auto">
+                                            <h5 class="fw-bold"> {{ entry.song_name }} </h5>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if entry.artist_name and entry.date %}
+                                        <div class="col-auto">
+                                            <span class="text-muted">
+                                            {{ entry.artist_name }} | {{ entry.date.strftime('%B %d %Y') }}
+                                            </span>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if entry.journal_text %}
+                                        <div class="row mb-2">
+                                            <div class="text-wrap" style="font-size:small">
+                                                {{ entry.journal_text[:150] }}{% if entry.journal_text | length > 150 %}...{% endif %}
+                                            </div>
+                                        </div>
+
+                                        {% endif %}
+                                        <div class="col-auto text-end">
+                                            <a href="/note?date={{ entry.date }}"
+                                            class="btn btn-sm btn-primary mt-2">
+                                            View Full Note
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if memories | length > 1 %}
+                <div class="d-flex justify-content-between gap-2">
+                <button class="carousel-control-prev position-relative bg-dark" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+
+                <button class="carousel-control-next position-relative bg-dark" type="button" data-bs-target="#onThisDayCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                </div>
+                
+                {% endif %}
+            </div>
+
+            {% else %}
+            <div class="text-center">
+                <h4 class="fw-bold text-dark">No memories from this day yet</h4>
+
+                <p class="text-muted">
+                    You do not have any saved memories from {{ today.strftime('%B %d') }} in past years.
+                </p>
+
+                <a href="/calendar" class="btn btn-primary">
+                    Back to Calendar
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+        const modalElement = document.getElementById('onThisDayModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    });
+</script>
+{% endblock %}

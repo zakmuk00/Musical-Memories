@@ -8,28 +8,34 @@
 {% block content %}
 
 <div class="row justify-content-center">
-    
     <div class="col-12 col-lg-10 col-xl-8">
         <div class="card shadow-sm border-0 p-4" style="background-color: #2d2d2d; border-radius: 16px;">
             <div class="card-body">
                 
-                
+                <!-- On This Day Button -->
+                <div class="mb-3">
+                    <a href="/on-this-day" class="btn btn-primary fw-bold">
+                        On This Day
+                    </a>
+                </div>
+
+                <!-- Centered Header & Integrated Search Bar -->
                 <div class="d-flex flex-column align-items-center mb-4">
                     <h2 class="fw-bold mb-2 text-center" style="font-family: 'Georgia', cursive, sans-serif; color: #8C6239;">
                         Your Musical Journey
                     </h2>
-                    
-                    <!-- Search box-->
+
+                    <!-- Inline Search Box Dropdown -->
                     <div class="position-relative w-100" style="max-width: 450px;">
                         <input 
                             type="text" 
                             id="entry-search" 
                             class="form-control shadow-sm" 
-                            placeholder="Search song, or date (YYYY-MM-DD)..." 
+                            placeholder="Search song, artist, or date (YYYY-MM-DD)..." 
                             style="border-radius: 20px; border: 1px solid #e1dddd; padding: 10px 18px; font-size: 0.95rem;"
                             autocomplete="off"
                         />
-                        
+
                         <div 
                             id="search-results" 
                             class="shadow-lg"
@@ -55,6 +61,8 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Calendar Component -->
                 <div id="calendar" class="p-3 bg-white" style="border-radius: 12px;"></div>
             </div>
         </div>
@@ -66,8 +74,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const calendarEl = document.getElementById('calendar');
-        
-        
         const userNotes = {{ user_notes | tojson | safe }};
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -78,7 +84,7 @@
 
             dateClick: (info) => {
                 const dateStr = info.dateStr;
-                
+
                 if (userNotes && userNotes[dateStr]) {
                     window.location.href = `/note?date=${dateStr}`;
                 } else {
@@ -148,7 +154,7 @@
                 })
                 .then(function(data) {
                     resultsContainer.innerHTML = "";
-                    
+
                     if (data.length === 0) {
                         resultsContainer.innerHTML = `
                             <div class="text-center text-muted py-4">
@@ -160,7 +166,7 @@
                     data.forEach(function(entry) {
                         const item = document.createElement("a");
                         item.href = "/note?date=" + entry.date;
-                        
+
                         item.style.display = "flex";
                         item.style.alignItems = "center";
                         item.style.padding = "12px";

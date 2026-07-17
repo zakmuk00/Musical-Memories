@@ -19,6 +19,15 @@ body {
     min-height: 100vh;
 }
 
+.footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 0;
+    background-color: var(--paper);
+    color: var(--ink);
+    padding: 10px 0;
+    margin-top: 10vh;
+}
+
 h1, h2, h3.fw-bold {
     font-family: 'Poppins', Arial, sans-serif;
     font-size: 2.2rem;
@@ -33,4 +42,14 @@ h1, h2, h3.fw-bold {
 .navbar .nav-link {
     font-family: 'Poppins', sans-serif;
     letter-spacing: 0.3px;
+}
+
+.navbar .nav-link:hover {
+    color: var(--accent) !important;
+}
+
+.navbar-brand {
+    font-family: 'Caveat', cursive;
+    font-size: 1.8rem;
+    color: var(--accent) !important;
 }
