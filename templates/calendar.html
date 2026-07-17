@@ -1,16 +1,62 @@
 {% extends "layout.html" %}
 
 {% block title %}Calendar{% endblock %}
-
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+{% endblock %}
 {% block content %}
+
 <div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card shadow-sm border-0 p-4">
+    
+    <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card shadow-sm border-0 p-4" style="background-color: #2d2d2d; border-radius: 16px;">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-center mb-4">
-                    <h2 class="fw-bold mb-0 text-center">Your Musical Journey</h2>
+                
+                
+                <div class="d-flex flex-column align-items-center mb-4">
+                    <h2 class="fw-bold mb-2 text-center" style="font-family: 'Georgia', cursive, sans-serif; color: #8C6239;">
+                        Your Musical Journey
+                    </h2>
+                    
+                    
+                    <div class="position-relative w-100" style="max-width: 450px;">
+                        <input 
+                            type="text" 
+                            id="entry-search" 
+                            class="form-control shadow-sm" 
+                            placeholder="Search song or artist..." 
+                            style="border-radius: 20px; border: 1px solid #e1dddd; padding: 10px 18px; font-size: 0.95rem;"
+                            autocomplete="off"
+                        />
+                        
+                        
+                        <div 
+                            id="search-results" 
+                            class="shadow-lg"
+                            style="
+                                display: none;
+                                position: absolute;
+                                top: 100%;
+                                left: 0;
+                                right: 0;
+                                z-index: 2000; /* Must be higher than FullCalendar elements (z-index ~1000) */
+                                background-color: #ffffff;
+                                border: 1px solid #eaeaea;
+                                border-radius: 14px;
+                                max-height: 350px; 
+                                overflow-y: auto;
+                                margin-top: 8px;
+                                padding: 8px;
+                            "
+                        >
+                            <div class="text-center text-muted py-4" id="search-placeholder-msg">
+                                <p class="mb-0" style="font-size: 0.9rem;">Start typing to search your memory timeline...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div id="calendar"></div>
+                <div id="calendar" class="p-3 bg-white" style="border-radius: 12px;"></div>
             </div>
         </div>
     </div>
@@ -22,15 +68,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         const calendarEl = document.getElementById('calendar');
         
-        // Jinja safely injected variables
+        
         const userNotes = {{ user_notes | tojson | safe }};
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             editable: true,
-            height: 650,        
-            expandRows: true,   
-            aspectRatio: 1.5,
+            height: 'auto',        
+            expandRows: true,
 
             dateClick: (info) => {
                 const dateStr = info.dateStr;
@@ -45,27 +90,141 @@
             dayCellDidMount: (arg) => {
                 const dateStr = arg.date.toISOString().split('T')[0];
                 const noteData = userNotes[dateStr] || '';
-                if (!noteData) return;
-        
-                const displayText = typeof noteData === 'string' ? noteData : noteData.text;
-                const tiltClass = arg.date.getDate() % 2 === 0 ? 'tilt-even' : 'tilt-odd';
-        
                 const frame = arg.el.querySelector('.fc-daygrid-day-frame');
                 frame.style.position = 'relative';
-        
                 const wrapper = document.createElement('div');
-                wrapper.className = `custom-sticky-wrapper ${tiltClass}`;
-                wrapper.innerHTML = `
-                    <img src="/static/images/yellow-sticky-note.avif" class="sticky-bg-asset" alt="">
-                    <div class="sticky-overlay-content" title="${displayText}">
-                        <div class="sticky-song-text">${displayText}</div>
-                    </div>
-                `;
+                if (noteData) {
+                    wrapper.className = `album-wrapper`;
+                    wrapper.innerHTML = `
+                        <img src="${noteData.song_image}" class="album-cover" alt="">
+                    `;
+                } else {
+                    wrapper.className = 'empty-add-button';
+                    wrapper.innerHTML = `
+                        <div class="add-icon">+</div>
+                    `;
+                }
                 frame.appendChild(wrapper);
             }
         });
 
         calendar.render();
+
+        // --- INLINE SEARCH BAR DROPDOWN FUNCTIONALITY ---
+        const searchInput = document.getElementById("entry-search");
+        const resultsContainer = document.getElementById("search-results");
+        const placeholderMsg = document.getElementById("search-placeholder-msg");
+
+        function showDropdown() {
+            resultsContainer.style.display = "block";
+        }
+
+        function hideDropdown() {
+            resultsContainer.style.display = "none";
+        }
+
+        searchInput.addEventListener("focus", function() {
+            if (searchInput.value.trim().length >= 2) {
+                showDropdown();
+            }
+        });
+
+        searchInput.addEventListener("input", function() {
+            const query = searchInput.value.trim();
+
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.appendChild(placeholderMsg);
+                placeholderMsg.style.display = 'block';
+                hideDropdown();
+                return;
+            }
+
+            showDropdown();
+
+            fetch(`/search-entries?q=${encodeURIComponent(query)}`)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    resultsContainer.innerHTML = "";
+                    
+                    if (data.length === 0) {
+                        resultsContainer.innerHTML = `
+                            <div class="text-center text-muted py-4">
+                                <p class="mb-0" style="font-size: 0.9rem;">No matching memories found.</p>
+                            </div>`;
+                        return;
+                    }
+
+                    data.forEach(function(entry) {
+                        const item = document.createElement("a");
+                        item.href = "/note?date=" + entry.date;
+                        
+                        item.style.display = "flex";
+                        item.style.alignItems = "center";
+                        item.style.padding = "12px";
+                        item.style.textDecoration = "none";
+                        item.style.color = "#333";
+                        item.style.backgroundColor = "#ffffff";
+                        item.style.border = "none";
+                        item.style.borderRadius = "10px";
+                        item.style.transition = "background-color 0.15s ease";
+                        item.style.marginBottom = "4px";
+
+                        item.addEventListener("mouseenter", function() {
+                            item.style.backgroundColor = "#f8f9fa";
+                        });
+                        item.addEventListener("mouseleave", function() {
+                            item.style.backgroundColor = "#ffffff";
+                        });
+
+                        let albumHTML = '';
+                        if (entry.song_image) {
+                            albumHTML = `<img src="${entry.song_image}" alt="Cover" style="width: 48px; height: 48px; border-radius: 8px; margin-right: 12px; object-fit: cover; flex-shrink: 0;" />`;
+                        } else {
+                            albumHTML = `
+                                <div style="
+                                    width: 48px; 
+                                    height: 48px; 
+                                    background-color: #E2E2E2; 
+                                    border-radius: 8px; 
+                                    margin-right: 12px; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center;
+                                    text-align: center;
+                                    padding: 2px;
+                                    flex-shrink: 0;
+                                ">
+                                    <span style="font-size: 8px; font-weight: bold; color: #555; line-height: 1.1;">No Album</span>
+                                </div>`;
+                        }
+
+                        item.innerHTML = `
+                            ${albumHTML}
+                            <div style="flex-grow: 1; min-width: 0; text-align: left;">
+                                <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2D2D2D;">
+                                    ${entry.song_name || "Untitled"}
+                                </div>
+                                <div style="font-size: 0.75rem; color: #888; font-weight: 500;">
+                                    ${entry.date}
+                                </div>
+                            </div>
+                        `;
+                        resultsContainer.appendChild(item);
+                    });
+                })
+                .catch(err => console.error("Error retrieving matches:", err));
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function(event) {
+            const isClickInside = searchInput.contains(event.target) || resultsContainer.contains(event.target);
+            if (!isClickInside) {
+                hideDropdown();
+            }
+        });
     }); 
 </script>
 {% endblock %}

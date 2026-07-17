@@ -449,6 +449,38 @@ def map():
 
     return render_template('map.html', subtitle='Map page', text='This is the map page', mapbox_token=mapbox_token)
 
+@app.route("/timeline")
+@login_required
+def timeline():
+    """
+    Renders the timeline page to see user's journal notes as a vertical timeline.
+    Sorted from newest to oldest. User can choose to sort oldest to newest.
+
+    Returns:
+        HTML: Renders timeline.html
+    """
+
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for("spotify_login"))
+    
+    entries = get_all_by_user(user_id)
+
+    # from the url we can get the sort query parameter
+    sort_order = request.args.get("sort", "newest")
+
+    if entries:
+        if sort_order == "oldest":
+            entries = sorted(entries, key=lambda entry: entry.date, reverse=True)
+        else:
+            entries = sorted(entries, key=lambda entry: entry.date)
+    else:
+        entries = []
+    
+
+    return render_template('timeline.html', subtitle='Timeline page', text='This is the timeline page', entries=entries, sort_order=sort_order)
+
 
 @app.route("/entries/locations")
 @login_required
@@ -492,6 +524,50 @@ def entry_locations():
 
     return jsonify(data)
 
+
+@app.route("/search-entries")
+@login_required
+def search_entries():
+    """
+    Searches the user's journal entries for matches in song name, artist, 
+    location, or journal text.
+    
+    Query Parameters:
+        q (str): The search keyword
+        
+    Returns:
+        JSON: A list of matching entries with their dates and metadata
+    """
+    query = request.args.get("q", "").strip().lower()
+    if not query:
+        return jsonify([])
+
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify([])
+
+    entries = get_all_by_user(user_id)
+    if not entries:
+        return jsonify([])
+
+    results = []
+    for entry in entries:
+        # Check if the query matches the song name, artist, location, or notes
+        song_match = query in (entry.song_name or "").lower()
+        artist_match = query in (entry.artist_name or "").lower()
+        #location_match = query in (entry.location_name or "").lower() 
+        #notes_match = query in (entry.journal_text or "").lower()
+
+        if song_match or artist_match: # or location_match or notes_match:
+            results.append({
+                "date": entry.date.strftime("%Y-%m-%d"),
+                "song_name": entry.song_name,
+                "artist_name": entry.artist_name,
+                "location_name": entry.location_name,
+                "song_image": entry.song_image
+            })
+
+    return jsonify(results)
 
 if __name__ == '__main__':
     with app.app_context():

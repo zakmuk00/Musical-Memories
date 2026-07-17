@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+:root {
+    --fc-page-bg-color: #2d2d2d; 
+    
+    --fc-neutral-text-color: #ffffff; 
+    
+    --fc-border-color: #555555; 
+
+    --fc-album-cover-bg-color: #363636;
+
+    --fc-album-cover-bg-color-hovered: #127900;
+}
+
+.fc {
+    background-color: var(--fc-page-bg-color) !important;
+}
+
+.fc-theme-standard td, 
+.fc-theme-standard th {
+    border-left: none !important;
+    border-right: none !important;
+}
+
+.fc-button-primary {
+    font-family: 'Poppins', sans-serif !important;
+    font-style: normal;
+    font-weight: 400;
+    text-decoration: none;
+    color: var(--fc-neutral-text-color);
+    background-color: var(--fc-page-bg-color) !important;
+    border: 1px solid var(--fc-border-color) !important;
+}
+
+.fc-toolbar-title {
+    font-family: 'Poppins', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    text-decoration: none;
+    color: var(--fc-neutral-text-color);
+}
+
+.fc .fc-scrollgrid {
+    border: none !important;
+}
+
+.fc-day {
+    background-color: var(--fc-page-bg-color);
+    transition: background-color 0.25s ease-in-out;
+}
+
+.fc-scrollgrid-section .fc-daygrid-day:hover {
+    background-color: var(--fc-album-cover-bg-color);
+}
+
+.fc-col-header-cell-cushion {
+    font-family: 'Poppins', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 10%;
+    color: var(--fc-neutral-text-color);
+}
+
+.fc-daygrid-day-frame {
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.fc-daygrid-day-number {
+    font-size: 20px;
+    padding: 4px 6px;
+    position: relative;
+    z-index: 1;
+    font-family: 'Poppins', sans-serif;
+    font-style: normal;
+    text-decoration: none;
+    color: var(--fc-neutral-text-color);
+}
+
+.fc-daygrid-day-number:hover {
+    color: var(--fc-neutral-text-color);
+}
+
+.album-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    background-color: var(--fc-album-cover-bg-color);
+    transition: background-color 0.3s ease-in-out;
+}
+
+.album-wrapper:hover {
+    background-color: var(--fc-album-cover-bg-color-hovered);
+}
+
+.album-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    box-sizing: border-box; 
+    position: absolute;
+    border-radius: 0%;
+    background-color: rgb(29, 29, 29); 
+    transition: border-radius 0.25s ease-in-out, padding 0.25s ease-in-out;
+}
+
+.album-cover:hover {
+    border-radius: 50%;
+    padding: 30%;
+    animation: spin-vinyl 1.5s linear infinite;
+}
+
+.empty-add-button {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    z-index: 2;
+}
+
+.fc-daygrid-day-frame:hover .empty-add-button {
+    opacity: 1;
+}
+
+.add-icon {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: 0%;
+    background-color: rgb(29, 29, 29);
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    font-size: 30px;
+    color: var(--fc-neutral-text-color);
+    
+    transition: border-radius 0.25s ease-in-out, padding 0.25s ease-in-out;
+    cursor: pointer;
+}
+
+
+.add-icon:hover {
+    border-radius: 50%;
+    padding: 30%;
+    animation: spin-vinyl 1.5s linear infinite;
+}
+
+
+@keyframes spin-vinyl {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

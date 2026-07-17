@@ -3,27 +3,23 @@
 {% block title %}Note{% endblock %}
 
 {% block head %}
-<link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
-<script id="search-js" src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-    }
-
-    #map {
-        width: 100%;
-        flex: 1 1 auto;
-        min-height: 150px;
-        border-radius: 10px;
-    }
-</style>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.25.0/mapbox-gl.js"></script>
+    <script id="search-js" src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/note.css') }}">
 {% endblock %}
 
 {% block content %}
+
 <div class="row justify-content-center">
-    <div class="card shadow mb-4 p-4">
+    <img src="{{ url_for('static', filename='images/Rectangle 139.svg') }}" class="wood-background" alt="">
+    <img src="{{ url_for('static', filename='images/Record.svg') }}" class="record" alt="">
+    <div class="tonearm-container">
+        <img src="{{ url_for('static', filename='images/Arm.svg') }}" class="tonearm" alt="">
+        <img src="{{ url_for('static', filename='images/Base.svg') }}" class="tonearm-base" alt="">
+    </div>
+
+    <div class="mainCard mb-4 p-4">
         <div class="card-body">
             
             <div class="d-flex justify-content-end mb-2">
@@ -35,8 +31,8 @@
 
             <div class="row g-4 mb-4">
                 <div class="col-md-8">
-                    <div class="card shadow-sm p-3 h-100 bg-light">
-                        <h3 class="fw-bold text-success">Your song on {{ date }}:</h3>
+                    <div class="card shadow-sm p-3 h-100">
+                        <h3 class="fw-bold">Your song on {{ date }}:</h3>
                         <div class="mt-2">
                             {% if note.track_id %}
                             <div class="mb-2">
@@ -79,7 +75,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <div class="card shadow-sm p-3 h-100 text-center d-flex align-items-center justify-content-center">
+                    <div class="polaroidCard shadow-sm p-3 h-100 text-center d-flex align-items-center justify-content-center">
                         {% if note.photo %}
                             <div class="polaroid">
                                 <img src="/static/uploads/{{ note.photo }}" class="img-fluid" alt="Note Photo">
