@@ -602,3 +602,45 @@ def respond_to_request(requester_id, receiver_id, accept):
     db.session.commit()
     print('Friend request has been updated')
     return True
+
+def cancel_request(requester_id, receiver_id):
+    """
+    Cancels/revokes a pending friend request, only original requester should call this.
+    """
+    friendship = Friendship.query.filter_by(requester_id=requester_id, receiver_id=receiver_id, status='pending').first()
+    if friendship is None:
+        print('No pending request was found')
+        return False
+    
+    db.session.delete(friendship)
+    db.session.commit()
+    print('Friend request cancelled')
+    return True
+
+def get_pending_outbound(user_id):
+    """
+    - Returns a list of User objects that user_id has sent pending requests to
+    """
+    sent = Friendship.query.filter_by(requester_id=user_id, status='pending').all()
+
+    pending = []
+    for f in sent:
+        target = User.query.get(f.receiver_id)
+        if target is not None:
+            pending.append(target)
+    
+    return pending
+
+def get_pending_inbound(user_id):
+    """
+    - Returns a list of User objects that have sent user_id a pending request
+    """
+    received = Friendship.query.filter_by(receiver_id=user_id, status='pending').all()
+
+    pending = []
+    for f in received:
+        requester = User.query.get(f.requester_id)
+        if requester is not None:
+            pending.append(requester)
+    
+    return pending

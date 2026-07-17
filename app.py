@@ -6,7 +6,7 @@ from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id, get_or_create_user, send_request, respond_to_request, get_user_by_username, is_friend_of, get_friends
+from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id, get_or_create_user, send_request, respond_to_request, get_user_by_username, is_friend_of, get_friends, get_pending_outbound, get_pending_inbound, cancel_request
 from database import db
 
 from spotify_api import SpotifyClient
@@ -613,7 +613,7 @@ def friend_accept(requester_username):
     """
     - Accepts pending friend request from the given username
     - requester_username (str): username of person who sent request
-    - Sends user back to calendar page
+    - Sends user back to their profile page
     """
     user_id = session.get("user_id")
 
@@ -622,7 +622,7 @@ def friend_accept(requester_username):
         return redirect(url_for('calendar'))
     
     respond_to_request(requester.id, user_id, True)
-    return redirect(url_for('calendar'))
+    return redirect(url_for('profile', username=session.get("username")))
 
 @app.route("/friends/decline/<requester_username>", methods=["POST"])
 @login_required
@@ -630,7 +630,7 @@ def friend_decline(requester_username):
     """
     - Declines pending friend request from the given username
     - requester_username (str): username of person who sent request
-    - Sends user back to calendar page
+    - Sends user back to their profile page
     """
     user_id = session.get("user_id")
 
@@ -639,7 +639,23 @@ def friend_decline(requester_username):
         return redirect(url_for('calendar'))
     
     respond_to_request(requester.id, user_id, False)
-    return redirect(url_for('calendar'))
+    return redirect(url_for('profile', username=session.get("username")))
+
+@app.route("/friends/cancel/<username>", methods=["POST"])
+@login_required
+def friend_cancel(username):
+    """
+    - Cancels pending friend request the current user sent to given username
+    - Sends user back to their own profile page
+    """
+    user_id = session.get("user_id")
+
+    target_user = get_user_by_username(username)
+    if target_user is None:
+        return redirect(url_for('calendar'))
+    
+    cancel_request(user_id, target_user.id)
+    return redirect(url_for('profile', username=session.get("username")))
 
 @app.route("/profile/<username>")
 @login_required
@@ -660,8 +676,10 @@ def profile(username):
     
     entries = get_all_by_user(target_user.id)
     friends = get_friends(target_user.id) if is_curr_user else []
+    pending_outbound = get_pending_outbound(target_user.id) if is_curr_user else []
+    pending_inbound = get_pending_inbound(target_user.id) if is_curr_user else []
 
-    return render_template('profile.html', subtitle='Profile Page', text='This is the profile page', viewing_user=target_user, is_curr_user=is_curr_user, entries=entries, friends=friends)
+    return render_template('profile.html', subtitle='Profile Page', text='This is the profile page', viewing_user=target_user, is_curr_user=is_curr_user, entries=entries, friends=friends, pending_outbound=pending_outbound, pending_inbound=pending_inbound)
 
 if __name__ == '__main__':
     with app.app_context():

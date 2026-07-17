@@ -37,6 +37,39 @@
                                         <p class="text-muted mt-2">No friends yet.</p>
                                     {% endfor %}
                                 </ul>
+
+                                <h5 class="fw-bold mt-4 border-top">Pending Requests Received</h5>
+                                <ul class="list-unstyled mt-2 mb-0">
+                                    {% for requester in pending_inbound %}
+                                        <li class="d-flex justify-content-between align-items-center py-1">
+                                            <div>{{ requester.username }}</div>
+                                            <div>
+                                                <form action="{{ url_for('friend_accept', requester_username=requester.username) }}" method="POST">
+                                                    <button type="submit" class="btn btn-outline-success btn-sm">Accept</button>
+                                                </form>
+                                                <form action="{{ url_for('friend_decline', requester_username=requester.username) }}" method="POST">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Decline</button>
+                                                </form>
+                                            </div>
+                                        </li>
+                                    {% else %}
+                                        <p class="text-muted mt-2">No pending inbound requests.</p>
+                                    {% endfor %}
+                                </ul>
+
+                                <h5 class="fw-bold mt-4 border-top">Pending Requests Sent</h5>
+                                <ul class="list-unstyled mt-2 mb-0">
+                                    {% for target in pending_outbound %}
+                                        <li class="d-flex justify-content-between align-items-center py-1">
+                                            <div>{{ target.username }}</div>
+                                            <form action="{{ url_for('friend_cancel', username=target.username) }}" method="POST">
+                                                <button type="submit" class="btn btn-outline-success btn-sm">Revoke</button>
+                                            </form>
+                                        </li>
+                                    {% else %}
+                                        <p class="text-muted mt-2">No pending outbound requests.</p>
+                                    {% endfor %}
+                                </ul>
                             </div>
                         </div>
                         <div class="col-md-4">
