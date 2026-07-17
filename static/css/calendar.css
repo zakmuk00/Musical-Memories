@@ -11,6 +11,20 @@
     --fc-album-cover-bg-color-hovered: #127900;
 }
 
+.btn-primary, .btn-success {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    border-radius: 30px;
+    box-shadow: 0 3px 8px var(--shadow);
+    padding: 10px 16px;
+    font-size: .9rem;
+}
+
+.btn-primary:hover, .btn-success:hover {
+    background-color: #15833b !important;
+    transform: translateY(-1px);
+}
+
 .card {
     background-color: var(--fc-page-bg-color);
     border: none;
