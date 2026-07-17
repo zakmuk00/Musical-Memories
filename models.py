@@ -1,4 +1,5 @@
 from database import db
+from helpers import generate_username
 import datetime
 import os
 
@@ -449,7 +450,7 @@ class User(db.Model):
     bio = db.Column(db.Text)
 
 
-def get_or_create_user(user_id, username):
+def get_or_create_user(user_id, display_name):
     """
     Creates a User row for a given id if it doesn't exist or fetches if does exist.
     """
@@ -458,15 +459,11 @@ def get_or_create_user(user_id, username):
         print('Invalid user_id')
         return None
     
-    if not type(username) is str:
-        print('Invalid username')
-        return None
-    
     existing = User.query.get(user_id)
     if existing is not None:
         return existing
     
-    db.session.add(User(id=user_id, username=username, display_name=None))
+    db.session.add(User(id=user_id, username=generate_username(display_name), display_name=display_name))
     db.session.commit()
     print('User created')
 
@@ -523,6 +520,26 @@ def is_friend_of(user1, user2):
     if response is not None:
         return True
     return False
+
+def get_friends(user_id):
+    """
+    - Returns a list of User objects for all accepted friends of given user_id
+    - Checks both directions
+    """
+    sent = Friendship.query.filter_by(requester_id=user_id, status='accepted').all()
+    received = Friendship.query.filter_by(receiver_id=user_id, status='accepted').all()
+
+    friends = []
+    for f in sent:
+        friend = User.query.get(f.receiver_id)
+        if friend is not None:
+            friends.append(friend)
+    for f in received:
+        friend = User.query.get(f.requester_id)
+        if friend is not None:
+            friends.append(friend)
+    
+    return friends
 
 def send_request(requester_id, receiver_id):
     """

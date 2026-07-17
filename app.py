@@ -6,7 +6,7 @@ from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id
+from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id, get_or_create_user, send_request, respond_to_request, get_user_by_username, is_friend_of, get_friends
 from database import db
 
 from spotify_api import SpotifyClient
@@ -103,6 +103,8 @@ def spotify_callback():
         "refresh_token": spotify.refresh_token,
         "expires_at": spotify.expires_at
     })
+
+    get_or_create_user(user_id, profile.get("display_name"))
 
     return redirect("/calendar")
 
@@ -505,3 +507,77 @@ def webhook():
         return 'Updated PythonAnywhere successfully', 200
     else:
         return 'Wrong event type', 400
+
+
+@app.route("/friends/request/<username>", methods=["POST"])
+@login_required
+def friend_request(username):
+    """
+    - Sends friend request from current user to given username
+    - username (str): username of person being requested
+    - Sends user back to the calendar page
+    """
+    user_id = session.get("user_id")
+
+    target_user = get_user_by_username(username)
+    if target_user is None:
+        return redirect(url_for('calendar'))
+    
+    send_request(user_id, target_user.id)
+    return redirect(url_for('calendar'))
+
+@app.route("/friends/accept/<requester_username>", methods=["POST"])
+@login_required
+def friend_accept(requester_username):
+    """
+    - Accepts pending friend request from the given username
+    - requester_username (str): username of person who sent request
+    - Sends user back to calendar page
+    """
+    user_id = session.get("user_id")
+
+    requester = get_user_by_username(requester_username)
+    if requester is None:
+        return redirect(url_for('calendar'))
+    
+    respond_to_request(requester.id, user_id, True)
+    return redirect(url_for('calendar'))
+
+@app.route("/friends/decline/<requester_username>", methods=["POST"])
+@login_required
+def friend_decline(requester_username):
+    """
+    - Declines pending friend request from the given username
+    - requester_username (str): username of person who sent request
+    - Sends user back to calendar page
+    """
+    user_id = session.get("user_id")
+
+    requester = get_user_by_username(requester_username)
+    if requester is None:
+        return redirect(url_for('calendar'))
+    
+    respond_to_request(requester.id, user_id, False)
+    return redirect(url_for('calendar'))
+
+@app.route("/profile/<username>")
+@login_required
+def profile(username):
+    """
+    - Render's a user's profile page
+    - username (str): username of the profile being viewed
+    """
+    user_id = session.get("user_id")
+
+    target_user = get_user_by_username(username)
+    if target_user is None:
+        return redirect(url_for('calendar'))
+    
+    is_curr_user = target_user.id == user_id
+    if not is_curr_user and not is_friend_of(user_id, target_user.id):
+        return redirect(url_for('calendar'))
+    
+    entries = get_all_by_user(target_user.id)
+    friends = get_friends(target_user.id) if is_curr_user else []
+
+    return render_template('profile.html', subtitle='Profile Page', text='This is the profile page', viewing_user=target_user, is_curr_user=is_curr_user, entries=entries, friends=friends)

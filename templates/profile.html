@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0 p-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-center mb-4">
+                    <h2 class="fw-bold mb-0 text-center">
+                        {% if is_curr_user %}
+                            Your Profile
+                        {% else %}
+                            {{ viewing_user.username }}'s Profile
+                        {% endif %}
+                    </h2>
+                </div>
+
+                {% if is_curr_user %}
+                    <div class="row g-4">
+                        <div class="col-md-8">
+                            <div class="card shadow-sm p-3">
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <h4 class="fw-bold mb-0">Friends List</h4>
+                                    <button type="button" class="btn btn-outline-success btn-sm rounded-pill">Add</button>
+                                </div>
+                                <ul class="list-unstyled mt-3 mb-0">
+                                    {% for friend in friends %}
+                                        <li class="py-1">
+                                            <a href="/profile/{{ friend.username }}">{{ friend.username }}</a>
+                                        </li>
+                                    {% else %}
+                                        <p class="text-muted mt-2">No friends yet.</p>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow-sm p-3 text-center d-flex align-items-center justify-content-center">
+                                <h4 class="fw-bold text-muted my-auto">Profile Analytics</h4>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <h4 class="fw-bold mt-3">Calendar</h4>
+                    <div class="mb-3">
+                        <!-- calendar will go here once the friend scoped route exists -->
+                    </div>
+
+                    <h4 class="fw-bold mt-3">Map</h4>
+                    <div class="mb-3">
+                        <!-- map goes here once route exists -->
+                    </div>
+
+                    <h4 class="fw-bold mt-3">Top Songs</h4>
+                    <div class="mb-3">
+                        <!-- not decided yet, either from the journal entries or live Spotify top tracks -->
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
