@@ -90,19 +90,20 @@
             dayCellDidMount: (arg) => {
                 const dateStr = arg.date.toISOString().split('T')[0];
                 const noteData = userNotes[dateStr] || '';
-                if (!noteData) return;
-        
-                const displayText = typeof noteData === 'string' ? noteData : noteData.text;
-                const tiltClass = arg.date.getDate() % 2 === 0 ? 'tilt-even' : 'tilt-odd';
-        
                 const frame = arg.el.querySelector('.fc-daygrid-day-frame');
                 frame.style.position = 'relative';
-        
                 const wrapper = document.createElement('div');
-                wrapper.className = `album-wrapper`;
-                wrapper.innerHTML = `
-                    <img src="${noteData.song_image}" class="album-cover" alt="">
-                `;
+                if (noteData) {
+                    wrapper.className = `album-wrapper`;
+                    wrapper.innerHTML = `
+                        <img src="${noteData.song_image}" class="album-cover" alt="">
+                    `;
+                } else {
+                    wrapper.className = 'empty-add-button';
+                    wrapper.innerHTML = `
+                        <div class="add-icon">+</div>
+                    `;
+                }
                 frame.appendChild(wrapper);
             }
         });
