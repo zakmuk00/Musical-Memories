@@ -1,4 +1,5 @@
 from database import db
+from helpers import generate_username
 import datetime
 import os
 
@@ -462,3 +463,217 @@ def delete_spotify_tokens(user_id):
     db.session.delete(token_row)
     db.session.commit()
     return True
+
+
+class User(db.Model):
+    """
+    This is the class that defines a user in our app
+
+    id reuses the Spotify account id
+
+    - id (str): Spotify account_id
+    - username (str): unique handle that is used in profile URLs /profile/<username>
+    - display_name (str): the name shown on the profile page
+    - bio (str): an optional short bio text, kinda like Instagram
+    """
+    __tablename__ = 'users'
+    id = db.Column(db.String(255), primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    display_name = db.Column(db.String(150))
+    bio = db.Column(db.Text)
+
+
+def get_or_create_user(user_id, display_name):
+    """
+    Creates a User row for a given id if it doesn't exist or fetches if does exist.
+    """
+
+    if not type(user_id) is str:
+        print('Invalid user_id')
+        return None
+    
+    existing = User.query.get(user_id)
+    if existing is not None:
+        return existing
+    
+    db.session.add(User(id=user_id, username=generate_username(display_name), display_name=display_name))
+    db.session.commit()
+    print('User created')
+
+    return User.query.get(user_id)
+
+
+def get_user_by_username(username):
+    """
+    Fetches a User based on username
+    """
+    response = User.query.filter_by(username=username).first()
+    if response is None:
+        print('Username does not exist in the table')
+    return response
+
+
+class Friendship(db.Model):
+    """
+    This is the class that defines a friendship between two users
+
+    Friendship is a two-way accept: requester sends request, other
+    person accepts or declines. A row can be either direction.
+
+    - id (int): auto-incremented unique Friendship key
+    - requester_id (str): user id of who sent the request
+    - receiver_id (str): user id of who received request
+    - status (str): 'pending', 'accepted', or 'declined'
+    """
+    __tablename__ = 'friendships'
+    id = db.Column(db.Integer, primary_key=True)
+    requester_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=False)
+    receiver_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')
+
+
+def is_friend_of(user1, user2):
+    """
+    Checks if two users are friends
+    """
+    response = Friendship.query.filter(
+        db.or_(
+            db.and_(
+                Friendship.requester_id == user1,
+                Friendship.receiver_id == user2
+            ),
+            db.and_(
+                Friendship.requester_id == user2,
+                Friendship.receiver_id == user1
+            )
+        ),
+        Friendship.status == 'accepted'
+    ).first()
+
+    if response is not None:
+        return True
+    return False
+
+def get_friends(user_id):
+    """
+    - Returns a list of User objects for all accepted friends of given user_id
+    - Checks both directions
+    """
+    sent = Friendship.query.filter_by(requester_id=user_id, status='accepted').all()
+    received = Friendship.query.filter_by(receiver_id=user_id, status='accepted').all()
+
+    friends = []
+    for f in sent:
+        friend = User.query.get(f.receiver_id)
+        if friend is not None:
+            friends.append(friend)
+    for f in received:
+        friend = User.query.get(f.requester_id)
+        if friend is not None:
+            friends.append(friend)
+    
+    return friends
+
+def send_request(requester_id, receiver_id):
+    """
+    Creates a pending friend request from the requester to the receiver
+    """
+    if not type(requester_id) is str or not type(receiver_id) is str:
+        print('Invalid user id')
+        return False
+    if requester_id == receiver_id:
+        print('Cannot send a friend request to yourself')
+        return False
+    
+    existing = Friendship.query.filter(
+        db.or_(
+            db.and_(
+                Friendship.requester_id == requester_id,
+                Friendship.receiver_id == receiver_id
+            ),
+            db.and_(
+                Friendship.requester_id == receiver_id,
+                Friendship.receiver_id == requester_id
+            )
+        )
+    ).first()
+    if existing is not None:
+        print('Friendship already exists or pending')
+        return False
+    
+    db.session.add(
+        Friendship(requester_id=requester_id, receiver_id=receiver_id, status='pending')
+    )
+    db.session.commit()
+    
+    print('Friend request sent')
+    return True
+
+def respond_to_request(requester_id, receiver_id, accept):
+    """
+    Accepts or declines a pending friend request,
+    only receiver of request should call this.
+    """
+    if not type(accept) is bool:
+        print('Invalid accept value, must be boolean')
+        return False
+    
+    friendship = Friendship.query.filter_by(
+        requester_id=requester_id,
+        receiver_id=receiver_id,
+        status='pending'
+    ).first()
+
+    if friendship is None:
+        print('No pending request was found')
+        return False
+    if accept:
+        friendship.status = 'accepted'
+    else:
+        friendship.status = 'declined'
+
+    db.session.commit()
+    print('Friend request has been updated')
+    return True
+
+def cancel_request(requester_id, receiver_id):
+    """
+    Cancels/revokes a pending friend request, only original requester should call this.
+    """
+    friendship = Friendship.query.filter_by(requester_id=requester_id, receiver_id=receiver_id, status='pending').first()
+    if friendship is None:
+        print('No pending request was found')
+        return False
+    
+    db.session.delete(friendship)
+    db.session.commit()
+    print('Friend request cancelled')
+    return True
+
+def get_pending_outbound(user_id):
+    """
+    - Returns a list of User objects that user_id has sent pending requests to
+    """
+    sent = Friendship.query.filter_by(requester_id=user_id, status='pending').all()
+
+    pending = []
+    for f in sent:
+        target = User.query.get(f.receiver_id)
+        if target is not None:
+            pending.append(target)
+    
+    return pending
+
+def get_pending_inbound(user_id):
+    """
+    - Returns a list of User objects that have sent user_id a pending request
+    """
+    received = Friendship.query.filter_by(receiver_id=user_id, status='pending').all()
+
+    pending = []
+    for f in received:
+        requester = User.query.get(f.requester_id)
+        if requester is not None:
+            pending.append(requester)
+    
+    return pending

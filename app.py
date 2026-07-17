@@ -1,12 +1,12 @@
 import os
 import git
-from flask import Flask, render_template, url_for,redirect, request, session, jsonify
+from flask import Flask, render_template, url_for,redirect, request, session, jsonify, flash
 from datetime import datetime, date
 from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id
+from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id, get_or_create_user, send_request, respond_to_request, get_user_by_username, is_friend_of, get_friends, get_pending_outbound, get_pending_inbound, cancel_request
 from database import db
 
 from spotify_api import SpotifyClient
@@ -103,6 +103,10 @@ def spotify_callback():
         "refresh_token": spotify.refresh_token,
         "expires_at": spotify.expires_at
     })
+
+    user = get_or_create_user(user_id, profile.get("display_name"))
+    # store useranme in flask session
+    session["username"] = user.username
 
     return redirect("/calendar")
 
@@ -605,10 +609,6 @@ def search_entries():
 
     return jsonify(results)
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(host='0.0.0.0', port=5000, debug=True)
 
 @app.route("/update_server", methods=['POST'])
 def webhook():
@@ -619,3 +619,107 @@ def webhook():
         return 'Updated PythonAnywhere successfully', 200
     else:
         return 'Wrong event type', 400
+
+
+@app.route("/friends/request", methods=["POST"])
+@login_required
+def friend_request():
+    """
+    - Sends friend request from current user to given username
+    - username (str): username of person being requested
+    - Sends user back to their own profile page
+    """
+    user_id = session.get("user_id")
+    username = request.form.get("username")
+
+    target_user = get_user_by_username(username)
+    if target_user is None:
+        flash("User not found.")
+        return redirect(url_for('profile', username=session.get("username")))
+    
+    success = send_request(user_id, target_user.id)
+    if success:
+        flash(f"Friend request sent to {username}!")
+    else:
+        flash("Could not send friend request.")
+
+    return redirect(url_for('profile', username=session.get("username")))
+
+@app.route("/friends/accept/<requester_username>", methods=["POST"])
+@login_required
+def friend_accept(requester_username):
+    """
+    - Accepts pending friend request from the given username
+    - requester_username (str): username of person who sent request
+    - Sends user back to their profile page
+    """
+    user_id = session.get("user_id")
+
+    requester = get_user_by_username(requester_username)
+    if requester is None:
+        return redirect(url_for('calendar'))
+    
+    respond_to_request(requester.id, user_id, True)
+    return redirect(url_for('profile', username=session.get("username")))
+
+@app.route("/friends/decline/<requester_username>", methods=["POST"])
+@login_required
+def friend_decline(requester_username):
+    """
+    - Declines pending friend request from the given username
+    - requester_username (str): username of person who sent request
+    - Sends user back to their profile page
+    """
+    user_id = session.get("user_id")
+
+    requester = get_user_by_username(requester_username)
+    if requester is None:
+        return redirect(url_for('calendar'))
+    
+    respond_to_request(requester.id, user_id, False)
+    return redirect(url_for('profile', username=session.get("username")))
+
+@app.route("/friends/cancel/<username>", methods=["POST"])
+@login_required
+def friend_cancel(username):
+    """
+    - Cancels pending friend request the current user sent to given username
+    - Sends user back to their own profile page
+    """
+    user_id = session.get("user_id")
+
+    target_user = get_user_by_username(username)
+    if target_user is None:
+        return redirect(url_for('calendar'))
+    
+    cancel_request(user_id, target_user.id)
+    return redirect(url_for('profile', username=session.get("username")))
+
+@app.route("/profile/<username>")
+@login_required
+def profile(username):
+    """
+    - Render's a user's profile page
+    - username (str): username of the profile being viewed
+    """
+    user_id = session.get("user_id")
+
+    target_user = get_user_by_username(username)
+    if target_user is None:
+        return redirect(url_for('calendar'))
+    
+    is_curr_user = target_user.id == user_id
+    if not is_curr_user and not is_friend_of(user_id, target_user.id):
+        return redirect(url_for('calendar'))
+    
+    entries = get_all_by_user(target_user.id)
+    friends = get_friends(target_user.id) if is_curr_user else []
+    pending_outbound = get_pending_outbound(target_user.id) if is_curr_user else []
+    pending_inbound = get_pending_inbound(target_user.id) if is_curr_user else []
+
+    return render_template('profile.html', subtitle='Profile Page', text='This is the profile page', viewing_user=target_user, is_curr_user=is_curr_user, entries=entries, friends=friends, pending_outbound=pending_outbound, pending_inbound=pending_inbound)
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(host='0.0.0.0', port=5000, debug=True)
