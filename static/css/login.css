@@ -1,14 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@400;600&display=swap');
 
-:root {
-    --paper: #272727; 
-    /* --paper-dark: #ECE3D0; */
-    --ink: #FFFFFF;
-    --accent: #1DB954;   /* muted terracotta, not neon */
-    --accent-soft: #464646;
-    --shadow: rgba(60, 45, 25, 0.15);
-}
-
 body {
     position: relative;
     margin: 0;
@@ -62,7 +53,6 @@ h1, h2, h3.fw-bold {
     padding-bottom: 20px;
 }
 
-
 .card::before {
     display: none;
 }
@@ -79,6 +69,10 @@ h1, h2, h3.fw-bold {
 .btn-primary:hover, .btn-success:hover {
     background-color: #15833b !important;
     transform: translateY(-1px);
+}
+
+.container {
+    margin-top: 0px !important;
 }
 
 .decor-bottom-left {
