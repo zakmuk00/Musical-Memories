@@ -214,6 +214,28 @@ def calendar():
                 })
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
+@app.route("/day")
+@login_required
+def day_entries():
+    """
+
+    Returns: a page that shows all notes from the chosen date
+    """
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for("spotify_login"))
+
+    chosen_date = request.args.get("date")
+
+    if not chosen_date:
+        return redirect(url_for("calendar"))
+    
+    entry_date = datetime.strptime(chosen_date, "%Y-%m-%d").date()
+
+    entries = get_entries_by_date(user_id, entry_date)
+
+    return render_template("day_entries.html", entries=entries,date=chosen_date)
 @app.route("/on-this-day")
 @login_required
 def on_this_day():
