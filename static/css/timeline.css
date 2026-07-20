@@ -80,11 +80,19 @@
     transition: opacity 0.5s ease-in-out, transform 0.5s ease-out;
 }
 
+.memory-card.reduced-motion-theme::before {
+    transition: opacity 0.25s ease-in-out !important;
+}
+
 /* 3. Reveal the glow on hover */
 .memory-card:hover::before {
     opacity: 1;
     transform: translateX(0);
     animation: breathe-colors 20s linear infinite;
+}
+
+.memory-card.reduced-motion-theme:hover::before {
+    animation: none !important;
 }
 
 @keyframes breathe-colors {

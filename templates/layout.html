@@ -34,6 +34,11 @@
                         {% endif %}
                     </div>
                     <div class="navbar-nav ms-auto">
+                        {% if session.reduced_motion %}
+                            <a class="btn btn-outline-light rounded-pill mx-3" style="background-color: #1DB954; color: white" href="/reduced-motion">Reduced Motion</a>
+                        {% else %}
+                            <a class="btn btn-outline-light rounded-pill mx-3" href="/reduced-motion">Reduced Motion</a>
+                        {% endif %}
                         {% if session.user_id %}
                             <a class="btn btn-outline-light rounded-pill" href="/logout">Logout</a>
                         {% else %}

@@ -16,7 +16,7 @@ from gemini import SongGenerator
 
 from dotenv import load_dotenv
 
-from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
+from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens, User, toggle_reduced_motion
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@' #change this when pushing to server
@@ -107,6 +107,7 @@ def spotify_callback():
     user = get_or_create_user(user_id, profile.get("display_name"))
     # store useranme in flask session
     session["username"] = user.username
+    session["reduced_motion"] = user.reduced_motion
 
     return redirect("/calendar")
 
@@ -211,6 +212,23 @@ def calendar():
                 }
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
+@app.route("/reduced-motion")
+@login_required
+def reduced_motion():
+    """
+    Toggles reduced motion setting for the current user in the database
+    Html elements with motion will check this setting to determine if they should animate or not
+    """
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for('spotify_login'))
+
+    print(f"Toggling reduced motion for user_id: {user_id}")
+    toggle_reduced_motion(user_id)
+    session["reduced_motion"] = not session.get("reduced_motion", False)
+
+    return redirect(request.referrer or url_for('calendar'))
+
 @app.route("/on-this-day")
 @login_required
 def on_this_day():
@@ -247,7 +265,6 @@ def on_this_day():
 
     return render_template("on_this_day.html", today=today, memories=memories)
     
-
 
 @app.route("/note")
 @login_required
