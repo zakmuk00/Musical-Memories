@@ -2,38 +2,20 @@
 
 {% block title %}Profile{% endblock %}
 
-    {% block head %}
+{% block head %}
+{{ super() }}
     <style>
-        .btn-outline-success {
-            border-color: var(--accent) !important;
-            color: var(--accent) !important;
-            border-radius: 30px;
-            box-shadow: 0 3px 8px var(--shadow);
-            padding: 10px 16px;
-            font-size: .9rem;
-        }
-
-        .btn-outline-success:hover {
-            background-color: var(--accent) !important;
-            color: #fff !important;
-            transform: translateY(-1px);
-        }
 
         .card {
-            background: #2d2d2d;
+            background: #2D2D2D;
             border: none;
             border-radius: 6px;
             box-shadow: 0 6px 16px var(--shadow);
             position: relative;
         }
 
-        .h1, h2, h3.fw-bold {
-            font-family: 'Poppins', Arial, sans-serif;
-            font-size: 2.2rem;
-            color: white;
-        }
     </style>
-    {% endblock %}
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
