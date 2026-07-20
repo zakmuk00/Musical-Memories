@@ -11,12 +11,69 @@
     <div class="col-12 col-lg-10 col-xl-8">
         <div class="card shadow-sm border-0 p-4" style="background-color: #2d2d2d; border-radius: 16px;">
             <div class="card-body">
-                
-                <!-- On This Day Button -->
-                <div class="mb-3">
+
+                <!-- Top action buttons -->
+                <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <a href="/on-this-day" class="btn btn-primary fw-bold">
                         On This Day
                     </a>
+
+                    
+                    <div class="position-relative">
+                        <button type="button" id="calendars-btn" class="btn btn-outline-light fw-bold">
+                            {% if active_calendar %}{{ active_calendar.name }}{% else %}My Calendars{% endif %} &#9662;
+                        </button>
+
+                        <div
+                            id="calendars-panel"
+                            class="shadow-lg"
+                            style="
+                                display: none;
+                                position: absolute;
+                                top: 100%;
+                                right: 0;
+                                z-index: 2000;
+                                width: 320px;
+                                background-color: #ffffff;
+                                border: 1px solid #eaeaea;
+                                border-radius: 14px;
+                                margin-top: 8px;
+                                padding: 16px;
+                                text-align: left;
+                            "
+                        >
+                            <div style="font-weight: 700; font-size: 0.9rem; color: #2D2D2D; margin-bottom: 8px;">
+                                Your calendars
+                            </div>
+                            <div id="calendars-list" style="max-height: 220px; overflow-y: auto; margin-bottom: 14px;">
+                                <div class="text-muted" style="font-size: 0.85rem;">Loading...</div>
+                            </div>
+
+                            <hr style="margin: 10px 0;">
+
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-weight: 600; font-size: 0.8rem; color: #555; margin-bottom: 6px;">
+                                    Start a shared calendar
+                                </div>
+                                <form id="create-calendar-form" style="display: flex; gap: 6px;">
+                                    <input type="text" id="new-calendar-name" placeholder="e.g. Me &amp; Alex"
+                                        class="form-control form-control-sm" style="border-radius: 8px;">
+                                    <button type="submit" class="btn btn-sm btn-primary" style="white-space: nowrap;">Create</button>
+                                </form>
+                            </div>
+
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.8rem; color: #555; margin-bottom: 6px;">
+                                    Join with an invite code
+                                </div>
+                                <form id="join-calendar-form" style="display: flex; gap: 6px;">
+                                    <input type="text" id="join-calendar-code" placeholder="e.g. AB12CD"
+                                        class="form-control form-control-sm" style="border-radius: 8px; text-transform: uppercase;">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary" style="white-space: nowrap;">Join</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Centered Header & Integrated Search Bar -->
@@ -104,6 +161,15 @@
                     wrapper.innerHTML = `
                         <img src="${noteData.song_image}" class="album-cover" alt="">
                     `;
+                    if (noteData.is_owner === false) {
+                        // small badge to show this day was added by someone else
+                        // in the shared calendar and can't be edited by you
+                        const badge = document.createElement('div');
+                        badge.className = 'shared-entry-badge';
+                        badge.title = 'Added by another member';
+                        badge.innerHTML = '&#128274;';
+                        wrapper.appendChild(badge);
+                    }
                 } else {
                     wrapper.className = 'empty-add-button';
                     wrapper.innerHTML = `
@@ -235,6 +301,153 @@
             if (!isClickInside) {
                 hideDropdown();
             }
+        });
+
+        // --- CALENDAR SWITCHER PANEL ---
+        const calendarsBtn = document.getElementById("calendars-btn");
+        const calendarsPanel = document.getElementById("calendars-panel");
+        const calendarsList = document.getElementById("calendars-list");
+        const createForm = document.getElementById("create-calendar-form");
+        const joinForm = document.getElementById("join-calendar-form");
+
+        function loadCalendars() {
+            calendarsList.innerHTML = '<div class="text-muted" style="font-size: 0.85rem;">Loading...</div>';
+
+            fetch('/calendars')
+                .then(res => res.json())
+                .then(calendars => {
+                    calendarsList.innerHTML = '';
+
+                    calendars.forEach(cal => {
+                        const row = document.createElement('div');
+                        row.style.display = 'flex';
+                        row.style.alignItems = 'center';
+                        row.style.justifyContent = 'space-between';
+                        row.style.padding = '8px 4px';
+                        row.style.borderBottom = '1px solid #f1f1f1';
+
+                        const label = document.createElement('div');
+                        label.style.minWidth = '0';
+                        label.innerHTML = `
+                            <div style="font-weight: 700; font-size: 0.9rem; color: #2D2D2D; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${cal.name}${cal.is_active ? ' <span style="color:#8C6239;">(viewing)</span>' : ''}
+                            </div>
+                            <div style="font-size: 0.7rem; color: #999;">
+                                ${cal.is_personal ? 'Personal' : (cal.join_code ? `Invite code: ${cal.join_code}` : 'Shared')}
+                            </div>
+                        `;
+
+                        row.appendChild(label);
+
+                        const actions = document.createElement('div');
+                        actions.style.display = 'flex';
+                        actions.style.gap = '6px';
+                        actions.style.flexShrink = '0';
+                        actions.style.marginLeft = '8px';
+
+                        if (!cal.is_active) {
+                            const switchBtn = document.createElement('button');
+                            switchBtn.className = 'btn btn-sm btn-outline-secondary';
+                            switchBtn.textContent = 'Switch';
+                            switchBtn.addEventListener('click', () => {
+                                const form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = '/calendars/select';
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'calendar_id';
+                                input.value = cal.id;
+                                form.appendChild(input);
+                                document.body.appendChild(form);
+                                form.submit();
+                            });
+                            actions.appendChild(switchBtn);
+                        }
+
+                        if (!cal.is_personal && cal.is_owner) {
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                            deleteBtn.textContent = 'Delete';
+                            deleteBtn.addEventListener('click', () => {
+                                const confirmed = window.confirm(
+                                    `Delete "${cal.name}" for everyone? This removes every entry in it and can't be undone.`
+                                );
+                                if (!confirmed) return;
+
+                                const form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = '/calendars/delete';
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'calendar_id';
+                                input.value = cal.id;
+                                form.appendChild(input);
+                                document.body.appendChild(form);
+                                form.submit();
+                            });
+                            actions.appendChild(deleteBtn);
+                        }
+
+                        row.appendChild(actions);
+                        calendarsList.appendChild(row);
+                    });
+                })
+                .catch(err => {
+                    console.error("Error loading calendars:", err);
+                    calendarsList.innerHTML = '<div class="text-danger" style="font-size: 0.85rem;">Could not load calendars.</div>';
+                });
+        }
+
+        calendarsBtn.addEventListener('click', function(event) {
+            event.stopPropagation();
+            const isOpen = calendarsPanel.style.display === 'block';
+            if (isOpen) {
+                calendarsPanel.style.display = 'none';
+            } else {
+                calendarsPanel.style.display = 'block';
+                loadCalendars();
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            const isClickInside = calendarsBtn.contains(event.target) || calendarsPanel.contains(event.target);
+            if (!isClickInside) {
+                calendarsPanel.style.display = 'none';
+            }
+        });
+
+        createForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = document.getElementById('new-calendar-name').value.trim();
+            if (!name) return;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/calendars/create';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'name';
+            input.value = name;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        });
+
+        joinForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const code = document.getElementById('join-calendar-code').value.trim();
+            if (!code) return;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/calendars/join';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'code';
+            input.value = code;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
         });
     }); 
 </script>
