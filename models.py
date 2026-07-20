@@ -723,6 +723,7 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     display_name = db.Column(db.String(150))
     bio = db.Column(db.Text)
+    reduced_motion = db.Column(db.Boolean, default=False)
 
 
 def get_or_create_user(user_id, display_name):
@@ -757,6 +758,20 @@ def get_user_by_username(username):
     if response is None:
         print('Username does not exist in the table')
     return response
+
+def toggle_reduced_motion(user_id):
+    """
+    Toggles the reduced motion setting for a user
+    """
+    user = User.query.get(user_id)
+    if user is None:
+        print('User not found')
+        return False
+    
+    user.reduced_motion = not user.reduced_motion
+    db.session.commit()
+    print(f'Reduced motion set to {user.reduced_motion}')
+    return True
 
 
 class Friendship(db.Model):

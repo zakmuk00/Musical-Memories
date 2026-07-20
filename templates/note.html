@@ -102,7 +102,23 @@
                     </div>
                     
                     <div class="col-md-4">
-                        <div id="map"></div>
+                        <div class="map-wrapper">
+                            <div id="map"></div>
+                            <a href="#mapModal" class = "zoom-in" data-bs-toggle="modal">
+                                <img src="{{ url_for('static', filename='images/material-symbols-light_fullscreen.svg') }}" class="zoom-icon" alt="">
+                            </a>
+                        </div>
+
+                        <div class="modal" id="mapModal">
+                            <div class="modal-dialog modal-dialog-centered modal-xl">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        <div id="mapZoomed"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -130,6 +146,24 @@
     new mapboxgl.Marker()
         .setLngLat([{{ longitude }}, {{ latitude }}])
         .addTo(map);
+
+    const mapZoomed = new mapboxgl.Map({
+        accessToken: mapboxToken,
+        container: 'mapZoomed',
+        style: 'mapbox://styles/mapbox/standard',
+        center: [{{ longitude }}, {{ latitude }}],
+        zoom: 9,
+        attributionControl: false
+    });
+
+    new mapboxgl.Marker()
+        .setLngLat([{{ longitude }}, {{ latitude }}])
+        .addTo(mapZoomed);
+
+    // Wait for Bootstrap to finish opening the modal, then tell Mapbox to fill it
+    document.getElementById('mapModal').addEventListener('shown.bs.modal', () => {
+        mapZoomed.resize();
+    });
 </script>
 {% else %}
 <p class="text-muted">No location recorded for this entry.</p>
