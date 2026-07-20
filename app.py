@@ -6,7 +6,7 @@ from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id, get_or_create_user, send_request, respond_to_request, get_user_by_username, is_friend_of, get_friends, get_pending_outbound, get_pending_inbound, cancel_request
+from models import Entry, get_all_by_user, add_entry, get_entries_by_date, get_entry_by_id_for_user ,update_entry, delete_by_id, get_or_create_user, send_request, respond_to_request, get_user_by_username, is_friend_of, get_friends, get_pending_outbound, get_pending_inbound, cancel_request
 from database import db
 
 from spotify_api import SpotifyClient
@@ -201,14 +201,17 @@ def calendar():
         if entries:
             for entry in entries:
                 entry_date = entry.date.strftime("%Y-%m-%d")
-                notes_data[entry_date] = {
+                if entry_date not in notes_data:
+                    notes_data[entry_date] = []
+                notes_data[entry_date].append({
+                    "id": entry.id,
                     "text": entry.song_name,
                     "artist": entry.artist_name,
                     "spotify_link": entry.spotify_link,
                     "song_image": entry.song_image,
                     "notes": entry.journal_text,
                     "location": entry.location_name
-                }
+                })
     return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
 
 @app.route("/on-this-day")
@@ -249,9 +252,9 @@ def on_this_day():
     
 
 
-@app.route("/note")
+@app.route("/note/<int:entry_id>")
 @login_required
-def note():
+def note(entry_id):
     """
     Renders the detailed note view of a specific date
 
@@ -272,8 +275,7 @@ def note():
     if not user_id:
         return redirect(url_for('spotify_login'))
 
-    date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
-    entry = get_by_date(user_id, date)
+    entry = get_entry_by_id_for_user(entry_id, user_id)
 
     if entry is None:
         return redirect(url_for('calendar'))
@@ -417,7 +419,7 @@ def noteMaker():
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
         # testing
-        existing_entry = get_by_date(user_id, entry_date)
+        existing_entry = get_entries_by_date(user_id, entry_date)
 
         if existing_entry:
             update_entry(user_id, existing_entry.id,
@@ -468,7 +470,7 @@ def delete_note():
         return redirect(url_for('calendar'))
 
     entry_date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
-    entry = get_by_date(user_id, entry_date)
+    entry = get_entries_by_date(user_id, entry_date)
 
     if entry:
         delete_by_id(user_id, entry.id, upload_folder=app.config['UPLOAD_FOLDER'])
@@ -511,9 +513,9 @@ def timeline():
 
     if entries:
         if sort_order == "oldest":
-            entries = sorted(entries, key=lambda entry: entry.date)
+            entries = sorted(entries, key=lambda entry: (entry.date, entry.id))
         else:
-            entries = sorted(entries, key=lambda entry: entry.date, reverse=True)
+            entries = sorted(entries, key=lambda entry: (entry.date, entry.id), reverse=True)
     else:
         entries = []
     

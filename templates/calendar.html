@@ -86,7 +86,7 @@
                 const dateStr = info.dateStr;
 
                 if (userNotes && userNotes[dateStr]) {
-                    window.location.href = `/note?date=${dateStr}`;
+                    window.location.href = `/day?date=${dateStr}`;
                 } else {
                     window.location.href = `/noteMaker?date=${dateStr}`;
                 }

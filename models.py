@@ -149,34 +149,35 @@ def get_all_by_user(query_user_id):
     if response is None:
         print('No entries by user')
     return response
-
 """
-def get_by_date(query_user_id, query_date):
-    
-    Returns a Entry object based on the date created
+    # remove once branch is complete ***
+    def get_by_date(query_user_id, query_date):
+        
+        Returns a Entry object based on the date created
 
-    Note: The current user id and the entry's user_id needs to match
+        Note: The current user id and the entry's user_id needs to match
 
-    Args:
-        query_user_id (str): The user id of entry being searched
-        query_date (date): The date of the entry
+        Args:
+            query_user_id (str): The user id of entry being searched
+            query_date (date): The date of the entry
 
-    Returns:
-        Entry: the Entry object if it exists and None otherwise
-    
-    # Validation needed
-    response = Entry.query.filter_by(
-        user_id=query_user_id,
-        date=query_date).first()
-    if response is None:
-        print('Date not in table')
-        print()
-    else:
-        print('id:', response.id)
-        print('song name:', response.song_name)
-        print('created:', response.date)
-        print()
-    return response
+        Returns:
+            Entry: the Entry object if it exists and None otherwise
+        
+        # Validation needed
+        
+        response = Entry.query.filter_by(
+            user_id=query_user_id,
+            date=query_date).first()
+        if response is None:
+            print('Date not in table')
+            print()
+        else:
+            print('id:', response.id)
+            print('song name:', response.song_name)
+            print('created:', response.date)
+            print()
+        return response
 """
 def get_entries_by_date(query_user_id, query_date):
     """
