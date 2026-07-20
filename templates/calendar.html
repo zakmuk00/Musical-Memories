@@ -176,6 +176,11 @@
                         <div class="add-icon">+</div>
                     `;
                 }
+
+                {% if session.reduced_motion %}
+                wrapper.classList.add('reduced-motion-theme');
+                {% endif %}
+                
                 frame.appendChild(wrapper);
             }
         });
