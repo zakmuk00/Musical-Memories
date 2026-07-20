@@ -6,7 +6,15 @@ from forms.note_maker_form import NoteMakerForm
 from werkzeug.utils import secure_filename
 from functools import wraps
 
-from models import Entry, get_all_by_user, add_entry, get_entries_by_date, get_entry_by_id_for_user ,update_entry, delete_by_id, get_or_create_user, send_request, respond_to_request, get_user_by_username, is_friend_of, get_friends, get_pending_outbound, get_pending_inbound, cancel_request
+from models import (
+    Entry, get_all_by_user, add_entry, get_by_date, get_entries_by_date, get_entry_by_id_for_user, update_entry, delete_by_id,
+    delete_by_date, get_or_create_user, send_request, respond_to_request,
+    get_user_by_username, is_friend_of, get_friends, get_pending_outbound,
+    get_pending_inbound, cancel_request,
+    Calendar, get_or_create_personal_calendar, get_user_calendars,
+    is_calendar_member, join_calendar_by_code, create_calendar,
+    get_calendar_by_id, get_all_by_calendar, delete_calendar
+)
 from database import db
 
 from spotify_api import SpotifyClient
@@ -41,13 +49,31 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# @app.route("/login/dev-bypass")
-# def dev_bypass():
-#     # Force a mock user into the session
-#     session["user_id"] = "dev_test_user_123"
-    
-#     # Send them straight into the protected app area
-#     return redirect(url_for("calendar"))
+
+def get_active_calendar_id():
+    """
+    Returns the id of the calendar the current user is currently viewing.
+    Falls back to (and repairs the session to point at) their personal
+    calendar if nothing valid is set yet.
+    """
+    user_id = session.get("user_id")
+    calendar_id = session.get("active_calendar_id")
+
+    if calendar_id and is_calendar_member(user_id, calendar_id):
+        return calendar_id
+
+    personal = get_or_create_personal_calendar(user_id)
+    session["active_calendar_id"] = personal.id
+    return personal.id
+
+
+@app.route("/login/dev-bypass")
+def dev_bypass():
+    fake_id = request.args.get("as", "dev_test_user_1")
+    session["user_id"] = fake_id
+    session["username"] = fake_id
+    get_or_create_user(fake_id, fake_id)
+    return redirect(url_for("calendar"))
 
 
 @app.route("/")
@@ -107,6 +133,10 @@ def spotify_callback():
     user = get_or_create_user(user_id, profile.get("display_name"))
     # store useranme in flask session
     session["username"] = user.username
+
+    # default the session to the user's personal calendar
+    personal = get_or_create_personal_calendar(user_id)
+    session["active_calendar_id"] = personal.id
 
     return redirect("/calendar")
 
@@ -188,31 +218,173 @@ def about():
 @login_required
 def calendar():
     """
-    Renders the interactive calendar page with the user's recorded entries
-    The entries are fetched from the database and injected to the calendar
+    Renders the interactive calendar page with the active calendar's entries.
+    The active calendar defaults to the user's personal calendar and can be
+    changed via the calendar-switcher panel (/calendars/select).
 
     Returns:
         HTML: Renders calendar.html with user_notes data from table
     """
     user_id = session.get("user_id")
+    calendar_id = get_active_calendar_id()
+
     notes_data = {}
-    if user_id:
-        entries = get_all_by_user(user_id)
-        if entries:
-            for entry in entries:
-                entry_date = entry.date.strftime("%Y-%m-%d")
-                if entry_date not in notes_data:
-                    notes_data[entry_date] = []
-                notes_data[entry_date].append({
-                    "id": entry.id,
-                    "text": entry.song_name,
-                    "artist": entry.artist_name,
-                    "spotify_link": entry.spotify_link,
-                    "song_image": entry.song_image,
-                    "notes": entry.journal_text,
-                    "location": entry.location_name
-                })
-    return render_template('calendar.html', subtitle='Calendar Page', text='This is the calendar page', user_notes=notes_data)
+    entries = get_all_by_calendar(calendar_id)
+    if entries:
+        for entry in entries:
+            entry_date = entry.date.strftime("%Y-%m-%d")
+            if entry_date not in notes_data:
+                notes_data[entry_date] = []
+            notes_data[entry_date].append({
+                "text": entry.song_name,
+                "artist": entry.artist_name,
+                "spotify_link": entry.spotify_link,
+                "song_image": entry.song_image,
+                "notes": entry.journal_text,
+                "location": entry.location_name,
+                "is_owner": entry.user_id == user_id
+            })
+
+    active_calendar = get_calendar_by_id(calendar_id)
+
+    return render_template(
+        'calendar.html', subtitle='Calendar Page', text='This is the calendar page',
+        user_notes=notes_data, active_calendar=active_calendar
+    )
+
+
+@app.route("/calendars")
+@login_required
+def list_calendars():
+    """
+    Returns the list of calendars (personal + shared) the current user
+    belongs to, for the calendar-switcher panel.
+
+    Returns:
+        JSON: A list of calendar objects
+    """
+    user_id = session.get("user_id")
+    active_id = get_active_calendar_id()
+    calendars = get_user_calendars(user_id)
+
+    data = [
+        {
+            "id": c.id,
+            "name": c.name,
+            "is_personal": c.is_personal,
+            "is_active": c.id == active_id,
+            "is_owner": c.owner_id == user_id,
+            "join_code": c.join_code if c.owner_id == user_id else None
+        }
+        for c in calendars
+    ]
+    return jsonify(data)
+
+
+@app.route("/calendars/select", methods=["POST"])
+@login_required
+def select_calendar():
+    """
+    Switches the active calendar for the current session
+
+    Form Data:
+        calendar_id (int): the calendar to switch to
+
+    Returns:
+        Redirect: Sends the user back to the calendar page
+    """
+    user_id = session.get("user_id")
+    calendar_id = request.form.get("calendar_id", type=int)
+
+    if calendar_id and is_calendar_member(user_id, calendar_id):
+        session["active_calendar_id"] = calendar_id
+    else:
+        flash("You don't have access to that calendar.")
+
+    return redirect(url_for('calendar'))
+
+
+@app.route("/calendars/create", methods=["POST"])
+@login_required
+def create_shared_calendar():
+    """
+    Creates a new shared calendar owned by the current user and
+    switches to it immediately
+
+    Form Data:
+        name (str): display name for the new calendar
+
+    Returns:
+        Redirect: Sends the user back to the calendar page
+    """
+    user_id = session.get("user_id")
+    name = request.form.get("name", "").strip() or "Shared Calendar"
+
+    calendar_obj = create_calendar(name=name, owner_id=user_id, is_personal=False)
+    session["active_calendar_id"] = calendar_obj.id
+
+    return redirect(url_for('calendar'))
+
+
+@app.route("/calendars/join", methods=["POST"])
+@login_required
+def join_shared_calendar():
+    """
+    Joins an existing shared calendar using its invite code and
+    switches to it immediately
+
+    Form Data:
+        code (str): the invite code for the calendar to join
+
+    Returns:
+        Redirect: Sends the user back to the calendar page
+    """
+    user_id = session.get("user_id")
+    code = request.form.get("code", "")
+
+    calendar_obj = join_calendar_by_code(user_id, code)
+
+    if calendar_obj is None:
+        flash("That invite code didn't match a calendar.")
+        return redirect(url_for('calendar'))
+
+    session["active_calendar_id"] = calendar_obj.id
+    return redirect(url_for('calendar'))
+
+
+@app.route("/calendars/delete", methods=["POST"])
+@login_required
+def delete_shared_calendar():
+    """
+    Deletes a shared calendar (and all of its entries/memberships).
+    Only the calendar's owner may do this; personal calendars can't
+    be deleted at all.
+
+    Form Data:
+        calendar_id (int): the calendar to delete
+
+    Returns:
+        Redirect: Sends the user back to the calendar page
+    """
+    user_id = session.get("user_id")
+    calendar_id = request.form.get("calendar_id", type=int)
+
+    if not calendar_id:
+        return redirect(url_for('calendar'))
+
+    was_active = session.get("active_calendar_id") == calendar_id
+    success = delete_calendar(user_id, calendar_id)
+
+    if not success:
+        flash("Couldn't delete that calendar.")
+    elif was_active:
+        # bump them back to their personal calendar since the one
+        # they were viewing no longer exists
+        personal = get_or_create_personal_calendar(user_id)
+        session["active_calendar_id"] = personal.id
+
+    return redirect(url_for('calendar'))
+
 
 @app.route("/day")
 @login_required
@@ -297,7 +469,10 @@ def note(entry_id):
     if not user_id:
         return redirect(url_for('spotify_login'))
 
-    entry = get_entry_by_id_for_user(entry_id, user_id)
+    calendar_id = get_active_calendar_id()
+
+    date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
+    entry = get_by_date(calendar_id, date)
 
     if entry is None:
         return redirect(url_for('calendar'))
@@ -306,7 +481,8 @@ def note(entry_id):
         "song": entry.song_name,
         "photo": entry.photo_path, 
         "notes": entry.journal_text,
-        "location": [entry.latitude, entry.longitude]
+        "location": [entry.latitude, entry.longitude],
+        "is_owner": entry.user_id == user_id
     }
 
     # gets song recommendations from Gemini
@@ -414,6 +590,8 @@ def noteMaker():
         if not user_id:
             return redirect(url_for("spotify_login"))
 
+        calendar_id = get_active_calendar_id()
+
         lat = float(form.latitude.data) if form.latitude.data else None
         lng = float(form.longitude.data) if form.longitude.data else None
 
@@ -440,8 +618,13 @@ def noteMaker():
         date_array = form.date_created.data.split('-')
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
-        # testing
-        existing_entry = get_entries_by_date(user_id, entry_date)
+        # an entry already exists for this date in the active calendar -
+        # only the person who created it is allowed to edit it
+        existing_entry = get_by_date(calendar_id, entry_date)
+
+        if existing_entry and existing_entry.user_id != user_id:
+            flash("Only the person who created that day's entry can edit it.")
+            return redirect(url_for('calendar'))
 
         if existing_entry:
             update_entry(user_id, existing_entry.id,
@@ -456,6 +639,7 @@ def noteMaker():
                 longitude=lng)
         else:
             add_entry(user=user_id,
+                calendar=calendar_id,
                 date=entry_date,
                 song=song,
                 artist=spotify_artist,
@@ -478,6 +662,7 @@ def noteMaker():
 def delete_note():
     """
     Deletes an existing note entry (and its photo, if any) for the current user
+    Only the original creator of the entry may delete it.
 
     Form Data:
         date (str): The date of the entry to delete, formatted 'YYYY-MM-DD'
@@ -491,11 +676,15 @@ def delete_note():
     if not chosen_date:
         return redirect(url_for('calendar'))
 
+    calendar_id = get_active_calendar_id()
     entry_date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
-    entry = get_entries_by_date(user_id, entry_date)
+    entry = get_by_date(calendar_id, entry_date)
 
-    if entry:
-        delete_by_id(user_id, entry.id, upload_folder=app.config['UPLOAD_FOLDER'])
+    if entry is not None:
+        if entry.user_id != user_id:
+            flash("Only the person who created that day's entry can delete it.")
+        else:
+            delete_by_id(user_id, entry.id, upload_folder=app.config['UPLOAD_FOLDER'])
 
     return redirect(url_for('calendar'))
 
@@ -549,8 +738,8 @@ def timeline():
 @login_required
 def entry_locations():
     """
-    Fetches location based entries to be rendered on the map for the user
-    Ignores entries without a set latitude and longitude coordinate
+    Fetches location based entries in the active calendar to be rendered
+    on the map. Ignores entries without a set latitude and longitude coordinate
 
     Returns:
         JSON: A list of entry objects
@@ -568,9 +757,9 @@ def entry_locations():
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for('spotify_login'))
-    entries = get_all_by_user(user_id)
 
-    entries = get_all_by_user(user_id)
+    calendar_id = get_active_calendar_id()
+    entries = get_all_by_calendar(calendar_id)
     if entries is None:
         return redirect(url_for('calendar'))
     
@@ -592,8 +781,8 @@ def entry_locations():
 @login_required
 def search_entries():
     """
-    Searches the user's journal entries for matches in song name, artist, 
-    location, or journal text.
+    Searches the active calendar's journal entries for matches in song name,
+    artist, location, or journal text.
     
     Query Parameters:
         q (str): The search keyword
@@ -609,7 +798,8 @@ def search_entries():
     if not user_id:
         return jsonify([])
 
-    entries = get_all_by_user(user_id)
+    calendar_id = get_active_calendar_id()
+    entries = get_all_by_calendar(calendar_id)
     if not entries:
         return jsonify([])
 

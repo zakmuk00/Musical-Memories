@@ -2,7 +2,218 @@ from database import db
 from helpers import generate_username
 import datetime
 import os
+import random
+import string
 
+
+# ---------------------------------------------------------------------------
+# Calendar / CalendarMembership
+# ---------------------------------------------------------------------------
+
+class Calendar(db.Model):
+    """
+    A calendar is a container of Entries with a set of members.
+
+    Every user gets exactly one personal calendar (is_personal=True),
+    created automatically the first time they log in. Shared calendars
+    are created explicitly and joined via a short invite code.
+
+    Attributes:
+        id (int): Auto-incremented unique Calendar key
+        name (str): Display name (e.g. "My Calendar", "Me & Alex")
+        owner_id (str): user_id of the calendar's creator
+        is_personal (bool): True for a user's own default calendar
+        join_code (str): Short code others can use to join (shared calendars only)
+    """
+    __tablename__ = 'calendars'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    owner_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=False)
+    is_personal = db.Column(db.Boolean, default=False, nullable=False)
+    join_code = db.Column(db.String(12), unique=True, nullable=True)
+
+
+class CalendarMembership(db.Model):
+    """
+    Join table linking a User to a Calendar they can view/add to.
+
+    Attributes:
+        id (int): Auto-incremented unique key
+        calendar_id (int): The Calendar being joined
+        user_id (str): The User who is a member
+    """
+    __tablename__ = 'calendar_memberships'
+    id = db.Column(db.Integer, primary_key=True)
+    calendar_id = db.Column(db.Integer, db.ForeignKey('calendars.id'), nullable=False)
+    user_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint(
+            'calendar_id',
+            'user_id',
+            name='unique_calendar_member'
+        ),
+    )
+
+
+def generate_join_code(length=6):
+    """
+    Generates a random alphanumeric invite code for a shared calendar
+    """
+    alphabet = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(alphabet, k=length))
+
+
+def create_calendar(name, owner_id, is_personal=False):
+    """
+    Creates a new Calendar and adds the owner as its first member
+
+    Args:
+        name (str): Display name for the calendar
+        owner_id (str): user_id of the creator
+        is_personal (bool): whether this is the user's default personal calendar
+
+    Returns:
+        Calendar: the newly created Calendar object
+    """
+    join_code = None if is_personal else generate_join_code()
+    # extremely unlikely, but guard against a collision on the join code
+    while join_code is not None and Calendar.query.filter_by(join_code=join_code).first():
+        join_code = generate_join_code()
+
+    calendar = Calendar(
+        name=name,
+        owner_id=owner_id,
+        is_personal=is_personal,
+        join_code=join_code
+    )
+    db.session.add(calendar)
+    db.session.commit()
+
+    db.session.add(CalendarMembership(calendar_id=calendar.id, user_id=owner_id))
+    db.session.commit()
+
+    return calendar
+
+
+def get_or_create_personal_calendar(user_id):
+    """
+    Fetches a user's personal calendar, creating one if it doesn't exist yet
+
+    Args:
+        user_id (str): the user's id
+
+    Returns:
+        Calendar: the user's personal Calendar object
+    """
+    existing = Calendar.query.filter_by(owner_id=user_id, is_personal=True).first()
+    if existing is not None:
+        return existing
+    return create_calendar(name="My Calendar", owner_id=user_id, is_personal=True)
+
+
+def get_user_calendars(user_id):
+    """
+    Returns every Calendar the given user is a member of (personal + shared)
+
+    Args:
+        user_id (str): the user's id
+
+    Returns:
+        [Calendar]: list of Calendar objects, personal calendar first
+    """
+    memberships = CalendarMembership.query.filter_by(user_id=user_id).all()
+    calendars = [Calendar.query.get(m.calendar_id) for m in memberships]
+    calendars = [c for c in calendars if c is not None]
+    calendars.sort(key=lambda c: (not c.is_personal, c.name.lower()))
+    return calendars
+
+
+def is_calendar_member(user_id, calendar_id):
+    """
+    Checks whether a user belongs to a given calendar
+
+    Returns:
+        bool: True if the user is a member of the calendar
+    """
+    if not calendar_id:
+        return False
+    response = CalendarMembership.query.filter_by(
+        user_id=user_id, calendar_id=calendar_id).first()
+    return response is not None
+
+
+def join_calendar_by_code(user_id, code):
+    """
+    Adds a user to a shared calendar using its invite code
+
+    Args:
+        user_id (str): the user's id
+        code (str): the invite code to look up
+
+    Returns:
+        Calendar: the joined Calendar, or None if the code was invalid
+    """
+    if not code:
+        return None
+
+    calendar = Calendar.query.filter_by(join_code=code.strip().upper()).first()
+    if calendar is None:
+        return None
+
+    if not is_calendar_member(user_id, calendar.id):
+        db.session.add(CalendarMembership(calendar_id=calendar.id, user_id=user_id))
+        db.session.commit()
+
+    return calendar
+
+
+def get_calendar_by_id(calendar_id):
+    """
+    Returns a Calendar object based on the id
+    """
+    return Calendar.query.get(calendar_id)
+
+
+def delete_calendar(user_id, calendar_id):
+    """
+    Deletes a shared calendar, along with every entry and membership
+    that belongs to it.
+
+    Note: only the calendar's owner may delete it, and personal
+    calendars can never be deleted.
+
+    Args:
+        user_id (str): the user requesting the deletion
+        calendar_id (int): the calendar to delete
+
+    Returns:
+        bool: True if the calendar was deleted
+    """
+    calendar_obj = Calendar.query.get(calendar_id)
+    if calendar_obj is None:
+        print('Calendar not found')
+        return False
+
+    if calendar_obj.is_personal:
+        print('Cannot delete a personal calendar')
+        return False
+
+    if calendar_obj.owner_id != user_id:
+        print('Only the owner can delete this calendar')
+        return False
+
+    Entry.query.filter_by(calendar_id=calendar_id).delete()
+    CalendarMembership.query.filter_by(calendar_id=calendar_id).delete()
+    db.session.delete(calendar_obj)
+    db.session.commit()
+
+    print('Calendar deleted')
+    return True
+
+
+# ---------------------------------------------------------------------------
+# Entry
+# ---------------------------------------------------------------------------
 
 # The ORM model of the entry
 class Entry(db.Model):
@@ -10,12 +221,15 @@ class Entry(db.Model):
     This is the class that defines a journal entry in our app
 
     Note:
-        There is a unique constraint to user_id and date.
-        One user can only have one entry per day.
+        There is a unique constraint on calendar_id and date.
+        One calendar can only have one entry per day, regardless of
+        which member created it. Only that member (user_id) may
+        edit or delete it afterward.
 
     Attributes:
         id (int): Auto-incremented unique Entry key
-        user_id (str): Identifies who made the Entry
+        calendar_id (int): Identifies which Calendar the Entry belongs to
+        user_id (str): Identifies who made the Entry (the only one who can edit it)
         date (date): The date of the journal Entry
         song_name (str): Name of the song
         artist_name (str): Name of the artist for the song
@@ -29,6 +243,7 @@ class Entry(db.Model):
     """
     __tablename__ = 'calendar_entries'
     id = db.Column(db.Integer, primary_key=True)
+    calendar_id = db.Column(db.Integer, db.ForeignKey('calendars.id'), nullable=False)
     user_id = db.Column(db.String(255), nullable=False)
     date = db.Column(db.Date, nullable=False)
     song_name = db.Column(db.String(255), nullable=False)
@@ -46,7 +261,7 @@ class Entry(db.Model):
 # Only accepts multiple parameters so far
 # Might need another version where an Entry object can be passed
 def add_entry(
-        user, date, song, artist, link, song_image, location,
+        user, calendar, date, song, artist, link, song_image, location,
         photo=None, text=None, latitude=None, longitude=None
         ):
     """
@@ -54,6 +269,7 @@ def add_entry(
 
     Args:
         user (str): The ID of the user creating the Entry
+        calendar (int): The ID of the Calendar this Entry belongs to
         date (date): The date the Entry is being created
         song (str): The name of the song
         artist (str): The name of the artist
@@ -71,6 +287,10 @@ def add_entry(
     # Validation needed
     if not type(date) is datetime.date:
         print('Wrong date format')
+        return False
+
+    if not calendar:
+        print('Missing calendar id')
         return False
 
     if not (
@@ -93,6 +313,7 @@ def add_entry(
     db.session.add(
         Entry(
             user_id=user,
+            calendar_id=calendar,
             date=date,
             song_name=song,
             artist_name=artist,
@@ -137,7 +358,8 @@ def get_by_id(query_user_id, id):
 
 def get_all_by_user(query_user_id):
     """
-    Returns all the entries made by a user
+    Returns all the entries made by a user, across every calendar
+    they've contributed to
 
     Args:
         query_user_id: The user id of entries being searched
@@ -149,13 +371,29 @@ def get_all_by_user(query_user_id):
     if response is None:
         print('No entries by user')
     return response
-"""
-    # remove once branch is complete ***
-    def get_by_date(query_user_id, query_date):
-        
-        Returns a Entry object based on the date created
 
-        Note: The current user id and the entry's user_id needs to match
+
+def get_all_by_calendar(calendar_id):
+    """
+    Returns all entries that belong to a given calendar, regardless
+    of which member created them
+
+    Args:
+        calendar_id (int): The calendar being queried
+
+    Returns:
+        [Entry]: A list of entries in the calendar
+    """
+    response = Entry.query.filter_by(calendar_id=calendar_id).all()
+    if response is None:
+        print('No entries in calendar')
+    return response
+
+
+def get_by_date(calendar_id, query_date):
+    """
+    Returns the Entry for a given date within a given calendar
+    (there is at most one, regardless of which member created it)
 
         Args:
             query_user_id (str): The user id of entry being searched
@@ -226,6 +464,7 @@ def delete_by_id(query_user_id, query_id, upload_folder=None):
     Deletes a Entry object based on the id
 
     Note: The current user id and the entry's user_id needs to match
+    (only the original creator of an entry may delete it)
 
     Args:
         query_user_id (str): The user id of entry being searched
@@ -258,13 +497,15 @@ def delete_by_id(query_user_id, query_id, upload_folder=None):
         return False
 
 
-def delete_by_date(query_user_id, query_date):
+def delete_by_date(calendar_id, query_user_id, query_date):
     """
-    Deletes an Entry based on the date created
+    Deletes an Entry based on the date created within a calendar
 
     Note: The current user id and the entry's user_id needs to match
+    (only the original creator of an entry may delete it)
 
     Args:
+        calendar_id (int): The calendar the Entry belongs to
         query_user_id (str): The user_id must match the id in Entry for access
         query_date (date): The date of the Entry being searched
 
@@ -272,6 +513,7 @@ def delete_by_date(query_user_id, query_date):
         bool: The status of the deletion
     """
     response = Entry.query.filter_by(
+        calendar_id=calendar_id,
         user_id=query_user_id,
         date=query_date
         ).first()
@@ -313,6 +555,8 @@ def update_entry(query_user_id, query_id, **kwargs):
     """
     Updates an existing entry with the passed fields
 
+    Note: only the original creator of an entry (user_id) may update it
+
     Args:
         query_user_id: The user id of the Entry being searched
         id: The id of the Entry
@@ -328,7 +572,7 @@ def update_entry(query_user_id, query_id, **kwargs):
         return False
     else:
         for key, value in kwargs.items():
-            if key == 'id' or key == 'user_id':
+            if key in ('id', 'user_id', 'calendar_id'):
                 print(f'Key {key} is immutable, cannot update this field')
                 continue
             if hasattr(entry, key):
@@ -487,19 +731,23 @@ class User(db.Model):
 def get_or_create_user(user_id, display_name):
     """
     Creates a User row for a given id if it doesn't exist or fetches if does exist.
+    Also ensures the user has a personal calendar.
     """
 
     if not type(user_id) is str:
         print('Invalid user_id')
         return None
-    
+
     existing = User.query.get(user_id)
     if existing is not None:
+        get_or_create_personal_calendar(user_id)
         return existing
-    
+
     db.session.add(User(id=user_id, username=generate_username(display_name), display_name=display_name))
     db.session.commit()
     print('User created')
+
+    get_or_create_personal_calendar(user_id)
 
     return User.query.get(user_id)
 
