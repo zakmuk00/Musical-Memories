@@ -389,9 +389,9 @@ def get_all_by_calendar(calendar_id):
         print('No entries in calendar')
     return response
 
-
+"""
 def get_by_date(calendar_id, query_date):
-    """
+    
     Returns the Entry for a given date within a given calendar
     (there is at most one, regardless of which member created it)
 
@@ -445,17 +445,14 @@ def get_entries_by_date(query_user_id, query_date):
             print()
     return response
 
-def get_entry_by_id_for_user(entry_id, user_id):
+def get_entry_by_id(entry_id):
     """
-    Returns one specific entry by id, but only if it belongs to the 
-    logged-in user.
+    Returns one specific entry by unique id
 
     Prevent users from opening entries that do not belong to them
     """
-    return Entry.query.filter_by(
-        id=entry_id,
-        user_id=user_id
-    ).first()
+    return Entry.query.get(entry_id)
+    
 
 # Deletes rows with the given id
 # Returns boolean value of deletion status

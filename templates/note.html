@@ -30,7 +30,7 @@
                 
                 <div class="d-flex justify-content-end mb-2">
                     <form action="{{ url_for('delete_note') }}" method="POST" onsubmit="return confirm('Delete this note? This cannot be undone.');">
-                        <input type="hidden" name="date" value="{{ date }}">
+                        <input type="hidden" name="entry_id" value="{{ entry.id }}">
                         <button type="submit" class="btn btn-outline-danger btn-sm">Delete Note</button>
                     </form>
                 </div>
