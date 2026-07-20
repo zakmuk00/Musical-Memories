@@ -255,13 +255,7 @@ class Entry(db.Model):
     journal_text = db.Column(db.Text)
     latitude = db.Column(db.Float())
     longitude = db.Column(db.Float())
-    __table_args__ = (
-        db.UniqueConstraint(
-            'calendar_id',
-            'date',
-            name='unique_calendar_date'
-            ),
-        )
+    
 
 
 # Only accepts multiple parameters so far
@@ -395,32 +389,70 @@ def get_all_by_calendar(calendar_id):
         print('No entries in calendar')
     return response
 
-
+"""
 def get_by_date(calendar_id, query_date):
-    """
+    
     Returns the Entry for a given date within a given calendar
     (there is at most one, regardless of which member created it)
 
+        Args:
+            query_user_id (str): The user id of entry being searched
+            query_date (date): The date of the entry
+
+        Returns:
+            Entry: the Entry object if it exists and None otherwise
+        
+        # Validation needed
+        
+        response = Entry.query.filter_by(
+            user_id=query_user_id,
+            date=query_date).first()
+        if response is None:
+            print('Date not in table')
+            print()
+        else:
+            print('id:', response.id)
+            print('song name:', response.song_name)
+            print('created:', response.date)
+            print()
+        return response
+"""
+def get_entries_by_date(query_user_id, query_date):
+    """
+    Returns Entry object(s) based on the date created
+
+    Note: The current user id and the entry's user_id needs to match
+
     Args:
-        calendar_id (int): The calendar being searched
+        query_user_id (str): The user id of entry being searched
         query_date (date): The date of the entry
 
     Returns:
-        Entry: the Entry object if it exists and None otherwise
+        A list with entries
     """
+    # Validation needed
     response = Entry.query.filter_by(
-        calendar_id=calendar_id,
-        date=query_date).first()
-    if response is None:
+        user_id=query_user_id,
+        date=query_date).all()
+    if not response:
         print('Date not in table')
         print()
     else:
-        print('id:', response.id)
-        print('song name:', response.song_name)
-        print('created:', response.date)
-        print()
+        for entry in response:
+            print('id:', entry.id)
+            print('song name:', entry.song_name)
+            print('created:', entry.date)
+            print()
     return response
 
+def get_entry_by_id(entry_id):
+    """
+    Returns one specific entry by unique id
+
+    Prevent users from opening entries that do not belong to them
+    """
+    return Entry.query.get(entry_id)
+    
 
 # Deletes rows with the given id
 # Returns boolean value of deletion status

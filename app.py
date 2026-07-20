@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 
 from models import (
-    Entry, get_all_by_user, add_entry, get_by_date, update_entry, delete_by_id,
+    Entry, get_all_by_user, add_entry, get_entries_by_date, get_entry_by_id, update_entry, delete_by_id,
     delete_by_date, get_or_create_user, send_request, respond_to_request,
     get_user_by_username, is_friend_of, get_friends, get_pending_outbound,
     get_pending_inbound, cancel_request,
@@ -234,7 +234,9 @@ def calendar():
     if entries:
         for entry in entries:
             entry_date = entry.date.strftime("%Y-%m-%d")
-            notes_data[entry_date] = {
+            if entry_date not in notes_data:
+                notes_data[entry_date] = []
+            notes_data[entry_date].append({
                 "text": entry.song_name,
                 "artist": entry.artist_name,
                 "spotify_link": entry.spotify_link,
@@ -242,7 +244,7 @@ def calendar():
                 "notes": entry.journal_text,
                 "location": entry.location_name,
                 "is_owner": entry.user_id == user_id
-            }
+            })
 
     active_calendar = get_calendar_by_id(calendar_id)
 
@@ -385,6 +387,45 @@ def delete_shared_calendar():
     return redirect(url_for('calendar'))
 
 
+@app.route("/day")
+@login_required
+def day_entries():
+    """
+    Shows all entries for one selected date in the active calendar.
+
+    Query parameters:
+        date (str): the selected date in YYYY-MM-DD format.
+
+    Returns:
+        day_entries.html with all entries for that day
+    """
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for("spotify_login"))
+
+    chosen_date = request.args.get("date")
+
+    if not chosen_date:
+        return redirect(url_for("calendar"))
+    
+    calendar_id = get_active_calendar_id()
+
+    # check to make sure the user is a member of the calendar
+    if not is_calendar_member(user_id, calendar_id):
+        flash("You do not have access to that calendar.")
+        return redirect(url_for("calendar"))
+    
+    entry_date = datetime.strptime(chosen_date, "%Y-%m-%d").date()
+
+    # need to filter by calendar and date
+    entries = Entry.query.filter_by(
+        calendar_id=calendar_id,
+        date=entry_date
+    ).all()
+
+    return render_template("day_entries.html", subtitle="Day Entries", entries=entries,date=chosen_date)
+
 @app.route("/reduced-motion")
 @login_required
 def reduced_motion():
@@ -417,7 +458,8 @@ def on_this_day():
 
     today = date.today()
 
-    entries = get_all_by_user(user_id)
+    calendar_id = get_active_calendar_id()
+    entries = get_all_by_calendar(calendar_id)
 
     if entries is None:
         entries = []
@@ -439,36 +481,36 @@ def on_this_day():
     return render_template("on_this_day.html", today=today, memories=memories)
     
 
-@app.route("/note")
+
+@app.route("/note/<int:entry_id>")
 @login_required
-def note():
+def note(entry_id):
     """
-    Renders the detailed note view of a specific date
+    Renders the detailed note view of a specific entry
 
     Query Parameters:
         date (str): The specified date in 'YYYY-MM-DD' format
+        entry_id (int): the unique database id of the entry.
 
     Returns:
-        HTML: Renders note.html with the specified date if it exists
+        HTML: Renders note.html for that one entry
         Redirects: Sends the user back to the calendar page if the note doesn't exist
     """
     mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
-
-    chosen_date = request.args.get('date')
-    if not chosen_date:
-        return redirect(url_for('calendar'))
     
     user_id = session.get("user_id", "test_user_1")
     if not user_id:
         return redirect(url_for('spotify_login'))
 
     calendar_id = get_active_calendar_id()
-
-    date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
-    entry = get_by_date(calendar_id, date)
+    entry = get_entry_by_id(entry_id)
 
     if entry is None:
         return redirect(url_for('calendar'))
+    
+    if not is_calendar_member(user_id, entry.calendar_id):
+        flash("you do not have access to that note")
+        return redirect(url_for("calendar"))
 
     note_data = {
         "song": entry.song_name,
@@ -531,8 +573,8 @@ def note():
     lng = entry.longitude
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
-    note=note_data, date = chosen_date, songs=songs,
-    latitude=lat, longitude=lng, mapbox_token=mapbox_token)
+    note=note_data, date=entry.date.strftime("%Y-%m-%d"), songs=songs,
+    latitude=lat, longitude=lng, mapbox_token=mapbox_token, entry=entry)
 
 
 @app.route("/noteMaker", methods=["GET", "POST"])
@@ -611,41 +653,27 @@ def noteMaker():
         date_array = form.date_created.data.split('-')
         entry_date = date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
-        # an entry already exists for this date in the active calendar -
-        # only the person who created it is allowed to edit it
-        existing_entry = get_by_date(calendar_id, entry_date)
+        # since we are allowing multiple entries you can always create a new entry
+        # do not check for an exisiting entry on this date because new ones are allowed
 
-        if existing_entry and existing_entry.user_id != user_id:
-            flash("Only the person who created that day's entry can edit it.")
-            return redirect(url_for('calendar'))
-
-        if existing_entry:
-            update_entry(user_id, existing_entry.id,
-                song_name=song,
-                artist_name=spotify_artist,
-                spotify_link=spotify_uri,
-                song_image=spotify_image,
-                location_name=location,
-                photo_path=file_path if filename else existing_entry.photo_path,
-                journal_text=notes,
-                latitude=lat,
-                longitude=lng)
-        else:
-            add_entry(user=user_id,
-                calendar=calendar_id,
-                date=entry_date,
-                song=song,
-                artist=spotify_artist,
-                link=spotify_uri,
-                song_image=spotify_image,
-                location=location,
-                photo=filename,
-                text=notes,
-                latitude=lat,
-                longitude=lng)
+        add_entry(
+            user=user_id,
+            calendar=calendar_id,
+            date=entry_date,
+            song=song,
+            artist=spotify_artist,
+            link=spotify_uri,
+            song_image=spotify_image,
+            location=location,
+            photo=filename,
+            text=notes,
+            latitude=lat,
+            longitude=lng
+        )
+        
 
 
-        return redirect(url_for('calendar'))
+        return redirect(url_for('day_entries', date=entry_date.strftime("%Y-%m-%d")))
 
     return render_template('noteMaker.html', subtitle='Note-Maker page', text='This is the note-maker page', form=form, mapbox_token=mapbox_token)
 
@@ -664,22 +692,28 @@ def delete_note():
         Redirect: Sends the user back to the calendar page
     """
     user_id = session.get("user_id")
-    chosen_date = request.form.get("date")
+    entry_id = request.form.get("entry_id", type=int)
 
-    if not chosen_date:
+    if not entry_id:
         return redirect(url_for('calendar'))
+    
+    entry = get_entry_by_id(entry_id)
 
     calendar_id = get_active_calendar_id()
-    entry_date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
-    entry = get_by_date(calendar_id, entry_date)
+    entry_date = entry.date.strftime('%Y-%m-%d')
+
+    if not is_calendar_member(user_id, entry.calendar_id):
+        flash("you do not have access to that note")
+        return redirect(url_for("calendar"))
 
     if entry is not None:
         if entry.user_id != user_id:
             flash("Only the person who created that day's entry can delete it.")
+            return redirect(url_for("day_entries", date=entry_date))
         else:
             delete_by_id(user_id, entry.id, upload_folder=app.config['UPLOAD_FOLDER'])
 
-    return redirect(url_for('calendar'))
+    return redirect(url_for('day_entries', date=entry_date))
 
 @app.route("/map")
 @login_required
@@ -701,6 +735,7 @@ def timeline():
     Renders the timeline page to see user's journal notes as a vertical timeline.
     Sorted from newest to oldest. User can choose to sort oldest to newest.
 
+    Since calendars can be shared, this uses entries from the active calendar.
     Returns:
         HTML: Renders timeline.html
     """
@@ -710,16 +745,22 @@ def timeline():
     if not user_id:
         return redirect(url_for("spotify_login"))
     
-    entries = get_all_by_user(user_id)
+    calendar_id = get_active_calendar_id()
+    
+    if not is_calendar_member(user_id, calendar_id):
+        flash("you do not have access to that note")
+        return redirect(url_for("calendar"))
+    
+    entries = get_all_by_calendar(calendar_id)
 
     # from the url we can get the sort query parameter
     sort_order = request.args.get("sort", "newest")
 
     if entries:
         if sort_order == "oldest":
-            entries = sorted(entries, key=lambda entry: entry.date)
+            entries = sorted(entries, key=lambda entry: (entry.date, entry.id))
         else:
-            entries = sorted(entries, key=lambda entry: entry.date, reverse=True)
+            entries = sorted(entries, key=lambda entry: (entry.date, entry.id), reverse=True)
     else:
         entries = []
     
@@ -807,6 +848,7 @@ def search_entries():
 
         if song_match or artist_match or date_match: 
             results.append({
+                "id": entry.id,
                 "date": entry.date.strftime("%Y-%m-%d"),
                 "song_name": entry.song_name,
                 "artist_name": entry.artist_name,
