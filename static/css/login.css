@@ -19,11 +19,11 @@ h1, h2, h3.fw-bold {
 }
 
 .welcome {
-    font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    color: var(--accent);
-    margin-bottom: 8px;
+    font-size: 1.8rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 1.5px !important;
+    color: #1DB954 !important;
+    margin-bottom: 8px !important;
 }
 
 .text-muted {

@@ -16,12 +16,12 @@
         <div class="wood-background"></div>
         <!-- <img src="{{ url_for('static', filename='images/Rectangle 139.svg') }}" class="wood-background" alt=""> -->
 
-        <div class="record-container">
-            <img src="{{ url_for('static', filename='images/Record.svg') }}" class="record" alt="">
+        <div class="record-container {% if session.reduced_motion %}reduced-motion-theme{% endif %}">
+            <img src="{{ url_for('static', filename='images/Record.svg') }}" class="record {% if session.reduced_motion %}reduced-motion-theme{% endif %}" alt="">
         </div>
 
         <div class="tonearm-container">
-            <img src="{{ url_for('static', filename='images/Arm.svg') }}" class="tonearm" alt="">
+            <img src="{{ url_for('static', filename='images/Arm.svg') }}" class="tonearm {% if session.reduced_motion %}reduced-motion-theme{% endif %}" alt="">
             <img src="{{ url_for('static', filename='images/Base.svg') }}" class="tonearm-base" alt="">
         </div>
 
