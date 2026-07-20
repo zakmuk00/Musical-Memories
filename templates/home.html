@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Home - Musical Memories{% endblock %}
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
@@ -9,6 +9,7 @@
 {% block navbar %}{% endblock %}
 
 {% block content %}
+<!-- Decorative Background Elements -->
 <img src="{{ url_for('static', filename='images/Group 32.svg') }}" class="decor-bottom-left" alt="">
 <img src="{{ url_for('static', filename='images/Group 33.svg') }}" class="decor-top-right" alt="">
 <img src="{{ url_for('static', filename='images/Group 34.svg') }}" class="decor-bottom-right" alt="">
@@ -16,15 +17,27 @@
 
 <div class="row justify-content-center align-items-center vh-100 m-0">
     <div class="col-md-6 col-lg-5 mx-auto text-center">
-        <div class="card shadow-lg py-5 px-3 border-1 rounded-3">
+        <div class="card shadow-lg py-5 px-4 border-1 rounded-3">
             <div class="card-body">
-                <div class="welcome">WELCOME TO</div>
+                <div class="welcome text-uppercase text-muted fw-bold mb-2">WELCOME TO</div>
                 <h2 class="card-title fw-bold mb-3">Musical Memories</h2>
-                <p class="text-muted mb-6">Digital scrapbook for your musical memories</p>
-                <!-- replace with for production {{ url_for('spotify_login') }} --> 
-                <a href="{{ url_for('spotify_login') }}" class="btn btn-success btn-lg rounded-pill px-4 py-2 fw-bold shadow-sm">
-                    <i class="fab fa-spotify me-2"></i> Login with Spotify
-                </a>
+                <p class="text-muted mb-4">Your digital scrapbook for cataloging and sharing your musical journey.</p>
+                
+                <div class="d-grid gap-3 col-10 mx-auto">
+                    <!-- Main Spotify Auth Login Link -->
+                    <a href="{{ url_for('spotify_login') }}" class="btn btn-success btn-lg rounded-pill px-4 py-2 fw-bold shadow-sm">
+                        <i class="fab fa-spotify me-2"></i> Login with Spotify
+                    </a>
+
+                    Dev Bypass Link (Visible strictly in Debug mode)
+                    {% if config.DEBUG %}
+                    <div class="pt-2 border-top mt-2">
+                        <a href="{{ url_for('dev_bypass') }}" class="btn btn-outline-secondary btn-sm rounded-pill w-100">
+                            Dev Bypass Login
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
