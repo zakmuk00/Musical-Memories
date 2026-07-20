@@ -17,6 +17,9 @@ from gemini import SongGenerator
 from dotenv import load_dotenv
 
 from models import SpotifyToken, save_spotify_tokens, get_spotify_tokens, delete_spotify_tokens
+
+from PIL import Image
+
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'overly=secure-token-4-testin@' #change this when pushing to server

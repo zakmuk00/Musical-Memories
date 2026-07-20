@@ -101,7 +101,8 @@
     font-family: 'Poppins', sans-serif;
     font-style: normal;
     text-decoration: none;
-    color: var(--fc-neutral-text-color);
+    color: #ffffff !important;
+    mix-blend-mode: difference;
 }
 
 .fc-daygrid-day-number:hover {
