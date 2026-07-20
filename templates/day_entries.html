@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block title %}Entries for {{ date }}{% endblock %}
+{% block content %}
+
+{% block head %}
+    <style>
+        .btn-primary, .btn-success {
+            background-color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            border-radius: 30px;
+            box-shadow: 0 3px 8px var(--shadow);
+            padding: 10px 16px;
+            font-size: .9rem;
+        }
+
+        .btn-primary:hover, .btn-success:hover {
+            background-color: #15833b !important;
+            transform: translateY(-1px);
+        }
+        
+        .modal {
+            background-color: transparent;
+        }
+      
+        .card {
+            background: #2d2d2d;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 6px 16px var(--shadow);
+            position: relative;
+        }
+
+    </style>
+{% endblock %}
+
+
+<div class="container">
+    <h2 class="fw-bold text-center mb-3">
+        Entries for {{ date }}
+    </h2>
+
+    <div class="text-end mb-4">
+        <a href="noteMaker?date={{ date }}" class=" btn btn-primary">
+            Add Another Entry!
+        </a>
+
+        <a href="/calendar" class="btn btn-outline-secondary">
+            Back to Calendar
+        </a>
+    </div>
+
+    {% if entries %}
+        {% for entry in entries %}
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-start">
+                    <div class="col-auto">
+                        {% if entry.song_image %}
+                            <img src="{{ entry.song_image }}" alt="Album picture" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded align-items-center justify-content-center fw-bold"
+                                style="width: 100px; height: 100px; background: #e1dddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
+                                No Album Picture
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col">
+                        <h5 class="fw-bold mb-1">
+                            {{ entry.song_name }}
+                        </h5>
+
+                        <p class="text-muted mb-2 small">
+                            {{ entry.artist_name }}
+                        </p>
+
+                        {% if entry.journal_text %}
+                            <p class="small">
+                                {{ entry.journal_text[:150] }}
+                                {% if entry.journal_text|length > 150 %}...{% endif %}
+                            </p>
+                        {% endif %}
+
+                        <a href="note/{{ entry.id }}"
+                            class="btn btn-sm btn-primary">
+                            View Full Note
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+
+    <div class="text-center">
+        <p class="text-muted">
+            No entries for today
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

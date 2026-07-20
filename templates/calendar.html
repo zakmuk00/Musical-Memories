@@ -159,7 +159,7 @@
                     wrapper.className = `album-wrapper`;
                     wrapper.style.setProperty('--bg-image', `url(${noteData.song_image})`);
                     wrapper.innerHTML = `
-                        <img src="${noteData.song_image}" class="album-cover" alt="">
+                        <img src="${noteData[0].song_image}" class="album-cover" alt="">
                     `;
                     if (noteData.is_owner === false) {
                         // small badge to show this day was added by someone else

@@ -479,18 +479,12 @@ def note(entry_id):
         Redirects: Sends the user back to the calendar page if the note doesn't exist
     """
     mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
-
-    chosen_date = request.args.get('date')
-    if not chosen_date:
-        return redirect(url_for('calendar'))
     
     user_id = session.get("user_id", "test_user_1")
     if not user_id:
         return redirect(url_for('spotify_login'))
 
     calendar_id = get_active_calendar_id()
-
-    date = datetime.strptime(chosen_date, '%Y-%m-%d').date()
     entry = get_entry_by_id(entry_id)
 
     if entry is None:
@@ -561,8 +555,8 @@ def note(entry_id):
     lng = entry.longitude
 
     return render_template('note.html', subtitle='Note page', text='This is the note page', 
-    note=note_data, date = chosen_date, songs=songs,
-    latitude=lat, longitude=lng, mapbox_token=mapbox_token)
+    note=note_data, date=entry.date.strftime("%Y-%m-%d"), songs=songs,
+    latitude=lat, longitude=lng, mapbox_token=mapbox_token, entry=entry)
 
 
 @app.route("/noteMaker", methods=["GET", "POST"])
@@ -688,7 +682,7 @@ def delete_note():
     entry = get_entry_by_id(entry_id)
 
     calendar_id = get_active_calendar_id()
-    entry_date = datetime.strftime('%Y-%m-%d')
+    entry_date = entry.date.strftime('%Y-%m-%d')
 
     if not is_calendar_member(user_id, entry.calendar_id):
         flash("you do not have access to that note")
