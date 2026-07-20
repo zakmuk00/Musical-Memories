@@ -4,16 +4,46 @@
 
 {% block head %}
 {{ super() }}
-    <style>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 
+    <style>
         .card {
             background: #2D2D2D;
             border: none;
             border-radius: 6px;
-            box-shadow: 0 6px 16px var(--shadow);
+            box-shadow: 0 6px 16px var(--shadow, rgba(0,0,0,0.3));
             position: relative;
         }
 
+        .modal-content {
+            background-color: #242424;
+            color: #ffffff;
+            border: 1px solid #3d3d3d;
+            border-radius: 12px;
+        }
+
+        #friend-map {
+            width: 100%;
+            height: 260px;
+            border-radius: 8px;
+        }
+
+        .friend-link {
+            cursor: pointer;
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        .friend-link:hover {
+            text-decoration: underline;
+        }
+
+        .mini-calendar-item {
+            background: #2d2d2d;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+        }
     </style>
 {% endblock %}
 
@@ -43,22 +73,40 @@
                                         <button type="submit" class="btn btn-outline-success btn-sm rounded-pill">Add</button>
                                     </form>
                                 </div>
+                                
+                                <div class="mb-3 p-2 border border-warning rounded">
+                                    <small class="text-warning d-block mb-1">Dev Tools:</small>
+                                    <button type="button" 
+                                            class="btn btn-warning btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#friendPreviewModal" 
+                                            data-username="{{ viewing_user.username }}">
+                                         Preview My Own Profile
+                                    </button>
+                                </div>
+                                
                                 <ul class="list-unstyled mt-3 mb-0">
                                     {% for friend in friends %}
                                         <li class="py-1">
-                                            <a href="/profile/{{ friend.username }}">{{ friend.username }}</a>
+                                            <a role="button" 
+                                               class="friend-link fw-semibold" 
+                                               data-bs-toggle="modal" 
+                                               data-bs-target="#friendPreviewModal" 
+                                               data-username="{{ friend.username }}">
+                                                 {{ friend.username }}
+                                            </a>
                                         </li>
                                     {% else %}
-                                        <p class="text-muted mt-2">No friends yet.</p>
+                                        <li class="text-muted mt-2">No friends yet.</li>
                                     {% endfor %}
                                 </ul>
 
-                                <h5 class="fw-bold mt-4 border-top">Pending Requests Received</h5>
+                                <h5 class="fw-bold mt-4 border-top pt-2">Pending Requests Received</h5>
                                 <ul class="list-unstyled mt-2 mb-0">
                                     {% for requester in pending_inbound %}
                                         <li class="d-flex justify-content-between align-items-center py-1">
                                             <div>{{ requester.username }}</div>
-                                            <div>
+                                            <div class="d-flex gap-2">
                                                 <form action="{{ url_for('friend_accept', requester_username=requester.username) }}" method="POST">
                                                     <button type="submit" class="btn btn-outline-success btn-sm">Accept</button>
                                                 </form>
@@ -68,25 +116,26 @@
                                             </div>
                                         </li>
                                     {% else %}
-                                        <p class="text-muted mt-2">No pending inbound requests.</p>
+                                        <li class="text-muted mt-2">No pending inbound requests.</li>
                                     {% endfor %}
                                 </ul>
 
-                                <h5 class="fw-bold mt-4 border-top">Pending Requests Sent</h5>
+                                <h5 class="fw-bold mt-4 border-top pt-2">Pending Requests Sent</h5>
                                 <ul class="list-unstyled mt-2 mb-0">
                                     {% for target in pending_outbound %}
                                         <li class="d-flex justify-content-between align-items-center py-1">
                                             <div>{{ target.username }}</div>
                                             <form action="{{ url_for('friend_cancel', username=target.username) }}" method="POST">
-                                                <button type="submit" class="btn btn-outline-success btn-sm">Revoke</button>
+                                                <button type="submit" class="btn btn-outline-warning btn-sm">Revoke</button>
                                             </form>
                                         </li>
                                     {% else %}
-                                        <p class="text-muted mt-2">No pending outbound requests.</p>
+                                        <li class="text-muted mt-2">No pending outbound requests.</li>
                                     {% endfor %}
                                 </ul>
                             </div>
                         </div>
+
                         <div class="col-md-4">
                             <div class="card shadow-sm p-3 text-center d-flex align-items-center justify-content-center">
                                 <h4 class="fw-bold text-muted my-auto">Profile Analytics</h4>
@@ -95,22 +144,147 @@
                     </div>
                 {% else %}
                     <h4 class="fw-bold mt-3">Calendar</h4>
-                    <div class="mb-3">
-                        <!-- calendar will go here once the friend scoped route exists -->
-                    </div>
-
-                    <h4 class="fw-bold mt-3">Map</h4>
-                    <div class="mb-3">
-                        <!-- map goes here once route exists -->
-                    </div>
-
-                    <h4 class="fw-bold mt-3">Top Songs</h4>
-                    <div class="mb-3">
-                        <!-- not decided yet, either from the journal entries or live Spotify top tracks -->
+                    <div class="mb-3 text-muted">
+                        Viewing {{ viewing_user.username }}'s profile.
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="friendPreviewModal" tabindex="-1" aria-labelledby="friendModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold" id="friendModalLabel">
+                    <span id="modal-friend-username">Friend</span>'s Profile
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <h6 class="fw-bold text-uppercase text-muted mb-2">Location Map</h6>
+                        <div id="friend-map"></div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <h6 class="fw-bold text-uppercase text-muted mb-2">Calendar Activity</h6>
+                        <div id="friend-calendar-container" style="max-height: 260px; overflow-y: auto;">
+                            <p class="text-muted">Loading calendar entries...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const MAPBOX_TOKEN = "{{ mapbox_token or '' }}";
+    let friendMap = null;
+    let friendMarkers = [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const friendModalEl = document.getElementById('friendPreviewModal');
+
+        friendModalEl.addEventListener('show.bs.modal', function (event) {
+            const triggerButton = event.relatedTarget;
+            const username = triggerButton.getAttribute('data-username');
+            
+            document.getElementById('modal-friend-username').textContent = username;
+            
+            const calContainer = document.getElementById('friend-calendar-container');
+            calContainer.innerHTML = `<div class="spinner-border spinner-border-sm text-light" role="status"></div> Loading...`;
+
+            fetch(`/api/user/${username}/preview-data`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.events || data.events.length === 0) {
+                        calContainer.innerHTML = '<p class="text-muted small">No calendar entries recorded yet.</p>';
+                    } else {
+                        let html = '';
+                        data.events.slice(0, 10).forEach(evt => {
+                            html += `
+                                <div class="mini-calendar-item d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="fw-bold small">${evt.title || 'Untitled'}</div>
+                                        <div class="text-muted extra-small" style="font-size: 0.75rem;">${evt.artist || ''}</div>
+                                    </div>
+                                    <span class="badge bg-dark text-secondary">${evt.date}</span>
+                                </div>
+                            `;
+                        });
+                        calContainer.innerHTML = html;
+                    }
+
+                    initFriendMap(data.locations);
+                })
+                .catch(err => {
+                    console.error("Error loading friend preview:", err);
+                    calContainer.innerHTML = '<p class="text-danger small">Failed to load friend data.</p>';
+                });
+        });
+
+        friendModalEl.addEventListener('shown.bs.modal', function () {
+            if (friendMap) {
+                friendMap.resize();
+            }
+        });
+    });
+
+    function initFriendMap(locations) {
+        if (!MAPBOX_TOKEN) {
+            document.getElementById('friend-map').innerHTML = 
+                '<div class="p-3 text-muted text-center border border-secondary rounded">Mapbox Token not configured.</div>';
+            return;
+        }
+
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+
+        const defaultCenter = (locations && locations.length > 0) 
+            ? [locations[0].longitude, locations[0].latitude]
+            : [-98.5795, 39.8283];
+
+        if (!friendMap) {
+            friendMap = new mapboxgl.Map({
+                container: 'friend-map',
+                style: 'mapbox://styles/mapbox/dark-v11',
+                center: defaultCenter,
+                zoom: locations && locations.length > 0 ? 9 : 3
+            });
+            friendMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        } else {
+            friendMarkers.forEach(m => m.remove());
+            friendMarkers = [];
+
+            if (locations && locations.length > 0) {
+                friendMap.flyTo({
+                    center: [locations[0].longitude, locations[0].latitude],
+                    zoom: 9
+                });
+            }
+        }
+
+        if (locations) {
+            locations.forEach(loc => {
+                const popupHtml = `<strong>${loc.song_name || 'Entry'}</strong><br><small>${loc.date}</small>`;
+                const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupHtml);
+
+                const marker = new mapboxgl.Marker({ color: '#1db954' })
+                    .setLngLat([loc.longitude, loc.latitude])
+                    .setPopup(popup)
+                    .addTo(friendMap);
+
+                friendMarkers.push(marker);
+            });
+        }
+    }
+</script>
 {% endblock %}

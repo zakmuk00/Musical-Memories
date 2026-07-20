@@ -858,18 +858,6 @@ def search_entries():
 
     return jsonify(results)
 
-
-@app.route("/update_server", methods=['POST'])
-def webhook():
-    if request.method == 'POST':
-        repo = git.Repo('/home/musicalmemories/Musical-Memories')
-        origin = repo.remotes.origin
-        origin.pull()
-        return 'Updated PythonAnywhere successfully', 200
-    else:
-        return 'Wrong event type', 400
-
-
 @app.route("/friends/request", methods=["POST"])
 @login_required
 def friend_request():
@@ -966,7 +954,72 @@ def profile(username):
     pending_outbound = get_pending_outbound(target_user.id) if is_curr_user else []
     pending_inbound = get_pending_inbound(target_user.id) if is_curr_user else []
 
-    return render_template('profile.html', subtitle='Profile Page', text='This is the profile page', viewing_user=target_user, is_curr_user=is_curr_user, entries=entries, friends=friends, pending_outbound=pending_outbound, pending_inbound=pending_inbound)
+    mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
+
+    return render_template(
+        'profile.html',
+        subtitle='Profile Page',
+        text='This is the profile page',
+        viewing_user=target_user,
+        is_curr_user=is_curr_user,
+        entries=entries,
+        friends=friends,
+        pending_outbound=pending_outbound,
+        pending_inbound=pending_inbound,
+        mapbox_token=mapbox_token
+    )
+
+@app.route("/api/user/<username>/preview-data")
+@login_required
+def user_preview_data(username):
+    """
+    Returns public entry data (locations & basic info) for previewing a friend's profile in a popup modal.
+    """
+    friend = get_user_by_username(username)
+    if not friend:
+        return jsonify({"error": "User not found"}), 404
+
+    # Get the user's personal calendar
+    personal_cal = get_or_create_personal_calendar(friend.id)
+    entries = get_all_by_calendar(personal_cal.id)
+
+    events = []
+    locations = []
+
+    for entry in entries:
+        date_str = entry.date.strftime("%Y-%m-%d")
+        events.append({
+            "title": entry.song_name,
+            "artist": entry.artist_name,
+            "date": date_str,
+            "song_image": entry.song_image
+        })
+
+        if entry.latitude is not None and entry.longitude is not None:
+            locations.append({
+                "latitude": entry.latitude,
+                "longitude": entry.longitude,
+                "song_name": entry.song_name,
+                "location_name": entry.location_name,
+                "date": date_str
+            })
+
+    return jsonify({
+        "username": friend.username,
+        "events": events,
+        "locations": locations
+    })
+
+
+@app.route("/update_server", methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('/home/musicalmemories/Musical-Memories')
+        origin = repo.remotes.origin
+        origin.pull()
+        return 'Updated PythonAnywhere successfully', 200
+    else:
+        return 'Wrong event type', 400
 
 if __name__ == '__main__':
     with app.app_context():
