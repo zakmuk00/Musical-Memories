@@ -1,0 +1,36 @@
+.card {
+    background: var(--fc-page-bg-color);
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 6px 16px var(--shadow, rgba(0,0,0,0.3));
+    position: relative;
+}
+
+.modal-content {
+    background-color: var(--fc-page-bg-color);
+    color: var(--fc-text-color);
+    border: 1px solid var(--fc-border-color);
+    border-radius: 12px;
+}
+
+#friend-map {
+    width: 100%;
+    height: 260px;
+    border-radius: 8px;
+}
+
+.friend-link {
+    cursor: pointer;
+    color: #0d6efd;
+    text-decoration: none;
+}
+.friend-link:hover {
+    text-decoration: underline;
+}
+
+.mini-calendar-item {
+    background: #2d2d2d;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+}
