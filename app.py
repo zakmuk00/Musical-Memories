@@ -17,6 +17,8 @@ from models import (
 )
 from database import db
 
+
+
 from spotify_api import SpotifyClient
 from database import db
 
@@ -91,15 +93,6 @@ def build_user_lookup(entries):
         users_by_id[user.id] = user
     
     return users_by_id
-
-
-@app.route("/login/dev-bypass")
-def dev_bypass():
-    fake_id = request.args.get("as", "dev_test_user_1")
-    session["user_id"] = fake_id
-    session["username"] = fake_id
-    get_or_create_user(fake_id, fake_id)
-    return redirect(url_for("calendar"))
 
 
 @app.route("/")
@@ -987,7 +980,7 @@ def friend_cancel(username):
 @login_required
 def profile(username):
     """
-    - Render's a user's profile page
+    - Renders a user's profile page
     - username (str): username of the profile being viewed
     """
     user_id = session.get("user_id")
@@ -1000,10 +993,50 @@ def profile(username):
     if not is_curr_user and not is_friend_of(user_id, target_user.id):
         return redirect(url_for('calendar'))
     
-    entries = get_all_by_user(target_user.id)
+    entries = get_all_by_user(target_user.id) or []
     friends = get_friends(target_user.id) if is_curr_user else []
     pending_outbound = get_pending_outbound(target_user.id) if is_curr_user else []
     pending_inbound = get_pending_inbound(target_user.id) if is_curr_user else []
+
+
+    total_tracks = len(entries)
+
+    track_counts = {}
+    track_dates = {}
+
+    for e in entries:
+        song = e.song_name
+        if not song:
+            continue
+        
+        date = str(e.date) if e.date else ''
+
+        track_counts[song] = track_counts.get(song, 0) + 1
+
+        if song not in track_dates or date > track_dates[song]:
+            track_dates[song] = date
+
+    if track_counts:
+        top_track = max(
+            track_counts.keys(),
+            key=lambda song: (track_counts[song], track_dates[song])
+        )
+    else:
+        top_track = 'N/A'
+
+    locations = []
+    for e in entries:
+        lat = getattr(e, 'latitude', None) if not isinstance(e, dict) else e.get('latitude')
+        lng = getattr(e, 'longitude', None) if not isinstance(e, dict) else e.get('longitude')
+        if lat is not None and lng is not None:
+            locations.append((lat, lng))
+
+    stats = {
+        'total_tracks': total_tracks,
+        'total_locations': len(set(locations)),
+        'top_track': top_track,
+    }
+    # ------------------------------
 
     mapbox_token = os.environ.get('MAPBOX_ACCESS_TOKEN')
 
@@ -1017,7 +1050,8 @@ def profile(username):
         friends=friends,
         pending_outbound=pending_outbound,
         pending_inbound=pending_inbound,
-        mapbox_token=mapbox_token
+        mapbox_token=mapbox_token,
+        stats=stats  
     )
 
 @app.route("/api/user/<username>/preview-data")

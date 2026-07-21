@@ -18,11 +18,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-center mb-4">
                     <h2 class="fw-bold mb-0 text-center">
-                        {% if is_curr_user %}
-                            Your Profile
-                        {% else %}
-                            {{ viewing_user.username }}'s Profile
-                        {% endif %}
+                        {{ viewing_user.username }}'s Profile
                     </h2>
                 </div>
 
@@ -33,20 +29,9 @@
                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
                                     <h4 class="fw-bold mb-0">Friends List</h4>
                                     <form action="{{ url_for('friend_request') }}" method="POST" class="d-flex">
-                                        <input type="text" name="username" class="form-control me-2" placeholder="Enter username" style="width: 150px;">
+                                        <input type="text" name="username" class="form-control me-2" placeholder="Enter username" style="width: 155px;">
                                         <button type="submit" class="btn btn-outline-success btn-sm rounded-pill">Add</button>
                                     </form>
-                                </div>
-                                
-                                <div class="mb-3 p-2 border border-warning rounded">
-                                    <small class="text-warning d-block mb-1">Dev Tools:</small>
-                                    <button type="button" 
-                                            class="btn btn-warning btn-sm" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#friendPreviewModal" 
-                                            data-username="{{ viewing_user.username }}">
-                                         Preview My Own Profile
-                                    </button>
                                 </div>
                                 
                                 <ul class="list-unstyled mt-3 mb-0">
@@ -101,8 +86,40 @@
                         </div>
 
                         <div class="col-md-4">
-                            <div class="card shadow-sm p-3 text-center d-flex align-items-center justify-content-center">
-                                <h4 class="fw-bold text-muted my-auto">Profile Analytics</h4>
+                            <div class="card shadow-sm p-3">
+                                <h5 class="fw-bold border-bottom pb-2 mb-3">Profile Analytics</h5>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted small">Total Friends</span>
+                                    <span class="fw-bold fs-5 text-success">{{ friends|length }}</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted small">Songs Pinned</span>
+                                    <span class="fw-bold fs-5 text-light">{{ stats.total_tracks if stats else 0 }}</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted small">Unique Locations</span>
+                                    <span class="fw-bold fs-5 text-warning">{{ stats.total_locations if stats else 0 }}</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">Top Song</span>
+                                    <span class="fw-bold text-info text-truncate ms-2" style="max-width: 120px;" title="{{ stats.top_artist if stats else 'N/A' }}">
+                                        {{ stats.top_track if stats and stats.top_track else 'N/A' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="text-end mt-2">
+                                <button type="button" 
+                                        class="btn btn-outline-success btn-sm w-100 rounded-pill mt-1 d-flex align-items-center justify-content-center gap-2 fw-semibold" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#friendPreviewModal" 
+                                        data-username="{{ viewing_user.username }}">
+                                    <i class="bi bi-eye"></i> View Profile As Others See It
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -151,104 +168,7 @@
 </div>
 
 <script>
-    const MAPBOX_TOKEN = "{{ mapbox_token or '' }}";
-    let friendMap = null;
-    let friendMarkers = [];
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const friendModalEl = document.getElementById('friendPreviewModal');
-
-        friendModalEl.addEventListener('show.bs.modal', function (event) {
-            const triggerButton = event.relatedTarget;
-            const username = triggerButton.getAttribute('data-username');
-            
-            document.getElementById('modal-friend-username').textContent = username;
-            
-            const calContainer = document.getElementById('friend-calendar-container');
-            calContainer.innerHTML = `<div class="spinner-border spinner-border-sm text-light" role="status"></div> Loading...`;
-
-            fetch(`/api/user/${username}/preview-data`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.events || data.events.length === 0) {
-                        calContainer.innerHTML = '<p class="text-muted small">No calendar entries recorded yet.</p>';
-                    } else {
-                        let html = '';
-                        data.events.slice(0, 10).forEach(evt => {
-                            html += `
-                                <div class="mini-calendar-item d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <div class="fw-bold small">${evt.title || 'Untitled'}</div>
-                                        <div class="text-muted extra-small" style="font-size: 0.75rem;">${evt.artist || ''}</div>
-                                    </div>
-                                    <span class="badge bg-dark text-secondary">${evt.date}</span>
-                                </div>
-                            `;
-                        });
-                        calContainer.innerHTML = html;
-                    }
-
-                    initFriendMap(data.locations);
-                })
-                .catch(err => {
-                    console.error("Error loading friend preview:", err);
-                    calContainer.innerHTML = '<p class="text-danger small">Failed to load friend data.</p>';
-                });
-        });
-
-        friendModalEl.addEventListener('shown.bs.modal', function () {
-            if (friendMap) {
-                friendMap.resize();
-            }
-        });
-    });
-
-    function initFriendMap(locations) {
-        if (!MAPBOX_TOKEN) {
-            document.getElementById('friend-map').innerHTML = 
-                '<div class="p-3 text-muted text-center border border-secondary rounded">Mapbox Token not configured.</div>';
-            return;
-        }
-
-        mapboxgl.accessToken = MAPBOX_TOKEN;
-
-        const defaultCenter = (locations && locations.length > 0) 
-            ? [locations[0].longitude, locations[0].latitude]
-            : [-98.5795, 39.8283];
-
-        if (!friendMap) {
-            friendMap = new mapboxgl.Map({
-                container: 'friend-map',
-                style: 'mapbox://styles/mapbox/dark-v11',
-                center: defaultCenter,
-                zoom: locations && locations.length > 0 ? 9 : 3
-            });
-            friendMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        } else {
-            friendMarkers.forEach(m => m.remove());
-            friendMarkers = [];
-
-            if (locations && locations.length > 0) {
-                friendMap.flyTo({
-                    center: [locations[0].longitude, locations[0].latitude],
-                    zoom: 9
-                });
-            }
-        }
-
-        if (locations) {
-            locations.forEach(loc => {
-                const popupHtml = `<strong>${loc.song_name || 'Entry'}</strong><br><small>${loc.date}</small>`;
-                const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupHtml);
-
-                const marker = new mapboxgl.Marker({ color: '#1db954' })
-                    .setLngLat([loc.longitude, loc.latitude])
-                    .setPopup(popup)
-                    .addTo(friendMap);
-
-                friendMarkers.push(marker);
-            });
-        }
-    }
+    window.MAPBOX_TOKEN = "{{ mapbox_token or '' }}";
 </script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 {% endblock %}
