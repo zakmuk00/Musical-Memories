@@ -16,29 +16,30 @@
         <div class="wood-background"></div>
         <!-- <img src="{{ url_for('static', filename='images/Rectangle 139.svg') }}" class="wood-background" alt=""> -->
 
-        <div class="record-container">
-            <img src="{{ url_for('static', filename='images/Record.svg') }}" class="record" alt="">
+        <div class="record-container {% if session.reduced_motion %}reduced-motion-theme{% endif %}">
+            <img src="{{ url_for('static', filename='images/Record.svg') }}" class="record {% if session.reduced_motion %}reduced-motion-theme{% endif %}" alt="">
         </div>
 
         <div class="tonearm-container">
-            <img src="{{ url_for('static', filename='images/Arm.svg') }}" class="tonearm" alt="">
+            <img src="{{ url_for('static', filename='images/Arm.svg') }}" class="tonearm {% if session.reduced_motion %}reduced-motion-theme{% endif %}" alt="">
             <img src="{{ url_for('static', filename='images/Base.svg') }}" class="tonearm-base" alt="">
         </div>
 
         <div class="mainCard mb-4 p-4">
             <div class="card-body">
-                
+                {% if note.is_owner %}
                 <div class="d-flex justify-content-end mb-2">
                     <form action="{{ url_for('delete_note') }}" method="POST" onsubmit="return confirm('Delete this note? This cannot be undone.');">
                         <input type="hidden" name="entry_id" value="{{ entry.id }}">
                         <button type="submit" class="btn btn-outline-danger btn-sm">Delete Note</button>
                     </form>
                 </div>
+                {% endif %}
 
                 <div class="row g-4 mb-4">
                     <div class="col-md-8">
                         <div class="card shadow-sm p-3 h-100">
-                            <h3 class="fw-bold">Your song on {{ date }}:</h3>
+                            <h3 class="fw-bold">{% if note.is_owner %}Your{% else %}{{ note.display_name }}'s{% endif %} song on {{ date }}:</h3>
                             <div class="mt-2">
                                 {% if note.track_id %}
                                 <div class="mb-2">
@@ -96,7 +97,7 @@
                 <div class="row g-4">
                     <div class="col-md-8">
                         <div class="card shadow-sm p-3">
-                            <h2 class="fw-bold border-bottom pb-2">Notes</h2>
+                            <h2 class="notes fw-bold border-bottom pb-2">Notes</h2>
                             <p class="text-secondary mt-2">{{ note.notes if note.notes else 'Empty entry.' }}</p>
                         </div>
                     </div>

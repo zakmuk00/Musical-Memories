@@ -1,20 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@400;600&display=swap');
 
-:root {
-    --paper: #272727; 
-    /* --paper-dark: #ECE3D0; */
-    --ink: #FFFFFF;
+:root, [data-bs-theme="dark"] {
+    --background: #272727;
+    --font-color: #FFFFFF;
     --accent: #1DB954;
-    --accent-soft: #464646;
+    --navbar: #464646;
     --shadow: rgba(60, 45, 25, 0.15);
+    --secondary-font-color: rgba(255, 255, 255, 0.6);
+    --fc-page-bg-color: #2d2d2d; 
+    --fc-neutral-text-color: #ffffff; 
+    --fc-border-color: #555555; 
+    --fc-album-cover-bg-color: #363636;
+    --fc-album-cover-bg-color-hovered: #127900;
+    --button-bg-color: #1DB954;
+    --border-color: #555555;
+}
+
+[data-bs-theme="light"] {
+    --background: #EEEEEE; 
+    --font-color: #272727;
+    --accent: #1DB954;
+    --navbar: #ffffff;
+    --shadow: rgba(90, 74, 53, 0.15);
+    --secondary-font-color: rgba(39, 39, 39, 0.6);
+    --fc-page-bg-color: #ffffff; 
+    --fc-neutral-text-color: #2d2d2d; 
+    --fc-border-color: #555555; 
+    --fc-album-cover-bg-color: #363636;
+    --fc-album-cover-bg-color-hovered: #127900;
+    --button-bg-color: #1DB954;
+    --border-color: #2d2d2d;
 }
 
 body {
     position: relative;
     margin: 0;
     font-family: 'Poppins', Arial, sans-serif;
-    color: var(--ink);
-    background-color: var(--paper);
+    color: var(--font-color);
+    background-color: var(--background);
     background-attachment: fixed;
     min-height: 100vh;
 }
@@ -22,8 +45,8 @@ body {
 .footer {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding: 20px 0;
-    background-color: var(--paper);
-    color: var(--ink);
+    background-color: var(--background);
+    color: var(--font-color);
     padding: 10px 0;
     margin-top: 10vh;
 }
@@ -31,17 +54,18 @@ body {
 h1, h2, h3.fw-bold {
     font-family: 'Poppins', Arial, sans-serif;
     font-size: 2.2rem;
-    color: white;
+    color: var(--font-color);
 }
 
 .navbar.bg-dark {
-    background-color: #464646 !important;
+    background-color: var(--navbar) !important;
     box-shadow: 0 2px 8px var(--shadow);
 }
 
 .navbar .nav-link {
     font-family: 'Poppins', sans-serif;
     letter-spacing: 0.3px;
+    color: var(--font-color) !important;
 }
 
 .navbar .nav-link:hover {
@@ -52,4 +76,49 @@ h1, h2, h3.fw-bold {
     font-family: 'Caveat', cursive;
     font-size: 1.8rem;
     color: var(--accent) !important;
+}
+
+#footer-text {
+    font-size: 0.9rem;
+    color: var(--secondary-font-color);
+}
+
+[data-bs-theme="light"] .btn-outline-light {
+    color: #272727 !important;
+    border-color: #272727 !important;
+}
+
+[data-bs-theme="light"] .btn-outline-light:hover {
+    background-color: #272727 !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="light"] #settings-dropdown {
+    background-color: var(--background);
+    border: 1px solid var(--border-color);
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 2000;
+    width: 320px;
+    border-radius: 14px;
+    margin-top: 8px;
+    padding: 16px;
+    text-align: left;
+}
+
+[data-bs-theme="dark"] #settings-dropdown {
+    background-color:var(--fc-album-cover-bg-color);
+    border: 1px solid var(--border-color);
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 2000;
+    width: 320px;
+    border-radius: 14px;
+    margin-top: 8px;
+    padding: 16px;
+    text-align: left;
 }
