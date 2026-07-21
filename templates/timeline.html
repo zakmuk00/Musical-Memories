@@ -57,13 +57,20 @@
                         
                         <div class="flex-grow-1">
                             <h5 class="fw-bold mb-1 song-name">{{ entry.song_name }}</h5>
-                            <div class="text-muted mb-1" style="font-size: 10px">
+                            <div class="text-muted mb-1" style="font-size: 12px">
                                 
                                 {% if entry.artist_name %}
                                     <span class="artist-name">{{ entry.artist_name }}</span> | 
                                 {% endif %}
                                 <span class="memory-date">{{ entry.date }}</span>
                             </div>
+
+                            {% set creator = users_by_id.get(entry.user_id) %}
+                            {% if creator %}
+                            <p class="text-muted mb-2" style="font-size: 10px;">
+                                Created by @{{ creator.username }}
+                            </p>
+                            {% endif %}
                         
                             {% if entry.journal_text %}
                             <div class="text-wrap text-break mb-2 journal-text" style="font-size:small">

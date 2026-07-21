@@ -83,6 +83,13 @@
                                         </div>
                                         {% endif %}
 
+                                        {% set creator = users_by_id.get(entry.user_id) %}
+                                        {% if creator %}
+                                            <p class=" col-auto text-muted small mb-2">
+                                                Created by @{{ creator.username }}
+                                            </p>
+                                        {% endif %}
+
                                         {% if entry.journal_text %}
                                         <div class="row mb-2">
                                             <div class="text-wrap" style="font-size:small">
@@ -91,7 +98,7 @@
                                         </div>
 
                                         {% endif %}
-                                        <div class="col-auto text-end">
+                                        <div class="col text-end">
                                             <a href="/note/{{ entry.id }}"
                                             class="btn btn-sm btn-primary mt-2">
                                             View Full Note

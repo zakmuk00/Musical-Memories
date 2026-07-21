@@ -66,6 +66,32 @@ def get_active_calendar_id():
     session["active_calendar_id"] = personal.id
     return personal.id
 
+def build_user_lookup(entries):
+    """
+    Builds a dictionary that maps user IDs to User objects.
+
+    This is used for shared calendars because entries can be created 
+    by different users. Instead of querying the database once every entry, 
+    we can use the user_ids and query them at once
+
+    """
+
+    user_ids = []
+
+    for entry in entries:
+        if entry.user_id not in user_ids:
+            user_ids.append(entry.user_id)
+    
+    # Get all User rows whos id is inside user_ids
+    users = User.query.filter(User.id.in_(user_ids)).all()
+
+    users_by_id = {}
+
+    for user in users:
+        users_by_id[user.id] = user
+    
+    return users_by_id
+
 
 @app.route("/login/dev-bypass")
 def dev_bypass():
@@ -231,18 +257,32 @@ def calendar():
 
     notes_data = {}
     entries = get_all_by_calendar(calendar_id)
+
     if entries:
+        users_by_id = build_user_lookup(entries)
+
         for entry in entries:
             entry_date = entry.date.strftime("%Y-%m-%d")
+
             if entry_date not in notes_data:
                 notes_data[entry_date] = []
+
+            creator = users_by_id.get(entry.user_id)
+
+            if creator:
+                creator_username = creator.username 
+            else:
+                creator_username = "N/A"
+            
             notes_data[entry_date].append({
+                "id": entry.id,
                 "text": entry.song_name,
                 "artist": entry.artist_name,
                 "spotify_link": entry.spotify_link,
                 "song_image": entry.song_image,
                 "notes": entry.journal_text,
                 "location": entry.location_name,
+                "creator_username": creator_username,
                 "is_owner": entry.user_id == user_id
             })
 
@@ -424,7 +464,10 @@ def day_entries():
         date=entry_date
     ).all()
 
-    return render_template("day_entries.html", subtitle="Day Entries", entries=entries,date=chosen_date)
+    # get users by their ids. Sends the dictionary so the template can show who created the entry
+    users_by_id = build_user_lookup(entries)
+
+    return render_template("day_entries.html", subtitle="Day Entries", entries=entries,date=chosen_date, users_by_id=users_by_id)
 
 @app.route("/reduced-motion")
 @login_required
@@ -478,7 +521,10 @@ def on_this_day():
     
     memories = sorted(memories, key=lambda entry: entry.date, reverse=True)
 
-    return render_template("on_this_day.html", today=today, memories=memories)
+    # get users by their ids. Sends the dictionary so the template can show who created the entry
+    users_by_id = build_user_lookup(memories)
+
+    return render_template("on_this_day.html", today=today, memories=memories, users_by_id=users_by_id)
     
 
 
@@ -764,8 +810,10 @@ def timeline():
     else:
         entries = []
     
+    # get users by their ids. Sends the dictionary so the template can show who created the entry
+    users_by_id = build_user_lookup(entries)
 
-    return render_template('timeline.html', subtitle='Timeline page', text='This is the timeline page', entries=entries, sort_order=sort_order)
+    return render_template('timeline.html', subtitle='Timeline page', text='This is the timeline page', entries=entries, sort_order=sort_order, users_by_id=users_by_id)
 
 
 @app.route("/entries/locations")
