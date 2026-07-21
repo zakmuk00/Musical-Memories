@@ -22,13 +22,29 @@
         .modal {
             background-color: transparent;
         }
+
+        .modal-body {
+            color: var(--font-color);
+            background: var(--background);
+        }
+
+        .modal-header {
+            color: var(--font-color);
+            background: var(--fc-page-bg-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            color: var(--font-color);
+        }
       
         .card {
-            background: #2d2d2d;
+            background: var(--fc-page-bg-color);
             border: none;
             border-radius: 6px;
             box-shadow: 0 6px 16px var(--shadow);
             position: relative;
+            color: var(--font-color);
         }
 
     </style>
@@ -38,7 +54,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold text-dark">
+                <h5 class="modal-title fw-bold">
                     On This Day
                 </h5>
 
@@ -83,6 +99,13 @@
                                         </div>
                                         {% endif %}
 
+                                        {% set creator = users_by_id.get(entry.user_id) %}
+                                        {% if creator %}
+                                            <p class=" col-auto text-muted small mb-2">
+                                                Created by @{{ creator.username }}
+                                            </p>
+                                        {% endif %}
+
                                         {% if entry.journal_text %}
                                         <div class="row mb-2">
                                             <div class="text-wrap" style="font-size:small">
@@ -91,7 +114,7 @@
                                         </div>
 
                                         {% endif %}
-                                        <div class="col-auto text-end">
+                                        <div class="col text-end">
                                             <a href="/note/{{ entry.id }}"
                                             class="btn btn-sm btn-primary mt-2">
                                             View Full Note

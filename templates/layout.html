@@ -17,11 +17,17 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    <div class="background-layer"></div>
+
     {% block navbar %}
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-            <a class="navbar-brand fw-bold" href="/">Musical Memories</a>
             <div class="container-fluid">
+
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+                    <img src="{{ url_for('static', filename='images/Group 36.svg') }}" class="logo" alt="">
+                </a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -63,6 +69,7 @@
         </nav>
     {% endblock %}
 
+    <!-- block for body content -->
     {% block container_start %}<div class="container mt-4">{% endblock %}
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -84,6 +91,9 @@
                 <a href="/map">Map</a>
                 <a href="/timeline">Timeline</a>
                 <a href="/about">About</a>
+            {% if session.username %}
+                <a href="/profile/{{ session.username }}">Profile</a>
+            {% endif %}
             {% endif %}
         </div>
     </footer>
@@ -110,7 +120,15 @@
             document.documentElement.setAttribute("data-bs-theme", newTheme);
             localStorage.setItem("theme", newTheme);
         });
+
+        document.addEventListener('click', function(event) {
+            const isClickInside = settingsBtn.contains(event.target) || settingsDropdown.contains(event.target);
+            if (!isClickInside) {
+                settingsDropdown.style.display = 'none';
+            }
+        });
     </script>
     {% block scripts %}{% endblock %}
+
 </body>
 </html>
