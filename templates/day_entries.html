@@ -76,6 +76,14 @@
                             {{ entry.artist_name }}
                         </p>
 
+                        {% set creator = users_by_id.get(entry.user_id) %}
+
+                        {% if creator %}
+                            <p class="text-muted small mb-2">
+                                Created by @{{ creator.username }}
+                            </p>
+                        {% endif %}
+
                         {% if entry.journal_text %}
                             <p class="small">
                                 {{ entry.journal_text[:150] }}
