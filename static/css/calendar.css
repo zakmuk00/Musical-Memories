@@ -1,15 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-:root {
-    --fc-page-bg-color: #2d2d2d; 
-    
-    --fc-neutral-text-color: #ffffff; 
-    
-    --fc-border-color: #555555; 
-
-    --fc-album-cover-bg-color: #363636;
-
-    --fc-album-cover-bg-color-hovered: #127900;
-}
 
 .btn-primary, .btn-success {
     background-color: var(--accent) !important;
@@ -220,4 +209,30 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+[data-bs-theme="light"] .fc .fc-button-primary {
+    background-color: transparent !important;
+    border-color: #dee2e6 !important;
+    color: #272727 !important; /* Forces the text/icons to be dark */
+}
+
+[data-bs-theme="light"] .fc .fc-button-primary:hover {
+    background-color: #f8f9fa !important;
+}
+
+[data-bs-theme="light"] .btn-outline-light {
+    color: #272727 !important;
+    border-color: #272727 !important;
+}
+
+[data-bs-theme="light"] .btn-outline-light:hover {
+    background-color: #272727 !important;
+    color: #ffffff !important;
+}
+
+/* Fix non-current month dates in light mode */
+[data-bs-theme="light"] .fc-day-other .fc-daygrid-day-number {
+    color: #7e7c7c !important;
+    opacity: 1 !important;
 }

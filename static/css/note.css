@@ -2,13 +2,19 @@ body {
     position: relative;
     margin: 0;
     font-family: 'Poppins', Arial, sans-serif;
-    color: var(--ink);
-    background-color: var(--paper);
+    color: #ffffff !important;
+    background-color: #272727;
     background-attachment: fixed;
     min-height: 100vh;
     background-image: url('../images/Rectangle 139.svg');
     background-size: cover;
     overflow: hidden;
+}
+
+.notes, h3.fw-bold {
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent) !important;
 }
 
 #map {
@@ -69,7 +75,7 @@ body {
 }
 
 .text-secondary {
-    color: var(--ink) !important;
+    color: #ffffff !important;
 }
 
 .scene-wrapper {
@@ -113,6 +119,21 @@ body {
     animation-timing-function: linear;
 }
 
+.record-container.reduced-motion-theme  {
+    position: absolute;
+    top: 14%;
+    left: 10%;
+    transform: translate(-15%, -10%);
+    width: 100%;
+    max-width: 950px;
+    aspect-ratio: 1 / 1;
+    z-index: -1;
+}
+
+.record.reduced-motion-theme {
+    animation: none !important;
+}
+
 @keyframes spin {
     0% { transform: translateY(-50%) rotate(0deg); }
     100% { transform: translateY(-50%) rotate(360deg); }
@@ -151,6 +172,18 @@ body {
     animation-duration: 5s;
     animation-fill-mode: forwards; /* Keeps the arm in its final position when done */
     animation-timing-function: ease-in-out;
+}
+
+.tonearm.reduced-motion-theme {
+    position: absolute;
+    top: -65%;
+    right: 75%;
+    width: 200%;
+    height: 200%;
+    object-fit: contain;
+
+    transform-origin: top right;
+    animation: none !important;
 }
 
 @keyframes tonearm-move {

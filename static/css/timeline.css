@@ -1,13 +1,3 @@
-:root {
-    --fc-page-bg-color: #2d2d2d; 
-    
-    --fc-neutral-text-color: #ffffff; 
-    
-    --fc-border-color: #555555; 
-
-    --button-bg-color: #1DB954;
-}
-
 .card {
     background-color: var(--fc-page-bg-color) !important;
     border: none;
