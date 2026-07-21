@@ -16,7 +16,7 @@
 
     {% block head %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <div class="background-layer"></div>
 
     {% block navbar %}
@@ -38,7 +38,7 @@
                             <a class="nav-link" href="/calendar">Calendar</a>
                             <a class="nav-link" href="/map">Map</a>
                             <a class="nav-link" href="/timeline">Timeline</a>
-                            <a class="nav-link" href="/about">About</a>
+                            
                         {% if session.username %}
                             <a class="nav-link" href="/profile/{{ session.username }}">Profile</a>
                         {% endif %}
@@ -69,34 +69,30 @@
         </nav>
     {% endblock %}
 
-    <!-- block for body content -->
-    {% block container_start %}<div class="container mt-4">{% endblock %}
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-    {% block container_end %}</div>{% endblock %}
+    <!-- Main Content Area -->
+    <main class="flex-grow-1">
+        {% block container_start %}<div class="container mt-4">{% endblock %}
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+        {% block container_end %}</div>{% endblock %}
+    </main>
 
     {% block footer %}
-    <!-- Footer -->
-    <footer class="footer text-center py-3">
-        <p id="footer-text">Made by Dante Santurian, Kaung Lin, Kenneth Silvestre, Sergio Alcazar, and Zakariya Mukhtar</p>
-        <div class="footer-links">
-            {% if session.user_id %}
-                <a href="/calendar">Calendar</a>
-                <a href="/map">Map</a>
-                <a href="/timeline">Timeline</a>
-                <a href="/about">About</a>
-            {% if session.username %}
-                <a href="/profile/{{ session.username }}">Profile</a>
-            {% endif %}
-            {% endif %}
-        </div>
-    </footer>
+        <!-- Footer -->
+        <footer class="footer text-center py-3 mt-auto border-top">
+            <div class="container">
+                <!-- <p id="footer-text" class="text-muted small mb-0">
+                    Made by Dante Santurian, Kaung Lin, Kenneth Silvestre, Sergio Alcazar, and Zakariya Mukhtar
+                </p> -->
+                <a class="nav-link" href="/about">About</a>
+            </div>
+        </footer>
     {% endblock %}
 
     <!-- Bootstrap JS Bundle -->

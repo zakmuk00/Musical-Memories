@@ -2,7 +2,29 @@
 
 {% block title %}About Us{% endblock %}
 
+{% block head %}
+     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% endblock %}
+
 {% block content %}
-    <h2>Shoutout SEO</h2>
-    <p>Just 5 guys getting to it for SEO</p>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 p-4" style="border-radius: 16px;">
+            <div class="card-body text-center">
+                <h2 class="fw-bold mb-3" style="font-family: 'Georgia', cursive, sans-serif; color: #8C6239;">
+                    About Us
+                </h2>
+                <p class="text-muted mb-4">The team behind Musical Memories</p>
+
+                <ul class="list-group list-group-flush text-center fw-semibold fs-5">
+                    <li class="list-group-item bg-transparent py-3">Dante Santurian</li>
+                    <li class="list-group-item bg-transparent py-3">Kaung Lin</li>
+                    <li class="list-group-item bg-transparent py-3">Kenneth Silvestre</li>
+                    <li class="list-group-item bg-transparent py-3">Sergio Alcazar</li>
+                    <li class="list-group-item bg-transparent py-3">Zakariya Mukhtar</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
