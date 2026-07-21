@@ -91,6 +91,9 @@
                 <a href="/map">Map</a>
                 <a href="/timeline">Timeline</a>
                 <a href="/about">About</a>
+            {% if session.username %}
+                <a href="/profile/{{ session.username }}">Profile</a>
+            {% endif %}
             {% endif %}
         </div>
     </footer>

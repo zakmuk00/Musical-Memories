@@ -170,6 +170,33 @@
                         badge.innerHTML = '&#128274;';
                         wrapper.appendChild(badge);
                     }
+
+                    if (noteData.length > 1) {
+                        let currentIndex = 0;
+                        const imgElement = wrapper.querySelector('.album-cover');
+                        
+                        {% if not session.reduced_motion %}
+                        setInterval(() => {
+                            imgElement.classList.add('switching-cover');
+                            setTimeout(() => {
+                                // Swap the image source and the background variable
+                                currentIndex = (currentIndex + 1) % noteData.length;
+                                const nextImage = noteData[currentIndex].song_image;
+                                
+                                imgElement.src = nextImage;
+                                wrapper.style.setProperty('--bg-image', `url(${nextImage})`);
+
+                                imgElement.classList.remove('switching-cover');
+                            }, 300);
+                        }, 3000);
+                        {% else %}
+                        const countBadge = document.createElement('div');
+                        countBadge.className = 'entry-count-badge';
+                        countBadge.textContent = noteData.length; 
+                        wrapper.appendChild(countBadge); 
+                        {% endif %}
+                    }
+
                 } else {
                     wrapper.className = 'empty-add-button';
                     wrapper.innerHTML = `
