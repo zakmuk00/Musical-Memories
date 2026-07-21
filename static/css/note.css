@@ -2,13 +2,19 @@ body {
     position: relative;
     margin: 0;
     font-family: 'Poppins', Arial, sans-serif;
-    color: var(--ink);
-    background-color: var(--paper);
+    color: #ffffff !important;
+    background-color: #272727;
     background-attachment: fixed;
     min-height: 100vh;
     background-image: url('../images/Rectangle 139.svg');
     background-size: cover;
     overflow: hidden;
+}
+
+.notes, h3.fw-bold {
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent) !important;
 }
 
 #map {
@@ -69,7 +75,7 @@ body {
 }
 
 .text-secondary {
-    color: var(--ink) !important;
+    color: #ffffff !important;
 }
 
 .scene-wrapper {

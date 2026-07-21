@@ -4,8 +4,8 @@ body {
     position: relative;
     margin: 0;
     font-family: 'Poppins', Arial, sans-serif;
-    color: var(--ink);
-    background-color: var(--paper);
+    color: var(--font-color);
+    background-color: var(--background);
     background-attachment: fixed;
     min-height: 100vh;
     overflow: hidden;
@@ -15,19 +15,19 @@ body {
 h1, h2, h3.fw-bold {
     font-family: 'Poppins';
     font-size: 2.2rem;
-    color: var(--ink);
+    color: var(--font-color);
 }
 
 .welcome {
     font-size: 1.8rem !important;
     font-weight: 600 !important;
     letter-spacing: 1.5px !important;
-    color: #1DB954 !important;
+    color: var(--accent) !important;
     margin-bottom: 8px !important;
 }
 
 .text-muted {
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: var(--secondary-font-color) !important;
     font-size: 0.95rem;
     font-family:Arial, Helvetica, sans-serif;
 }
@@ -43,7 +43,7 @@ h1, h2, h3.fw-bold {
 
 .card {
     margin: 0 auto;
-    background: #464646;
+    background: var(--background);
     border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     box-shadow: 5px 6px 16px var(--shadow);

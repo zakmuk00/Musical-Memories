@@ -1,16 +1,20 @@
+[data-bs-theme="dark"] {
+    --note-background: #2e2e2e;
+}
+
 body {
     position: relative;
     margin: 0;
     font-family: 'Poppins', Arial, sans-serif;
-    color: var(--ink);
-    background-color: var(--paper);
+    color: var(--font-color);
+    background-color: var(--background);
     min-height: 100vh;
     overflow: auto;
 }
 
 .card {
     height: 100%;
-    background-color: #2e2e2e;
+    background-color: var(--note-background);
 }
 
 .left-back {
@@ -54,8 +58,8 @@ body {
 }
 
 #song-results {
-    background: rgb(255, 255, 255);
-    border: 1px solid #ddd;
+    background: var(--fc-page-bg-color);
+    border: 1px solid var(--accent);
     border-radius: 8px;
     margin-top: 3px;
     display: none;
@@ -69,9 +73,9 @@ body {
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
-    color: #000;
+    color: var(--font-color) !important;
 }
 
 .song-result:last-child {
@@ -117,13 +121,13 @@ body {
 
 .form-label {
     font-weight: 600;
-    color: var(--ink) !important;
+    color: var(--font-color) !important;
 }
 
 .form-control {
-    background-color: #1a1a1a !important;
-    color: #f1f1f1 !important;
-    border: 1px solid #333333 !important;
+    background-color: var(--fc-page-bg-color) !important;
+    color: var(--font-color) !important;
+    border: 1px solid var(--border-color) !important;
 }
 
 .form-control::placeholder {
@@ -131,21 +135,21 @@ body {
 }
 
 .form-control:focus {
-    background-color: #222222 !important;
-    color: #ffffff !important;
-    border-color: var(--accent) !important;   /* Glows with your accent green */
+    background-color: var(--fc-page-bg-color) !important;
+    color: var(--font-color) !important;
+    border-color: var(--accent) !important;
     box-shadow: 0 0 0 0.25rem rgba(21, 131, 59, 0.25) !important; 
 }
 
 .form-control::file-selector-button {
-    background-color: #2d2d2d !important;
-    color: #e0e0e0 !important;
-    border-right: 1px solid #444444 !important;
+    background-color: var(--fc-page-bg-color) !important;
+    color: var(--font-color) !important;
+    border-right: 1px solid var(--border-color) !important;
 }
 .form-control::file-selector-button:hover {
     background-color: #3d3d3d !important;
 }
 
 .border {
-    border-color: #86868675 !important;
+    border-color: var(--border-color) !important;
 }
