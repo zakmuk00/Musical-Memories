@@ -10,7 +10,7 @@ from models import (
     Entry, get_all_by_user, add_entry, get_entries_by_date, get_entry_by_id, update_entry, delete_by_id,
     delete_by_date, get_or_create_user, send_request, respond_to_request,
     get_user_by_username, is_friend_of, get_friends, get_pending_outbound,
-    get_pending_inbound, cancel_request,
+    get_pending_inbound, cancel_request, get_display_name,
     Calendar, get_or_create_personal_calendar, get_user_calendars,
     is_calendar_member, join_calendar_by_code, create_calendar,
     get_calendar_by_id, get_all_by_calendar, delete_calendar
@@ -511,13 +511,16 @@ def note(entry_id):
     if not is_calendar_member(user_id, entry.calendar_id):
         flash("you do not have access to that note")
         return redirect(url_for("calendar"))
+    
+    friend_display_name = get_display_name(entry.user_id)
 
     note_data = {
         "song": entry.song_name,
         "photo": entry.photo_path, 
         "notes": entry.journal_text,
         "location": [entry.latitude, entry.longitude],
-        "is_owner": entry.user_id == user_id
+        "is_owner": entry.user_id == user_id,
+        "display_name": friend_display_name
     }
 
     # gets song recommendations from Gemini

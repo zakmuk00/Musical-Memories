@@ -27,18 +27,19 @@
 
         <div class="mainCard mb-4 p-4">
             <div class="card-body">
-                
+                {% if note.is_owner %}
                 <div class="d-flex justify-content-end mb-2">
                     <form action="{{ url_for('delete_note') }}" method="POST" onsubmit="return confirm('Delete this note? This cannot be undone.');">
                         <input type="hidden" name="entry_id" value="{{ entry.id }}">
                         <button type="submit" class="btn btn-outline-danger btn-sm">Delete Note</button>
                     </form>
                 </div>
+                {% endif %}
 
                 <div class="row g-4 mb-4">
                     <div class="col-md-8">
                         <div class="card shadow-sm p-3 h-100">
-                            <h3 class="fw-bold">Your song on {{ date }}:</h3>
+                            <h3 class="fw-bold">{% if note.is_owner %}Your{% else %}{{ note.display_name }}'s{% endif %} song on {{ date }}:</h3>
                             <div class="mt-2">
                                 {% if note.track_id %}
                                 <div class="mb-2">
