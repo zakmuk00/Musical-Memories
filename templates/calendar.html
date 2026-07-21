@@ -157,11 +157,11 @@
                 const wrapper = document.createElement('div');
                 if (noteData) {
                     wrapper.className = `album-wrapper`;
-                    wrapper.style.setProperty('--bg-image', `url(${noteData.song_image})`);
+                    wrapper.style.setProperty('--bg-image', `url(${noteData[0].song_image})`);
                     wrapper.innerHTML = `
                         <img src="${noteData[0].song_image}" class="album-cover" alt="">
                     `;
-                    if (noteData.is_owner === false) {
+                    if (noteData[0].is_owner === false) {
                         // small badge to show this day was added by someone else
                         // in the shared calendar and can't be edited by you
                         const badge = document.createElement('div');

@@ -759,6 +759,16 @@ def get_user_by_username(username):
         print('Username does not exist in the table')
     return response
 
+def get_display_name(user_id):
+    """
+    Fetches a User's display name based on user_id
+    """
+    user = User.query.get(user_id)
+    if user is None:
+        print('User not found')
+        return None
+    return user.display_name
+
 def toggle_reduced_motion(user_id):
     """
     Toggles the reduced motion setting for a user
