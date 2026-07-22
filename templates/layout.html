@@ -84,15 +84,19 @@
     </main>
 
     {% block footer %}
-        <!-- Footer -->
-        <footer class="footer text-center py-3 mt-auto border-top">
-            <div class="container">
-                <!-- <p id="footer-text" class="text-muted small mb-0">
-                    Made by Dante Santurian, Kaung Lin, Kenneth Silvestre, Sergio Alcazar, and Zakariya Mukhtar
-                </p> -->
-                <a class="nav-link" href="/about">About</a>
-            </div>
-        </footer>
+    <!-- Footer -->
+    <footer class="footer text-center py-3">
+        <p id="footer-text">Made by Dante Santurian, Kaung Lin, Kenneth Silvestre, Sergio Alcazar, and Zakariya Mukhtar</p>
+        <div class="footer-links">
+            {% if session.user_id %}
+                <a href="/calendar">Calendar</a>
+                <a href="/map">Map</a>
+                <a href="/timeline">Timeline</a>
+                <a href="/profile">Profile</a>
+                <a href="/about">About</a>
+            {% endif %}
+        </div>
+    </footer>
     {% endblock %}
 
     <!-- Bootstrap JS Bundle -->
