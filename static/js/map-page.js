@@ -30,7 +30,7 @@ map.on("load", () => {
           .addTo(map);
         // reroutes to note page when a marker is clicked
         marker.getElement().addEventListener("click", () => {
-          window.location.href = "/note?date=" + entry.date;
+          window.location.href = "/note/" + entry.id;
         });
       });
     })
