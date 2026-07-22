@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const frame = arg.el.querySelector('.fc-daygrid-day-frame');
                 frame.style.position = 'relative';
                 const wrapper = document.createElement('div');
+                const reducedMotion = window.REDUCED_MOTION === true;
                 if (noteData) {
                     wrapper.className = `album-wrapper`;
                     wrapper.style.setProperty('--bg-image', `url(${noteData[0].song_image})`);
@@ -39,6 +40,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         badge.innerHTML = '&#128274;';
                         wrapper.appendChild(badge);
                     }
+
+                    if (noteData.length > 1) {
+                        let currentIndex = 0;
+                        const imgElement = wrapper.querySelector('.album-cover');
+
+                        if (!reducedMotion) {
+                            setInterval(() => {
+                                imgElement.classList.add('switching-cover');
+                                setTimeout(() => {
+                                    currentIndex = (currentIndex + 1) % noteData.length;
+                                    const nextImage = noteData[currentIndex].song_image;
+                                    imgElement.src = nextImage;
+                                    wrapper.style.setProperty('--bg-image', `url(${nextImage})`);
+                                    imgElement.classList.remove('switching-cover');
+                                }, 300);
+                            }, 3000);
+                        } else {
+                            const countBadge = document.createElement('div');
+                            countBadge.className = 'entry-count-badge';
+                            countBadge.textContent = noteData.length;
+                            wrapper.appendChild(countBadge);
+                        }
+                    }
                 } else {
                     wrapper.className = 'empty-add-button';
                     wrapper.innerHTML = `
@@ -46,7 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                 }
 
-                
+                if (reducedMotion) {
+                    wrapper.classList.add('reduced-motion-theme');
+                }
                 frame.appendChild(wrapper);
             }
         });
