@@ -96,7 +96,7 @@
 
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <span class="text-muted small">Songs Pinned</span>
-                                    <span class="fw-bold fs-5 text-light">{{ stats.total_tracks if stats else 0 }}</span>
+                                    <span class="fw-bold fs-5 text-primary">{{ stats.total_tracks if stats else 0 }}</span>
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -137,11 +137,11 @@
 <div class="modal fade" id="friendPreviewModal" tabindex="-1" aria-labelledby="friendModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header border-bottom border-secondary">
+            <div class="modal-header border-bottom">
                 <h5 class="modal-title fw-bold" id="friendModalLabel">
                     <span id="modal-friend-username">Friend</span>'s Profile
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
             <div class="modal-body">
@@ -160,7 +160,7 @@
                 </div>
             </div>
 
-            <div class="modal-footer border-top border-secondary">
+            <div class="modal-footer border-top">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
         </div>

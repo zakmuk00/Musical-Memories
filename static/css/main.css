@@ -7,29 +7,31 @@
     --navbar: #464646;
     --shadow: rgba(60, 45, 25, 0.15);
     --secondary-font-color: rgba(255, 255, 255, 0.6);
-    --fc-page-bg-color: #2d2d2d; 
-    --fc-neutral-text-color: #ffffff; 
-    --fc-border-color: #555555; 
+    --fc-page-bg-color: #2d2d2d;
+    --fc-neutral-text-color: #ffffff;
+    --fc-border-color: #555555;
     --fc-album-cover-bg-color: #363636;
     --fc-album-cover-bg-color-hovered: #127900;
     --button-bg-color: #1DB954;
     --border-color: #555555;
+    --dropdown-bg: var(--fc-album-cover-bg-color);
 }
 
 [data-bs-theme="light"] {
-    --background: #EEEEEE; 
+    --background: #EEEEEE;
     --font-color: #272727;
     --accent: #1DB954;
     --navbar: #ffffff;
     --shadow: rgba(90, 74, 53, 0.15);
     --secondary-font-color: rgba(39, 39, 39, 0.6);
-    --fc-page-bg-color: #ffffff; 
-    --fc-neutral-text-color: #2d2d2d; 
-    --fc-border-color: #555555; 
+    --fc-page-bg-color: #ffffff;
+    --fc-neutral-text-color: #2d2d2d;
+    --fc-border-color: #555555;
     --fc-album-cover-bg-color: #363636;
     --fc-album-cover-bg-color-hovered: #127900;
     --button-bg-color: #1DB954;
     --border-color: #2d2d2d;
+    --dropdown-bg: var(--background);
 }
 
 body {
@@ -43,7 +45,7 @@ body {
 }
 
 .logo {
-    height: clamp(32px, 4vw, 45px); 
+    height: clamp(32px, 4vw, 45px);
     width: auto;
     object-fit: contain;
 }
@@ -55,7 +57,6 @@ body {
     color: var(--font-color);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
-
 }
 
 h1, h2, h3.fw-bold {
@@ -101,9 +102,9 @@ h1, h2, h3.fw-bold {
     color: #ffffff !important;
 }
 
-[data-bs-theme="light"] #settings-dropdown {
-    background-color: var(--background);
-    border: 1px solid var(--border-color);
+.navbar-nav { position: relative; }
+
+#settings-dropdown {
     display: none;
     position: absolute;
     top: 100%;
@@ -113,20 +114,65 @@ h1, h2, h3.fw-bold {
     border-radius: 14px;
     margin-top: 8px;
     padding: 16px;
+    border: 1px solid var(--border-color);
+    background-color: var(--dropdown-bg);
+    flex-direction: column;
+    gap: 12px;
     text-align: left;
 }
 
-[data-bs-theme="dark"] #settings-dropdown {
-    background-color:var(--fc-album-cover-bg-color);
-    border: 1px solid var(--border-color);
-    display: none;
+#settings-dropdown .btn {
+    margin: 0 !important;
+    width: 100%;
+}
+
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.theme-icon { font-size: 1rem; }
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-switch-slider {
     position: absolute;
-    top: 100%;
-    right: 0;
-    z-index: 2000;
-    width: 320px;
-    border-radius: 14px;
-    margin-top: 8px;
-    padding: 16px;
-    text-align: left;
+    inset: 0;
+    cursor: pointer;
+    background-color: var(--fc-border-color);
+    border-radius: 26px;
+    transition: background-color 0.2s ease;
+}
+
+.theme-switch-slider::before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.theme-switch input:checked + .theme-switch-slider {
+    background-color: var(--accent);
+}
+
+.theme-switch input:checked + .theme-switch-slider::before {
+    transform: translateX(22px);
 }

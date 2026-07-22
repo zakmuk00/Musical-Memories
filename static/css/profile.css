@@ -28,9 +28,7 @@
     text-decoration: underline;
 }
 
-.mini-calendar-item {
-    background: #2d2d2d;
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-bottom: 8px;
+.mini-calendar-badge {
+    color: var(--fc-text-color);
+    font-weight: 500;
 }

@@ -1,6 +1,11 @@
 let friendMap = null;
 let friendMarkers = [];
 
+function getMapStyle() {
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    return isDark ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/streets-v12';
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const friendModalEl = document.getElementById('friendPreviewModal');
 
@@ -11,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modal-friend-username').textContent = username;
         
         const calContainer = document.getElementById('friend-calendar-container');
-        calContainer.innerHTML = `<div class="spinner-border spinner-border-sm text-light" role="status"></div> Loading...`;
+        calContainer.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div> Loading...`;
 
         fetch(`/api/user/${username}/preview-data`)
             .then(res => res.json())
@@ -27,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <div class="fw-bold small">${evt.title || 'Untitled'}</div>
                                     <div class="text-muted extra-small" style="font-size: 0.75rem;">${evt.artist || ''}</div>
                                 </div>
-                                <span class="badge bg-dark text-secondary">${evt.date}</span>
+                                <span class="badge mini-calendar-badge">${evt.date}</span>
                             </div>
                         `;
                     });
@@ -47,12 +52,22 @@ document.addEventListener('DOMContentLoaded', function () {
             friendMap.resize();
         }
     });
+
+    const themeObserver = new MutationObserver(() => {
+        if (friendMap) {
+            friendMap.setStyle(getMapStyle());
+        }
+    });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-bs-theme']
+    });
 });
 
 function initFriendMap(locations) {
     if (!MAPBOX_TOKEN) {
         document.getElementById('friend-map').innerHTML = 
-            '<div class="p-3 text-muted text-center border border-secondary rounded">Mapbox Token not configured.</div>';
+            '<div class="p-3 text-muted text-center border rounded">Mapbox Token not configured.</div>';
         return;
     }
 
@@ -65,7 +80,7 @@ function initFriendMap(locations) {
     if (!friendMap) {
         friendMap = new mapboxgl.Map({
             container: 'friend-map',
-            style: 'mapbox://styles/mapbox/dark-v11',
+            style: getMapStyle(),
             center: defaultCenter,
             zoom: locations && locations.length > 0 ? 9 : 3
         });
